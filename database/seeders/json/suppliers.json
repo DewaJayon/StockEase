@@ -1,0 +1,62 @@
+[
+    {
+        "slug": "supplier-utama",
+        "name": "Supplier Utama",
+        "phone": "08123456789",
+        "address": "Jl. Raya No. 1"
+    },
+    {
+        "slug": "tokopedia",
+        "name": "Tokopedia Grosir",
+        "phone": "082233445566",
+        "address": "Online"
+    },
+    {
+        "slug": "indogrosir",
+        "name": "Indogrosir",
+        "phone": "085612345678",
+        "address": "Jl. Margonda"
+    },
+    {
+        "slug": "nusantara-logistik",
+        "name": "Nusantara Logistik",
+        "phone": "0888999777",
+        "address": "Surabaya"
+    },
+    {
+        "slug": "toko-sumber",
+        "name": "Toko Sumber",
+        "phone": "08111222333",
+        "address": "Bandung"
+    },
+    {
+        "slug": "grosir-murah",
+        "name": "Grosir Murah",
+        "phone": "081333444555",
+        "address": "Yogyakarta"
+    },
+    {
+        "slug": "bulkstore-id",
+        "name": "BulkStore ID",
+        "phone": "089999000111",
+        "address": "Bekasi"
+    },
+    {
+        "slug": "distributor-utama",
+        "name": "Distributor Utama",
+        "phone": "083344556677",
+        "address": "Cibinong"
+    },
+    {
+        "slug": "bintang-grosir",
+        "name": "Bintang Grosir",
+        "phone": "082199887766",
+        "address": "Bogor"
+    },
+    {
+        "slug": "sentra-supplier",
+        "name": "Sentra Supplier",
+        "phone": "087788899900",
+        "address": "Malang"
+    }
+]

@@ -1,0 +1,82 @@
+[
+    {
+        "slug": "makanan-ringan",
+        "name": "Makanan Ringan"
+    },
+    {
+        "slug": "minuman",
+        "name": "Minuman"
+    },
+    {
+        "slug": "alat-tulis",
+        "name": "Alat Tulis"
+    },
+    {
+        "slug": "alat-rumah-tangga",
+        "name": "Alat Rumah Tangga"
+    },
+    {
+        "slug": "kebutuhan-bayi",
+        "name": "Kebutuhan Bayi"
+    },
+    {
+        "slug": "perawatan-tubuh",
+        "name": "Perawatan Tubuh"
+    },
+    {
+        "slug": "elektronik",
+        "name": "Elektronik"
+    },
+    {
+        "slug": "pakaian",
+        "name": "Pakaian"
+    },
+    {
+        "slug": "mainan-anak",
+        "name": "Mainan Anak"
+    },
+    {
+        "slug": "makanan-beku",
+        "name": "Makanan Beku"
+    },
+    {
+        "slug": "produk-pembersih",
+        "name": "Produk Pembersih"
+    },
+    {
+        "slug": "obat-obatan",
+        "name": "Obat-obatan"
+    },
+    {
+        "slug": "aksesoris-hp",
+        "name": "Aksesoris HP"
+    },
+    {
+        "slug": "susu",
+        "name": "Susu"
+    },
+    {
+        "slug": "beras-dan-sembako",
+        "name": "Beras dan Sembako"
+    },
+    {
+        "slug": "bumbu-dapur",
+        "name": "Bumbu Dapur"
+    },
+    {
+        "slug": "roti-dan-kue",
+        "name": "Roti dan Kue"
+    },
+    {
+        "slug": "peralatan-mandi",
+        "name": "Peralatan Mandi"
+    },
+    {
+        "slug": "kecantikan",
+        "name": "Kecantikan"
+    },
+    {
+        "slug": "lainnya",
+        "name": "Lainnya"
+    }
+]
