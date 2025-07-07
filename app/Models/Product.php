@@ -19,4 +19,29 @@ class Product extends Model
         'alert_stock',
         'image_path',
     ];
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function purchaseItems()
+    {
+        return $this->hasMany(PurcaseItem::class);
+    }
+
+    public function saleItems()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
+    public function stockLogs()
+    {
+        return $this->hasMany(StockLog::class);
+    }
 }
