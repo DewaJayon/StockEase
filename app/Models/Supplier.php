@@ -17,4 +17,9 @@ class Supplier extends Model
     {
         return 'slug';
     }
+
+    public function purcases()
+    {
+        return $this->hasMany(Purcase::class);
+    }
 }

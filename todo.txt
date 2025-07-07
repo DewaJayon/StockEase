@@ -1,0 +1,21 @@
+sidebar menu
+
+Dashboard
+├── Manajemen Data
+│   ├── Produk
+│   ├── Kategori
+│   └── Supplier
+├── Transaksi
+│   ├── Pembelian
+│   └── Penjualan
+├── Pembayaran
+│   └── Transaksi Pembayaran
+├── Laporan
+│   ├── Laporan Penjualan
+│   ├── Laporan Pembelian
+│   └── Laporan Stok
+├── Manajemen Stok
+│   └── Log Stok
+├── Pengguna
+│   └── Daftar User
+└── Pengaturan

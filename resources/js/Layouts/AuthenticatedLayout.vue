@@ -1,8 +1,9 @@
 <script setup>
-import { Head } from "@inertiajs/vue3";
 import AppSidebar from "@/Components/AppSidebar.vue";
 import { SidebarProvider } from "@/Components/ui/sidebar";
 import Header from "@/Components/Header.vue";
+import { Toaster } from "@/Components/ui/sonner";
+import "vue-sonner/style.css";
 </script>
 
 <template>
@@ -20,5 +21,6 @@ import Header from "@/Components/Header.vue";
                 </main>
             </div>
         </SidebarProvider>
+        <Toaster rich-colors position="top-right" />
     </div>
 </template>
