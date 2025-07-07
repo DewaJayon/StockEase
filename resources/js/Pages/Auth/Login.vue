@@ -12,7 +12,7 @@ import {
 } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
-import { Loader2 } from "lucide-vue-next";
+import { Eye, Loader2 } from "lucide-vue-next";
 
 defineProps({
     canResetPassword: {
@@ -33,6 +33,15 @@ const submit = () => {
     form.post(route("login"), {
         onFinish: () => form.reset("password"),
     });
+};
+
+const showPassword = () => {
+    const passwordInput = document.getElementById("password");
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+    } else {
+        passwordInput.type = "password";
+    }
 };
 </script>
 
@@ -69,18 +78,33 @@ const submit = () => {
                                 </div>
                                 <div class="grid gap-2">
                                     <Label html-for="password">Password</Label>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        placeholder="password"
-                                        v-model="form.password"
-                                        required
-                                    />
+
+                                    <div class="relative">
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            placeholder="password"
+                                            v-model="form.password"
+                                            required
+                                            class="pr-10"
+                                        />
+
+                                        <span
+                                            class="absolute right-0 inset-y-0 flex items-center px-3"
+                                        >
+                                            <Eye
+                                                class="cursor-pointer"
+                                                @click="showPassword"
+                                            />
+                                        </span>
+                                    </div>
+
                                     <InputError
                                         class="mt-2"
                                         :message="form.errors.password"
                                     />
                                 </div>
+
                                 <Button
                                     type="submit"
                                     class="w-full"
