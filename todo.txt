@@ -1,10 +1,11 @@
 sidebar menu
 
-Dashboard
+├── Dashboard
+├── POS (Kasir) - Ini real-time data, jadinya mungkin sangat kompleks
 ├── Manajemen Data
 │   ├── Produk
-│   ├── Kategori
-│   └── Supplier
+│   ├── Kategori - Done
+│   └── Supplier - Done
 ├── Transaksi
 │   ├── Pembelian
 │   └── Penjualan

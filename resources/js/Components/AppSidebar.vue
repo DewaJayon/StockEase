@@ -12,7 +12,18 @@ import {
     SidebarMenuButton,
 } from "@/Components/ui/sidebar";
 import { Link } from "@inertiajs/vue3";
-import { PackageSearch, Tag, Truck, LayoutDashboard } from "lucide-vue-next";
+import {
+    PackageSearch,
+    Tag,
+    Truck,
+    LayoutDashboard,
+    ChevronDown,
+} from "lucide-vue-next";
+import {
+    CollapsibleContent,
+    CollapsibleRoot,
+    CollapsibleTrigger,
+} from "reka-ui";
 
 const manageData = [
     {
@@ -27,7 +38,7 @@ const manageData = [
     },
     {
         title: "Supplier",
-        routeName: "#",
+        routeName: "supplier.index",
         icon: Truck,
     },
 ];
@@ -65,33 +76,46 @@ const manageData = [
                 </SidebarGroupContent>
             </SidebarGroup>
 
-            <SidebarGroup>
-                <SidebarGroupLabel> Manajemen Data </SidebarGroupLabel>
-                <SidebarGroupContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem
-                            v-for="item in manageData"
-                            :key="item.title"
-                        >
-                            <SidebarMenuButton
-                                asChild
-                                :is-active="route().current(item.routeName)"
-                            >
-                                <Link
-                                    :href="
-                                        route().has(item.routeName)
-                                            ? route(item.routeName)
-                                            : '#'
-                                    "
+            <CollapsibleRoot defaultOpen class="group/collapsible">
+                <SidebarGroup>
+                    <SidebarGroupLabel asChild>
+                        <CollapsibleTrigger>
+                            Manajemen Data
+                            <ChevronDown
+                                class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
+                            />
+                        </CollapsibleTrigger>
+                    </SidebarGroupLabel>
+                    <CollapsibleContent>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem
+                                    v-for="item in manageData"
+                                    :key="item.title"
                                 >
-                                    <component :is="item.icon" />
-                                    <span>{{ item.title }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroupContent>
-            </SidebarGroup>
+                                    <SidebarMenuButton
+                                        asChild
+                                        :is-active="
+                                            route().current(item.routeName)
+                                        "
+                                    >
+                                        <Link
+                                            :href="
+                                                route().has(item.routeName)
+                                                    ? route(item.routeName)
+                                                    : '#'
+                                            "
+                                        >
+                                            <component :is="item.icon" />
+                                            <span>{{ item.title }}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </CollapsibleContent>
+                </SidebarGroup>
+            </CollapsibleRoot>
         </SidebarContent>
         <SidebarFooter />
     </Sidebar>
