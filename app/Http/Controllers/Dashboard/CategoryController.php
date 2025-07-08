@@ -6,24 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Cviebrock\EloquentSluggable\Services\SlugService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
-
-    /**
-     * Constructor for CategoryController.
-     *
-     * Checks if the user is logged in and has an admin role.
-     * If not, aborts with a 403 status code.
-     */
-    public function __construct()
-    {
-        if (Auth::check() && Auth::user()->role !== 'admin' && Auth::user()->role !== 'warehouse') {
-            abort(403);
-        }
-    }
 
     /**
      * Display a listing of the resource.
