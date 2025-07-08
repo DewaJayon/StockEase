@@ -18,12 +18,26 @@ import {
     Truck,
     LayoutDashboard,
     ChevronDown,
+    UserRound,
 } from "lucide-vue-next";
 import {
     CollapsibleContent,
     CollapsibleRoot,
     CollapsibleTrigger,
 } from "reka-ui";
+
+const general = [
+    {
+        title: "Dashboard",
+        routeName: "home",
+        icon: LayoutDashboard,
+    },
+    {
+        title: "User",
+        routeName: "users.index",
+        icon: UserRound,
+    },
+];
 
 const manageData = [
     {
@@ -61,14 +75,20 @@ const manageData = [
                 <SidebarGroupLabel> Dashboard </SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                        <SidebarMenuItem>
+                        <SidebarMenuItem v-for="item in general">
                             <SidebarMenuButton
                                 asChild
-                                :is-active="route().current('home')"
+                                :is-active="route().current(item.routeName)"
                             >
-                                <Link :href="route('home')">
-                                    <LayoutDashboard />
-                                    Dashboard
+                                <Link
+                                    :href="
+                                        route().has(item.routeName)
+                                            ? route(item.routeName)
+                                            : '#'
+                                    "
+                                >
+                                    <component :is="item.icon" />
+                                    <span>{{ item.title }}</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
