@@ -11,11 +11,11 @@ import {
 import { Head, Link } from "@inertiajs/vue3";
 import { Separator } from "@/Components/ui/separator";
 import { DataTable } from "@/Components/ui/data-table";
-import { categoryColumns } from "./partials/category-column";
-import CategoryCreateForm from "./form/CategoryCreateForm.vue";
+import { supplierColumns } from "./partials/supplier-columns";
+import SupplierCreateForm from "./form/SupplierCreateForm.vue";
 
 const props = defineProps({
-    categories: {
+    suppliers: {
         type: Object,
         required: true,
     },
@@ -25,7 +25,7 @@ const props = defineProps({
 <template>
     <AuthenticatedLayout>
         <Head>
-            <title>Kategori</title>
+            <title>Supplier</title>
         </Head>
         <template #breadcrumb>
             <Breadcrumb>
@@ -37,7 +37,7 @@ const props = defineProps({
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
-                        <BreadcrumbPage> Kategori </BreadcrumbPage>
+                        <BreadcrumbPage> Supplier </BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
@@ -45,17 +45,17 @@ const props = defineProps({
         <div class="flex flex-1 flex-col gap-4 p-4">
             <div class="rounded-xl bg-muted/50 h-full p-4">
                 <div class="flex justify-between items-center">
-                    <h4 class="font-semibold">Kategori</h4>
-                    <CategoryCreateForm />
+                    <h4 class="font-semibold">Supplier</h4>
+                    <SupplierCreateForm />
                 </div>
                 <Separator class="my-4" />
 
                 <div class="mt-4">
                     <DataTable
-                        :data="categories.data"
-                        :columns="categoryColumns"
-                        :route-name="'category.index'"
-                        :pagination="categories"
+                        :data="suppliers.data"
+                        :columns="supplierColumns"
+                        :route-name="'supplier.index'"
+                        :pagination="suppliers"
                     />
                 </div>
             </div>
