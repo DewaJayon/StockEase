@@ -42,7 +42,7 @@ const general = [
 const manageData = [
     {
         title: "Produk",
-        routeName: "#",
+        routeName: "product.index",
         icon: PackageSearch,
     },
     {
@@ -116,7 +116,11 @@ const manageData = [
                                     <SidebarMenuButton
                                         asChild
                                         :is-active="
-                                            route().current(item.routeName)
+                                            item.title === 'Produk'
+                                                ? route().current('product.*')
+                                                : route().current(
+                                                      item.routeName
+                                                  )
                                         "
                                     >
                                         <Link

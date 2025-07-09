@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    use Sluggable;
+
     protected $fillable = [
         'category_id',
         'slug',
@@ -19,6 +22,15 @@ class Product extends Model
         'alert_stock',
         'image_path',
     ];
+
+    public function sluggable(): array
+    {
+        return [
+            'slug' => [
+                'source' => 'name'
+            ]
+        ];
+    }
 
     public function getRouteKeyName()
     {

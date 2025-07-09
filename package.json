@@ -28,10 +28,12 @@
         "@vueuse/core": "^13.5.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "cropperjs": "^1.5.6",
         "lucide-vue-next": "^0.525.0",
         "reka-ui": "^2.3.2",
         "tailwind-merge": "^3.3.1",
         "tailwindcss-animate": "^1.0.7",
+        "vue-cropperjs": "^5.0.0",
         "vue-sonner": "^2.0.1"
     }
 }
