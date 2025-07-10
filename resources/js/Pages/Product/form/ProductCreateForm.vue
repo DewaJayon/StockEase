@@ -9,6 +9,7 @@ import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
 import { Separator } from "@/Components/ui/separator";
 import VueCropper from "vue-cropperjs";
 import "/node_modules/cropperjs/dist/cropper.css";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 import {
     Breadcrumb,
@@ -124,6 +125,47 @@ const handleCrop = () => {
 
     showCropperModal.value = false;
 };
+
+const showScannerModal = ref(false);
+
+let html5QrcodeScanner = null;
+
+const onScanSuccess = (decodedText, decodedResult) => {
+    toast.success("Barcode berhasil terdeteksi", {
+        description: `Barcode ${decodedText} berhasil terdeteksi oleh ${user}`,
+    });
+
+    form.barcode = decodedText;
+    showScannerModal.value = false;
+};
+
+const onScanFailure = (error) => {
+    // console.warn(`Code scan error = ${error}`);
+};
+
+watch(showScannerModal, (newVal) => {
+    if (newVal) {
+        nextTick(() => {
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader",
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                false
+            );
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        });
+    } else {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner
+                .clear()
+                .then(() => {
+                    html5QrcodeScanner = null;
+                })
+                .catch((err) => {
+                    console.error("Failed to clear scanner", err);
+                });
+        }
+    }
+});
 
 const user = usePage().props.auth.user.name;
 
@@ -282,15 +324,27 @@ const submit = () => {
                             <InputError :message="form.errors.sku" />
                         </div>
 
-                        <div>
+                        <div class="w-full">
                             <Label for="barcode">Barcode</Label>
-                            <Input
-                                id="barcode"
-                                v-model="form.barcode"
-                                type="text"
-                                placeholder="Opsional"
-                            />
-
+                            <div class="flex items-center gap-1.5">
+                                <Input
+                                    id="barcode"
+                                    v-model="form.barcode"
+                                    type="text"
+                                    placeholder="Opsional"
+                                    class="flex-1"
+                                />
+                                <Button
+                                    type="button"
+                                    @click="showScannerModal = true"
+                                >
+                                    Scan Barcode
+                                </Button>
+                            </div>
+                            <span class="text-xs text-muted-foreground">
+                                Klik Scan Barcode untuk memasukkan data secara
+                                otomatis dengan menggunakan kamera.
+                            </span>
                             <InputError :message="form.errors.barcode" />
                         </div>
 
@@ -471,10 +525,24 @@ const submit = () => {
                                     >
                                         Batal
                                     </Button>
-                                    <Button @click="handleCrop"
-                                        >Simpan Gambar</Button
-                                    >
+                                    <Button @click="handleCrop">
+                                        Simpan Gambar
+                                    </Button>
                                 </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog v-model:open="showScannerModal">
+                        <DialogContent class="max-w-xl">
+                            <DialogHeader>
+                                <DialogTitle>Scan Barcode</DialogTitle>
+                            </DialogHeader>
+                            <div class="flex flex-col gap-4 items-center">
+                                <div id="reader" class="w-full" />
+                                <Button @click="showScannerModal = false">
+                                    Tutup
+                                </Button>
                             </div>
                         </DialogContent>
                     </Dialog>
