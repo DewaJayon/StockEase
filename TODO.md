@@ -6,7 +6,7 @@
 | POS (Kasir)             | admin, cashier              |         |
 | User                    | admin                       | Done ✅ |
 | **Manajemen Data**      |                             |         |
-| ├─ Produk               | admin, warehouse            | WIP     |
+| ├─ Produk               | admin, warehouse            | Done ✅ |
 | ├─ Kategori             | admin                       | Done ✅ |
 | └─ Supplier             | admin, warehouse            | Done ✅ |
 | **Transaksi**           |                             |         |
@@ -20,6 +20,5 @@
 | └─ Laporan Stok         | admin, warehouse            |         |
 | **Manajemen Stok**      |                             |         |
 | └─ Log Stok             | admin, warehouse            |         |
-| **Pengguna**            |                             |         |
-| └─ Daftar User          | admin                       |         |
-| Pengaturan              | admin                       |         |
+| **Pengaturan**          |                             |         |
+| └─ Pengaturan           | admin                       |         |
