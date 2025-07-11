@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use Inertia\Inertia;
 use App\Enums\UnitEnum;
-use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\Category;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use App\Models\Category;
 use Cviebrock\EloquentSluggable\Services\SlugService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
+
 
 class ProductController extends Controller
 {
@@ -29,6 +31,7 @@ class ProductController extends Controller
                     ->orWhere('sku', 'like', "%{$search}%")
                     ->orWhere('alert_stock', 'like', "%{$search}%")
                     ->orWhere('unit', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%")
                     ->orWhereHas('category', function ($queryCategory) use ($search) {
                         $queryCategory->where('name', 'like', "%{$search}%");
                     });
@@ -95,7 +98,9 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        return Inertia::render('Product/Show', [
+            'product' => $product->load('category')
+        ]);
     }
 
     /**
@@ -103,7 +108,23 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        //
+
+        $units = UnitEnum::options();
+
+        $categories = Category::select('id', 'name')->get();
+
+        $categories = $categories->map(function ($category) {
+            return [
+                'value' => $category->id,
+                'label' => $category->name,
+            ];
+        });
+
+        return Inertia::render('Product/form/ProductEditForm', [
+            'product'       => $product,
+            'units'         => $units,
+            'categories'    => $categories
+        ]);
     }
 
     /**
@@ -111,7 +132,35 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        //
+        $data = $request->validated();
+
+        if ($data['name'] != $product->name) {
+            $data['slug'] = SlugService::createSlug(Product::class, 'slug', $data['name']);
+        }
+
+        if ($request->hasFile('image')) {
+
+            if ($product->image_path) {
+                $filePath = Str::chopStart($product->image_path, 'storage/');
+                Storage::disk('public')->delete($filePath);
+            }
+
+            $imagePath = "product";
+
+            $image = $request->file('image');
+
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+
+            Storage::disk('public')->putFileAs($imagePath, $image, $imageName);
+
+            $data['image_path'] = "storage/{$imagePath}/{$imageName}";
+        } else {
+            $data['image_path'] = $product->image_path;
+        }
+
+        $product->update($data);
+
+        return redirect()->route('product.index')->with('success', 'Product berhasil diubah');
     }
 
     /**
@@ -119,6 +168,19 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+
+        try {
+            $filePath = Str::chopStart($product->image_path, 'storage/');
+
+            if ($product->image_path) {
+                Storage::disk('public')->delete($filePath);
+            }
+
+            $product->delete();
+
+            return redirect()->route('product.index')->with('success', 'Product berhasil dihapus');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Product gagal dihapus');
+        }
     }
 }
