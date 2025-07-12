@@ -5,6 +5,7 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\Dashboard\PosController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:admin, warehouse',])->group(function () {
     Route::resource('supplier', SupplierController::class);
     Route::resource('product', ProductController::class);
+});
+
+// POS Route
+Route::prefix('pos')->middleware('auth', 'role:admin, cashier')->group(function () {
+    Route::get('/', [PosController::class, 'index'])->name('pos.index');
 });
 
 require __DIR__ . '/auth.php';

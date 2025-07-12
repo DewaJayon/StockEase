@@ -1,4 +1,6 @@
 <script setup>
+import { Link } from "@inertiajs/vue3";
+
 import {
     Sidebar,
     SidebarContent,
@@ -11,7 +13,7 @@ import {
     SidebarMenuItem,
     SidebarMenuButton,
 } from "@/Components/ui/sidebar";
-import { Link } from "@inertiajs/vue3";
+
 import {
     PackageSearch,
     Tag,
@@ -19,7 +21,9 @@ import {
     LayoutDashboard,
     ChevronDown,
     UserRound,
+    ShoppingCart,
 } from "lucide-vue-next";
+
 import {
     CollapsibleContent,
     CollapsibleRoot,
@@ -36,6 +40,11 @@ const general = [
         title: "User",
         routeName: "users.index",
         icon: UserRound,
+    },
+    {
+        title: "POS (Kasir)",
+        routeName: "pos.index",
+        icon: ShoppingCart,
     },
 ];
 
