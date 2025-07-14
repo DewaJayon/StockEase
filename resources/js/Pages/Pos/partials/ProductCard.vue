@@ -3,6 +3,8 @@ import { Button } from "@/Components/ui/button";
 import { Plus } from "lucide-vue-next";
 import { Card, CardContent } from "@/Components/ui/card";
 import { formatPrice } from "@/lib/utils";
+import axios from "axios";
+import { toast } from "vue-sonner";
 
 const props = defineProps({
     product: {
@@ -10,12 +12,27 @@ const props = defineProps({
         required: true,
     },
 });
+
+const emit = defineEmits(["cart-updated"]);
+
+const addToCart = (producId) => {
+    axios
+        .post(route("pos.add-to-cart", { product_id: producId }))
+        .then((response) => {
+            toast.success(response.data.message);
+            emit("cart-updated");
+        })
+        .catch((error) => {
+            toast.error(error.data.message);
+        });
+};
 </script>
 
 <template>
     <Card
         class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
         :class="{ 'opacity-50': product.stock === 0 }"
+        @click="addToCart(product.id)"
     >
         <CardContent class="p-0">
             <div class="h-32 flex items-center justify-center relative">

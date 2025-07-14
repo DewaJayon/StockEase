@@ -1,8 +1,10 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link, router } from "@inertiajs/vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import { Separator } from "@/Components/ui/separator";
-
+import ProductFilter from "./partials/ProductFilter.vue";
+import axios from "axios";
+import { ref } from "vue";
 import Cart from "./partials/Cart.vue";
 import ProductCard from "./partials/ProductCard.vue";
 import ProductPagination from "./partials/ProductPagination.vue";
@@ -16,8 +18,6 @@ import {
     BreadcrumbSeparator,
 } from "@/Components/ui/breadcrumb";
 
-import ProductFilter from "./partials/ProductFilter.vue";
-
 const props = defineProps({
     categories: {
         type: Array,
@@ -27,7 +27,18 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    cart: {
+        type: Object || null,
+        required: true,
+    },
 });
+
+const cart = ref(props.cart);
+
+const fetchCart = async () => {
+    const response = await axios.get(route("pos.get-cart"));
+    cart.value = response.data.cart;
+};
 </script>
 
 <template>
@@ -77,6 +88,7 @@ const props = defineProps({
                                     v-for="product in products.data"
                                     :key="product.id"
                                     :product="product"
+                                    @cart-updated="fetchCart"
                                 />
                                 <div
                                     v-else
@@ -91,7 +103,7 @@ const props = defineProps({
                             </div>
                         </div>
 
-                        <Cart />
+                        <Cart v-if="cart" :cart="cart" />
                     </div>
                 </div>
             </div>

@@ -6,8 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\SaleItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+
+use function PHPUnit\Framework\isJson;
 
 class PosController extends Controller
 {
@@ -44,10 +49,219 @@ class PosController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-
         return Inertia::render('Pos/Index', [
             'products'      => $products,
-            'categories'    => $categories
+            'categories'    => $categories,
+            'cart'          => $this->getCart()
         ]);
+    }
+
+
+    /**
+     * Return the cart data in JSON format.
+     * 
+     * Only returns the cart data if the request is an AJAX request.
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCartJson()
+    {
+        if (isJson()) {
+            $cart = $this->getCart();
+            return response()->json(['cart' => $cart]);
+        }
+    }
+
+
+    /**
+     * Return the current cart data.
+     * 
+     * If the current cart doesn't exist, create a new one.
+     * 
+     * @return \App\Models\Sale
+     */
+    private function getCart()
+    {
+
+        $cart = Sale::with('saleItems.product')
+            ->where('user_id', Auth::id())
+            ->where('paid', false)
+            ->first();
+
+        if (!$cart) {
+            $cart = Sale::create([
+                'user_id'           => Auth::user()->id,
+                'total'             => 0,
+                'payment_method'    => 'null',
+                'paid'              => false,
+                'change'            => 0,
+                'date'              => now()
+            ]);
+        } else {
+            $cart->load('saleItems.product');
+            $cart->calculateTotal();
+        }
+
+        return $cart;
+    }
+
+
+    /**
+     * Update the qty of a product in the current cart.
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+
+    public function changeQty(Request $request)
+    {
+        $request->validate([
+            'product_id'    => 'required|exists:products,id',
+            'qty'           => 'required|numeric'
+        ]);
+
+        $cart = $this->getCart();
+
+        if ($request->qty <= 0) {
+            $cart->saleItems()->where('product_id', $request->product_id)->delete();
+
+            $cart->load('saleItems.product');
+            $cart->calculateTotal();
+
+            return response()->json([
+                'message' => 'Item berhasil dihapus',
+                'total'   => $cart->total,
+                'cart'    => $cart
+            ]);
+        }
+
+        $saleItem = $cart->saleItems()->where('product_id', $request->product_id)->first();
+
+        if (!$saleItem) {
+            return response()->json(['message' => 'Item tidak ditemukan di cart.'], 404);
+        }
+
+        DB::transaction(function () use ($request, $saleItem) {
+            $saleItem->update([
+                'qty' => $request->qty
+            ]);
+        });
+
+        $cart->load('saleItems.product');
+        $cart->calculateTotal();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Qty berhasil diubah',
+                'total'   => $cart->total,
+            ]);
+        }
+
+        return back();
+    }
+
+
+    /**
+     * Tambahkan item produk ke keranjang.
+     * 
+     * Validasi:
+     * - product_id harus ada di tabel products
+     * - Jika qty yang diinputkan lebih besar dari stok produk, maka akan gagal dan mengembalikan response 400
+     * - Jika stok produk habis, maka akan gagal dan mengembalikan response 400
+     * 
+     * Jika berhasil, maka akan mengembalikan response 200 dengan data keranjang yang sudah di update.
+     * Jika gagal, maka akan mengembalikan response 400 dengan pesan error.
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function addToCart(Request $request)
+    {
+
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $product = Product::where('id', $request->product_id)->first();
+        $cart    = Sale::where('user_id', Auth::id())->first();
+        $qty     = 1;
+
+        if ($product->stock == 0) {
+            return response()->json([
+                'message' => 'Stok produk habis'
+            ], 400);
+        }
+
+        if ($product->stock < $qty) {
+            return response()->json([
+                'message' => 'Stok produk tidak mencukupi'
+            ], 400);
+        }
+
+        $existItem = SaleItem::where([
+            'sale_id'       => $cart->id,
+            'product_id'    => $product->id
+        ])->first();
+
+        if (!$existItem) {
+            SaleItem::create([
+                'sale_id'       => $cart->id,
+                'product_id'    => $product->id,
+                'qty'           => $qty,
+                'price'         => $product->selling_price
+            ]);
+        } else {
+            $existItem->update([
+                'qty' => $existItem->qty + $qty
+            ]);
+        }
+
+        $cart->load('saleItems.product');
+        $cart->calculateTotal();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Item berhasil ditambahkan ke keranjang',
+                'total' => $cart->total
+            ]);
+        }
+
+        return back();
+    }
+
+
+    /**
+     * Hapus item produk dari keranjang.
+     * 
+     * Validasi:
+     * - product_id harus ada di tabel products
+     * 
+     * Jika berhasil, maka akan mengembalikan response 200 dengan data keranjang yang sudah di update.
+     * Jika gagal, maka akan mengembalikan response 400 dengan pesan error.
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function removeFromCart(Request $request)
+    {
+        if ($request->expectsJson()) {
+            $request->validate([
+                'product_id' => 'required|exists:products,id'
+            ]);
+
+            $cart = $this->getCart();
+            $cart->saleItems()->where('product_id', $request->product_id)->delete();
+
+            $cart->load('saleItems.product');
+            $cart->calculateTotal();
+
+            return response()->json([
+                'message'    => 'Item berhasil dihapus',
+                'total'      => $cart->total,
+                'cart'       => $cart
+            ]);
+        }
+
+        return back();
     }
 }

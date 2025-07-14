@@ -33,6 +33,10 @@ Route::middleware(['auth', 'role:admin, warehouse',])->group(function () {
 // POS Route
 Route::prefix('pos')->middleware('auth', 'role:admin, cashier')->group(function () {
     Route::get('/', [PosController::class, 'index'])->name('pos.index');
+    Route::patch('/change-qty', [PosController::class, 'changeQty'])->name('pos.change-qty');
+    Route::post('/add-to-cart', [PosController::class, 'addToCart'])->name('pos.add-to-cart');
+    Route::get('/pos/get-cart', [PosController::class, 'getCartJson'])->name('pos.get-cart');
+    Route::delete('/remove-from-cart', [PosController::class, 'removeFromCart'])->name('pos.remove-from-cart');
 });
 
 require __DIR__ . '/auth.php';
