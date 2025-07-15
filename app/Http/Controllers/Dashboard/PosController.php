@@ -66,10 +66,11 @@ class PosController extends Controller
      */
     public function getCartJson()
     {
-        if (isJson()) {
+        if (request()->expectsJson()) {
             $cart = $this->getCart();
             return response()->json(['cart' => $cart]);
         }
+        return abort(403, 'Invalid request.');
     }
 
 
@@ -82,27 +83,40 @@ class PosController extends Controller
      */
     private function getCart()
     {
-
         $cart = Sale::with('saleItems.product')
             ->where('user_id', Auth::id())
-            ->where('paid', false)
+            ->where('status', 'draft')
             ->first();
 
         if (!$cart) {
             $cart = Sale::create([
-                'user_id'           => Auth::user()->id,
-                'total'             => 0,
-                'payment_method'    => 'null',
-                'paid'              => false,
-                'change'            => 0,
-                'date'              => now()
+                'user_id'         => Auth::id(),
+                'total'           => 0,
+                'payment_method'  => 'pending',
+                'paid'            => 0,
+                'change'          => 0,
+                'date'            => now(),
+                'status'          => 'draft',
             ]);
         } else {
-            $cart->load('saleItems.product');
-            $cart->calculateTotal();
+            $this->refreshCart($cart);
         }
 
         return $cart;
+    }
+
+
+    /**
+     * Refresh the cart data by reloading the sale items and recalculating the total.
+     *
+     * @param \App\Models\Sale $cart The cart object to refresh.
+     * @return void
+     */
+
+    private function refreshCart($cart)
+    {
+        $cart->load('saleItems.product');
+        $cart->calculateTotal();
     }
 
 
@@ -125,8 +139,7 @@ class PosController extends Controller
         if ($request->qty <= 0) {
             $cart->saleItems()->where('product_id', $request->product_id)->delete();
 
-            $cart->load('saleItems.product');
-            $cart->calculateTotal();
+            $this->refreshCart($cart);
 
             return response()->json([
                 'message' => 'Item berhasil dihapus',
@@ -147,8 +160,7 @@ class PosController extends Controller
             ]);
         });
 
-        $cart->load('saleItems.product');
-        $cart->calculateTotal();
+        $this->refreshCart($cart);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -183,7 +195,7 @@ class PosController extends Controller
         ]);
 
         $product = Product::where('id', $request->product_id)->first();
-        $cart    = Sale::where('user_id', Auth::id())->first();
+        $cart    = $this->getCart();
         $qty     = 1;
 
         if ($product->stock == 0) {
@@ -216,8 +228,7 @@ class PosController extends Controller
             ]);
         }
 
-        $cart->load('saleItems.product');
-        $cart->calculateTotal();
+        $this->refreshCart($cart);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -252,13 +263,113 @@ class PosController extends Controller
             $cart = $this->getCart();
             $cart->saleItems()->where('product_id', $request->product_id)->delete();
 
-            $cart->load('saleItems.product');
-            $cart->calculateTotal();
+            $this->refreshCart($cart);
 
             return response()->json([
                 'message'    => 'Item berhasil dihapus',
                 'total'      => $cart->total,
                 'cart'       => $cart
+            ]);
+        }
+
+        return back();
+    }
+
+
+    /**
+     * Kosongkan keranjang.
+     * 
+     * Jika keranjang sudah kosong, maka akan mengembalikan response 400 dengan pesan error.
+     * Jika berhasil, maka akan mengembalikan response 200 dengan data keranjang yang sudah dikosongkan.
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function emptyCart()
+    {
+        $cart = $this->getCart();
+
+        if ($cart->saleItems()->count() == 0) {
+            return response()->json([
+                'message' => 'Keranjang masih kosong'
+            ], 400);
+        }
+
+        if (isJson()) {
+
+            $cart->saleItems()->delete();
+            $this->refreshCart($cart);
+
+            return response()->json([
+                'message' => 'Keranjang berhasil dikosongkan',
+                'total'   => $cart->total,
+                'cart'    => $cart
+            ], 200);
+        }
+    }
+
+
+    /**
+     * Checkout sale.
+     *
+     * Validation rules:
+     * - payment_method harus ada di tabel payments
+     * - customer_name boleh kosong, tapi tidak boleh lebih dari 255 karakter
+     * - paid harus berupa angka
+     * - change harus berupa angka
+     *
+     * Jika sale item kosong, maka akan mengembalikan response 400 dengan pesan error.
+     * Jika berhasil, maka akan mengembalikan response 200 dengan data keranjang yang sudah di update.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Sale $sale
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function checkout(Request $request, Sale $sale)
+    {
+
+        if ($sale->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access to cart.');
+        }
+
+        if ($request->expectsJson()) {
+            $request->validate([
+                'payment_method' => 'required|in:cash,qris',
+                'customer_name'  => 'nullable|string|max:255',
+                'paid'           => 'required|numeric',
+                'change'         => 'required|numeric'
+            ]);
+
+            if ($sale->saleItems->isEmpty()) {
+                return response()->json(['message' => 'Keranjang kosong, tidak bisa checkout'], 400);
+            }
+
+            foreach ($sale->saleItems as $item) {
+                if ($item->product->stock < $item->qty) {
+                    return response()->json([
+                        'message' => "Stok produk {$item->product->name} tidak mencukupi untuk checkout."
+                    ], 400);
+                }
+            }
+
+            DB::transaction(function () use ($request, $sale) {
+                $sale->update([
+                    'payment_method' => $request->payment_method,
+                    'customer_name'  => $request->customer_name,
+                    'paid'           => $request->paid,
+                    'change'         => $request->change,
+                    'status'         => 'completed'
+                ]);
+
+                Product::reduceStockFromSaleItems($sale->saleItems);
+            });
+
+            $cart = $this->getCart();
+            $this->refreshCart($cart);
+
+            return response()->json([
+                'message' => 'Checkout berhasil',
+                'total'   => $cart->total,
+                'cart'    => $cart
             ]);
         }
 

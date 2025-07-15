@@ -14,7 +14,8 @@ class Sale extends Model
         'payment_method',
         'paid',
         'change',
-        'date'
+        'date',
+        'status'
     ];
 
     public function user()
