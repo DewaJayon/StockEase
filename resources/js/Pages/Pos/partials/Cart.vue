@@ -1,6 +1,6 @@
 <script setup>
 import { Button } from "@/Components/ui/button";
-import { Loader2, Printer, Trash2 } from "lucide-vue-next";
+import { Loader2, Trash2 } from "lucide-vue-next";
 import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { Label } from "@/Components/ui/label";
 import { formatPrice } from "@/lib/utils";
@@ -131,6 +131,9 @@ watch(paymentMethod, (newValue) => {
 const customerName = ref(null);
 
 const isCheckoutLoading = ref(false);
+
+const emit = defineEmits(["checkout-success"]);
+
 const checkout = () => {
     isCheckoutLoading.value = true;
 
@@ -158,6 +161,8 @@ const checkout = () => {
                 cashPayment.value = 0;
                 change.value = 0;
                 customerName.value = null;
+
+                emit("checkout-success");
             })
             .catch((error) => {
                 toast.error(error.data.message);

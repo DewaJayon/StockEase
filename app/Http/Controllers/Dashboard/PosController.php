@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-use function PHPUnit\Framework\isJson;
-
 class PosController extends Controller
 {
     /**
@@ -294,7 +292,7 @@ class PosController extends Controller
             ], 400);
         }
 
-        if (isJson()) {
+        if (request()->expectsJson()) {
 
             $cart->saleItems()->delete();
             $this->refreshCart($cart);
