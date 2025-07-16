@@ -56,4 +56,29 @@ class Product extends Model
     {
         return $this->hasMany(StockLog::class);
     }
+
+    public static function reduceStockFromSaleItems($saleItems)
+    {
+        $productIds = $saleItems->pluck('product_id')->toArray();
+        $products = self::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
+
+        foreach ($saleItems as $item) {
+            $product = $products[$item->product_id];
+
+            if ($product->stock < $item->qty) {
+                throw new \Exception("Stok produk {$product->name} tidak cukup.");
+            }
+
+            $product->decrement('stock', $item->qty);
+
+            StockLog::create([
+                'product_id'     => $product->id,
+                'qty'            => $item->qty,
+                'type'           => 'out',
+                'reference_type' => 'Sale',
+                'reference_id'   => $item->sale_id,
+                'note'           => 'Penjualan produk ' . $product->name,
+            ]);
+        }
+    }
 }

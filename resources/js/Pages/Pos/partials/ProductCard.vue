@@ -14,7 +14,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["cart-updated"]);
-
 const addToCart = (producId) => {
     axios
         .post(route("pos.add-to-cart", { product_id: producId }))

@@ -1,6 +1,6 @@
 <script setup>
 import { Button } from "@/Components/ui/button";
-import { Loader2, Printer, Trash2 } from "lucide-vue-next";
+import { Loader2, Trash2 } from "lucide-vue-next";
 import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { Label } from "@/Components/ui/label";
 import { formatPrice } from "@/lib/utils";
@@ -54,9 +54,11 @@ watch(
     { immediate: true }
 );
 
-props.cart.sale_items.forEach((item) => {
-    qtyRefs.value[item.product_id] = item.qty;
-});
+if (props.cart?.sale_items?.length) {
+    props.cart.sale_items.forEach((item) => {
+        qtyRefs.value[item.product_id] = item.qty;
+    });
+}
 
 const changeQty = (id, qty) => {
     axios
@@ -87,6 +89,145 @@ const removeItemFromCart = (productId) => {
         .finally(() => {
             loadingItemId.value = null;
         });
+};
+
+const isClearCartLoading = ref(false);
+const clearCart = () => {
+    isClearCartLoading.value = true;
+
+    if (cartItems.value.length > 0) {
+        axios
+            .delete(route("pos.empty-cart"))
+            .then((response) => {
+                toast.success(response.data.message);
+                totalCart.value = response.data.total;
+                cartItems.value = response.data.cart.sale_items;
+            })
+            .catch((error) => {
+                toast.error(error.data.message);
+                console.log(error);
+            })
+            .finally(() => {
+                isClearCartLoading.value = false;
+            });
+    } else {
+        toast.error("Keranjang belanja masih kosong");
+        isClearCartLoading.value = false;
+    }
+};
+
+const cashPayment = ref(0);
+const change = ref(0);
+const paymentMethod = ref("cash");
+
+watch(cashPayment, (newValue) => {
+    change.value = newValue - totalCart.value;
+});
+
+watch(paymentMethod, (newValue) => {
+    paymentMethod.value = newValue;
+});
+
+const customerName = ref(null);
+
+const isCheckoutLoading = ref(false);
+
+const emit = defineEmits(["checkout-success"]);
+
+const checkout = () => {
+    isCheckoutLoading.value = true;
+
+    const saleId = cartData.value.id;
+
+    if (paymentMethod.value === "cash") {
+        if (cashPayment.value < totalCart.value) {
+            toast.error("Uang pembayaran kurang");
+            isCheckoutLoading.value = false;
+            return;
+        }
+
+        axios
+            .put(route("pos.checkout", { sale: saleId }), {
+                sale_id: saleId,
+                payment_method: paymentMethod.value,
+                customer_name: customerName.value,
+                paid: cashPayment.value,
+                change: change.value,
+            })
+            .then((response) => {
+                toast.success(response.data.message);
+                totalCart.value = response.data.total;
+                cartItems.value = response.data.cart.sale_items;
+                cashPayment.value = 0;
+                change.value = 0;
+                customerName.value = null;
+
+                emit("checkout-success");
+            })
+            .catch((error) => {
+                toast.error(error.data.message);
+                console.log(error);
+            })
+            .finally(() => {
+                isCheckoutLoading.value = false;
+            });
+    } else if (paymentMethod.value === "qris") {
+        axios
+            .post(
+                route("pos.qris-token", {
+                    amount: totalCart.value,
+                    customer_name: customerName.value,
+                })
+            )
+            .then((response) => {
+                console.log(response.data);
+                const snapToken = response.data.snap_token;
+
+                window.snap.pay(snapToken, {
+                    onSuccess: function (result) {
+                        axios
+                            .put(route("pos.checkout", { sale: saleId }), {
+                                sale_id: saleId,
+                                payment_method: paymentMethod.value,
+                                customer_name: customerName.value,
+                                paid: result.gross_amount,
+                                order_id: result.order_id,
+                            })
+                            .then((response) => {
+                                toast.success(response.data.message);
+                                totalCart.value = response.data.total;
+                                cartItems.value = response.data.cart.sale_items;
+                                cashPayment.value = 0;
+                                change.value = 0;
+                                customerName.value = null;
+
+                                emit("checkout-success");
+                            })
+                            .catch((error) => {
+                                toast.error(error.data.message);
+                                console.log(error);
+                            })
+                            .finally(() => {
+                                isCheckoutLoading.value = false;
+                            });
+                        console.log(result);
+                    },
+                    onPending: function (result) {
+                        toast.info("Menunggu pembayaran QRIS");
+                        console.log(result);
+                    },
+                    onError: function (result) {
+                        toast.error("Pembayaran gagal");
+                        console.error(result);
+                    },
+                });
+            })
+            .catch((error) => {
+                toast.error("Gagal mendapatkan token pembayaran QRIS");
+                console.log(error);
+                isCheckoutLoading.value = false;
+            });
+    }
 };
 </script>
 
@@ -167,7 +308,7 @@ const removeItemFromCart = (productId) => {
             <div>
                 <span>Metode Pembayaran:</span>
                 <div class="flex items-center space-x-2 mt-2">
-                    <RadioGroup v-model="cart.payment_method">
+                    <RadioGroup v-model="paymentMethod">
                         <div class="flex items-center space-x-2">
                             <RadioGroupItem id="cash" value="cash" />
                             <Label for="cash">Cash</Label>
@@ -180,40 +321,70 @@ const removeItemFromCart = (productId) => {
                 </div>
             </div>
 
-            <div v-if="cart.payment_method === 'cash'" class="flex mt-2">
+            <div v-if="paymentMethod === 'cash'" class="flex mt-2">
                 <Input
+                    v-model="cashPayment"
+                    name="cashPayment"
+                    id="cashPayment"
                     type="number"
                     class="w-full mt-2 [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="Uang Pembayaran "
+                    autocomplete="off"
+                />
+            </div>
+
+            <div class="flex mt-2">
+                <Input
+                    v-model="customerName"
+                    name="customer_name"
+                    id="customer_name"
+                    type="text"
+                    class="w-full mt-2 [&::-webkit-inner-spin-button]:appearance-none"
+                    placeholder="Nama Pelanggan (Opsional)"
+                    autocomplete="off"
                 />
             </div>
 
             <div class="flex justify-between text-lg font-bold mt-2">
                 <span class="text-muted-foreground">Kembalian:</span>
-                <span>{{ formatPrice(cart.change) }}</span>
+                <span>{{ formatPrice(change) }}</span>
             </div>
 
-            <Button class="w-full"> PROSES PEMBAYARAN </Button>
+            <Button
+                class="w-full disabled:cursor-not-allowed"
+                :disabled="
+                    !cart.payment_method ||
+                    cart.sale_items.length === 0 ||
+                    isCheckoutLoading
+                "
+                @click="checkout"
+            >
+                <Loader2
+                    v-if="isCheckoutLoading"
+                    class="w-4 h-4 animate-spin"
+                />
+                {{ isCheckoutLoading ? "Loading..." : "Proses Pembayaran" }}
+            </Button>
 
             <div class="grid grid-cols-3 gap-2 mt-3">
                 <TooltipProvider :delay-duration="0">
                     <Tooltip>
                         <TooltipTrigger>
-                            <Button size="icon" class="w-full">
-                                <Printer />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                            <p>Cetak</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-
-                <TooltipProvider :delay-duration="0">
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button size="icon" class="w-full">
-                                <Trash2 />
+                            <Button
+                                size="icon"
+                                class="w-full"
+                                @click="clearCart"
+                                :disabled="
+                                    !cart.payment_method ||
+                                    cart.sale_items.length === 0 ||
+                                    isClearCartLoading
+                                "
+                            >
+                                <Loader2
+                                    v-if="isClearCartLoading"
+                                    class="w-4 h-4 animate-spin"
+                                />
+                                <Trash2 v-else />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">

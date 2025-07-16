@@ -3,7 +3,7 @@
 | Sidebar Menu            | Role Akses                  | Status  |
 | ----------------------- | --------------------------- | ------- |
 | Dashboard               | admin, cashier, warehouse   |         |
-| POS (Kasir)             | admin, cashier              | WIP     |
+| POS (Kasir)             | admin, cashier              | Done ✅ |
 | User                    | admin                       | Done ✅ |
 | **Manajemen Data**      |                             |         |
 | ├─ Produk               | admin, warehouse            | Done ✅ |
@@ -22,3 +22,10 @@
 | └─ Log Stok             | admin, warehouse            |         |
 | **Pengaturan**          |                             |         |
 | └─ Pengaturan           | admin                       |         |
+
+## Fitur Tambahan
+
+| Fitur           | Status  |
+| --------------- | ------- |
+| Notifikasi      |         |
+| Payment Gateway | Done ✅ |

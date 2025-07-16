@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Dashboard\CategoryController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\PaymentController;
 use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
@@ -35,8 +36,11 @@ Route::prefix('pos')->middleware('auth', 'role:admin, cashier')->group(function 
     Route::get('/', [PosController::class, 'index'])->name('pos.index');
     Route::patch('/change-qty', [PosController::class, 'changeQty'])->name('pos.change-qty');
     Route::post('/add-to-cart', [PosController::class, 'addToCart'])->name('pos.add-to-cart');
-    Route::get('/pos/get-cart', [PosController::class, 'getCartJson'])->name('pos.get-cart');
+    Route::get('/get-cart', [PosController::class, 'getCartJson'])->name('pos.get-cart');
     Route::delete('/remove-from-cart', [PosController::class, 'removeFromCart'])->name('pos.remove-from-cart');
+    Route::delete('/empty-cart', [PosController::class, 'emptyCart'])->name('pos.empty-cart');
+    Route::put('/checkout/{sale}', [PosController::class, 'checkout'])->name('pos.checkout');
+    Route::post('/qris-token', [PaymentController::class, 'createMidtransTransaction'])->name('pos.qris-token');
 });
 
 require __DIR__ . '/auth.php';

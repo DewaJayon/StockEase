@@ -96,6 +96,9 @@ watchDebounced(
             <SelectContent>
                 <SelectGroup>
                     <SelectLabel>Kategori</SelectLabel>
+                    <SelectItem :value="null" class="capitalize cursor-pointer">
+                        Semua Kategori
+                    </SelectItem>
                     <SelectItem
                         v-for="category in categories"
                         :key="category.value"
