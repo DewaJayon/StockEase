@@ -171,12 +171,62 @@ const checkout = () => {
             .finally(() => {
                 isCheckoutLoading.value = false;
             });
-    } else {
-        toast.error("Untuk saat ini metode pembayaran hanya cash", {
-            description:
-                "Silahkan pilih metode pembayaran cash (Developer sedang malas ngoding)",
-        });
-        isCheckoutLoading.value = false;
+    } else if (paymentMethod.value === "qris") {
+        axios
+            .post(
+                route("pos.qris-token", {
+                    amount: totalCart.value,
+                    customer_name: customerName.value,
+                })
+            )
+            .then((response) => {
+                console.log(response.data);
+                const snapToken = response.data.snap_token;
+
+                window.snap.pay(snapToken, {
+                    onSuccess: function (result) {
+                        axios
+                            .put(route("pos.checkout", { sale: saleId }), {
+                                sale_id: saleId,
+                                payment_method: paymentMethod.value,
+                                customer_name: customerName.value,
+                                paid: result.gross_amount,
+                                order_id: result.order_id,
+                            })
+                            .then((response) => {
+                                toast.success(response.data.message);
+                                totalCart.value = response.data.total;
+                                cartItems.value = response.data.cart.sale_items;
+                                cashPayment.value = 0;
+                                change.value = 0;
+                                customerName.value = null;
+
+                                emit("checkout-success");
+                            })
+                            .catch((error) => {
+                                toast.error(error.data.message);
+                                console.log(error);
+                            })
+                            .finally(() => {
+                                isCheckoutLoading.value = false;
+                            });
+                        console.log(result);
+                    },
+                    onPending: function (result) {
+                        toast.info("Menunggu pembayaran QRIS");
+                        console.log(result);
+                    },
+                    onError: function (result) {
+                        toast.error("Pembayaran gagal");
+                        console.error(result);
+                    },
+                });
+            })
+            .catch((error) => {
+                toast.error("Gagal mendapatkan token pembayaran QRIS");
+                console.log(error);
+                isCheckoutLoading.value = false;
+            });
     }
 };
 </script>

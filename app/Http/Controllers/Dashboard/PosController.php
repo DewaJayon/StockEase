@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\PaymentTransaction;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -330,11 +331,12 @@ class PosController extends Controller
         }
 
         if ($request->expectsJson()) {
+
             $request->validate([
                 'payment_method' => 'required|in:cash,qris',
                 'customer_name'  => 'nullable|string|max:255',
-                'paid'           => 'required|numeric',
-                'change'         => 'required|numeric'
+                'paid'           => 'required_if:payment_method,cash|numeric',
+                'change'         => 'required_if:payment_method,cash|numeric',
             ]);
 
             if ($sale->saleItems->isEmpty()) {
@@ -350,13 +352,32 @@ class PosController extends Controller
             }
 
             DB::transaction(function () use ($request, $sale) {
-                $sale->update([
-                    'payment_method' => $request->payment_method,
-                    'customer_name'  => $request->customer_name,
-                    'paid'           => $request->paid,
-                    'change'         => $request->change,
-                    'status'         => 'completed'
-                ]);
+
+                if ($request->payment_method === 'qris') {
+                    $sale->update([
+                        'payment_method' => 'qris',
+                        'customer_name'  => $request->customer_name,
+                        'paid'           => $request->paid,
+                        'status'         => 'completed'
+                    ]);
+
+                    PaymentTransaction::create([
+                        'sale_id'       => $sale->id,
+                        'gateway'       => 'midtrans',
+                        'external_id'   => $request->order_id,
+                        'status'        => 'pending',
+                        'amount'        => $request->paid,
+                        'payment_type'  => 'qris',
+                    ]);
+                } else if ($request->payment_method === 'cash') {
+                    $sale->update([
+                        'payment_method' => $request->payment_method,
+                        'customer_name'  => $request->customer_name,
+                        'paid'           => $request->paid,
+                        'change'         => $request->change,
+                        'status'         => 'completed'
+                    ]);
+                }
 
                 Product::reduceStockFromSaleItems($sale->saleItems);
             });
