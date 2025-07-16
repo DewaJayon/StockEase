@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
 import { Separator } from "@/Components/ui/separator";
 import ProductFilter from "./partials/ProductFilter.vue";
 import axios from "axios";
@@ -17,6 +17,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/Components/ui/breadcrumb";
+import { computed } from "vue";
 
 const props = defineProps({
     categories: {
@@ -34,10 +35,20 @@ const props = defineProps({
 });
 
 const cart = ref(props.cart);
+const products = computed(() => props.products);
 
 const fetchCart = async () => {
     const response = await axios.get(route("pos.get-cart"));
     cart.value = response.data.cart;
+};
+
+const reloadPage = () => {
+    fetchCart();
+    router.reload({
+        preserveScroll: true,
+        preserveState: true,
+        only: ["products"],
+    });
 };
 </script>
 
@@ -84,11 +95,11 @@ const fetchCart = async () => {
                                 style="max-height: 70vh"
                             >
                                 <ProductCard
-                                    v-if="products.data.length > 0"
+                                    v-if="products && products.data"
                                     v-for="product in products.data"
                                     :key="product.id"
                                     :product="product"
-                                    @cart-updated="fetchCart"
+                                    @cart-updated="fetchCart()"
                                 />
                                 <div
                                     v-else
@@ -103,7 +114,11 @@ const fetchCart = async () => {
                             </div>
                         </div>
 
-                        <Cart v-if="cart" :cart="cart" />
+                        <Cart
+                            v-if="cart"
+                            :cart="cart"
+                            @checkout-success="reloadPage"
+                        />
                     </div>
                 </div>
             </div>
