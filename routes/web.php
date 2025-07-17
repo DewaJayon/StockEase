@@ -7,6 +7,7 @@ use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\PosController;
+use App\Http\Controllers\Dashboard\SaleHistoryController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,12 @@ Route::prefix('pos')->middleware('auth', 'role:admin, cashier')->group(function 
     Route::delete('/empty-cart', [PosController::class, 'emptyCart'])->name('pos.empty-cart');
     Route::put('/checkout/{sale}', [PosController::class, 'checkout'])->name('pos.checkout');
     Route::post('/qris-token', [PaymentController::class, 'createMidtransTransaction'])->name('pos.qris-token');
+});
+
+// Sale History || Data Transaksi Penjualan Route
+Route::middleware('auth', 'role:admin, cashier')->group(function () {
+    Route::get('/sale', [SaleHistoryController::class, 'index'])->name('sale.index');
+    Route::get('/sale/{sale}', [SaleHistoryController::class, 'show'])->name('sale.show');
 });
 
 require __DIR__ . '/auth.php';
