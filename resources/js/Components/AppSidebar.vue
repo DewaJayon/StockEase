@@ -22,6 +22,8 @@ import {
     ChevronDown,
     UserRound,
     ShoppingCart,
+    ShoppingBag,
+    PackageCheck,
 } from "lucide-vue-next";
 
 import {
@@ -63,6 +65,19 @@ const manageData = [
         title: "Supplier",
         routeName: "supplier.index",
         icon: Truck,
+    },
+];
+
+const transaction = [
+    {
+        title: "Pembelian",
+        routeName: "#",
+        icon: PackageCheck,
+    },
+    {
+        title: "Penjualan",
+        routeName: "sale.index",
+        icon: ShoppingBag,
     },
 ];
 </script>
@@ -127,6 +142,51 @@ const manageData = [
                                         :is-active="
                                             item.title === 'Produk'
                                                 ? route().current('product.*')
+                                                : route().current(
+                                                      item.routeName
+                                                  )
+                                        "
+                                    >
+                                        <Link
+                                            :href="
+                                                route().has(item.routeName)
+                                                    ? route(item.routeName)
+                                                    : '#'
+                                            "
+                                        >
+                                            <component :is="item.icon" />
+                                            <span>{{ item.title }}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </CollapsibleContent>
+                </SidebarGroup>
+            </CollapsibleRoot>
+
+            <CollapsibleRoot defaultOpen class="group/collapsible">
+                <SidebarGroup>
+                    <SidebarGroupLabel asChild>
+                        <CollapsibleTrigger>
+                            Data Transaksi
+                            <ChevronDown
+                                class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
+                            />
+                        </CollapsibleTrigger>
+                    </SidebarGroupLabel>
+                    <CollapsibleContent>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem
+                                    v-for="item in transaction"
+                                    :key="item.title"
+                                >
+                                    <SidebarMenuButton
+                                        asChild
+                                        :is-active="
+                                            item.title === 'Penjualan'
+                                                ? route().current('sale.*')
                                                 : route().current(
                                                       item.routeName
                                                   )
