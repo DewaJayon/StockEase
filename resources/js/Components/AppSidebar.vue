@@ -169,7 +169,7 @@ const transaction = [
                 <SidebarGroup>
                     <SidebarGroupLabel asChild>
                         <CollapsibleTrigger>
-                            Data Transaksi
+                            Data Transaksi dan Penjualan
                             <ChevronDown
                                 class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
                             />

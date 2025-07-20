@@ -1,5 +1,11 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { Head, Link } from "@inertiajs/vue3";
+import { Separator } from "@/Components/ui/separator";
+import { DataTable } from "@/Components/ui/data-table";
+import { saleColumns } from "./partials/sale-columns";
+import DateFilter from "./partials/DateFilter.vue";
+
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -8,10 +14,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/Components/ui/breadcrumb";
-import { Head, Link } from "@inertiajs/vue3";
-import { Separator } from "@/Components/ui/separator";
-import { DataTable } from "@/Components/ui/data-table";
-import { saleColumns } from "./partials/sale-columns";
+import { computed } from "vue";
 
 const props = defineProps({
     sales: {
@@ -45,7 +48,7 @@ const props = defineProps({
             <div class="rounded-xl bg-muted/50 h-full p-4">
                 <div class="flex justify-between items-center">
                     <h4 class="font-semibold">Data Penjualan</h4>
-                    TODO: Filter tanggal
+                    <DateFilter />
                 </div>
                 <Separator class="my-4" />
 
