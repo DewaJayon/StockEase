@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sale;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -18,6 +19,10 @@ class SaleHistoryController extends Controller
      */
     public function index(Request $request)
     {
+
+        $startDate = $request->input('start');
+        $endDate = $request->input('end');
+
         $perPage = $request->input('per_page', 10);
 
         $sales = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
@@ -42,6 +47,12 @@ class SaleHistoryController extends Controller
                                 ->orWhere('email', 'like', "%{$search}%");
                         });
                 });
+            })
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('updated_at', [
+                    Carbon::parse($startDate)->startOfDay(),
+                    Carbon::parse($endDate)->endOfDay(),
+                ]);
             })
             ->orderBy('created_at', 'desc')
             ->paginate($perPage)

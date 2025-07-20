@@ -113,6 +113,8 @@ watch(
                 page: newPage + 1,
                 per_page: pagination.value.pageSize,
                 search: search.value,
+                start: new URLSearchParams(window.location.search).get("start"),
+                end: new URLSearchParams(window.location.search).get("end"),
             },
             {
                 preserveScroll: true,
@@ -135,6 +137,8 @@ watchDebounced(
                 page: 1,
                 per_page: pagination.value.pageSize,
                 search: newSearch,
+                start: new URLSearchParams(window.location.search).get("start"),
+                end: new URLSearchParams(window.location.search).get("end"),
             },
             {
                 preserveScroll: true,

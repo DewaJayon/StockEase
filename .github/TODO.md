@@ -29,4 +29,5 @@
 | -------------------------------- | ------- |
 | Notifikasi                       |         |
 | Payment Gateway                  | Done ✅ |
-| Filter Tanggal di data penjualan |         |
+| Filter Tanggal di data penjualan | Done ✅ |
+| Print Detail Data Penjualan      | WIP     |

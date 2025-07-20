@@ -2,6 +2,7 @@ import { DataTableColumnHeader } from "@/Components/ui/data-table";
 import { h } from "vue";
 import { formatPrice, formatDateTime } from "@/lib/utils";
 import SaleActionRow from "./SaleActionRow.vue";
+import SaleHistoryStatusRow from "./SaleHistoryStatusRow.vue";
 
 const centerClass = "capitalize flex items-center justify-center";
 
@@ -22,7 +23,7 @@ export const saleColumns = [
             h(
                 "span",
                 { class: centerClass },
-                formatDateTime(row.original.created_at)
+                formatDateTime(row.original.updated_at)
             ),
     },
     {
@@ -35,7 +36,7 @@ export const saleColumns = [
         accessorKey: "total",
         header: "Total",
         cell: ({ row }) =>
-            h("span", { class: centerClass }, row.original.total),
+            h("span", { class: centerClass }, formatPrice(row.original.total)),
     },
     {
         accessorKey: "payment_method",
@@ -47,7 +48,7 @@ export const saleColumns = [
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) =>
-            h("span", { class: centerClass }, row.original.status),
+            h(SaleHistoryStatusRow, { row: row.original.status }),
     },
     {
         accessorKey: "action",
