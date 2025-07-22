@@ -50,6 +50,14 @@ const props = defineProps({
         type: Object,
         required: false,
     },
+    dateFilterEnd: {
+        type: Boolean,
+        required: false,
+    },
+    dateFilterStart: {
+        type: Boolean,
+        required: false,
+    },
 });
 
 const pagination = ref({
@@ -107,21 +115,26 @@ const isLastPage = computed(() => {
 watch(
     () => pagination.value.pageIndex,
     (newPage) => {
-        router.get(
-            route(props.routeName, props.routeParams),
-            {
-                page: newPage + 1,
-                per_page: pagination.value.pageSize,
-                search: search.value,
-                start: new URLSearchParams(window.location.search).get("start"),
-                end: new URLSearchParams(window.location.search).get("end"),
-            },
-            {
-                preserveScroll: true,
-                preserveState: true,
-                replace: true,
-            }
-        );
+        const query = {
+            page: newPage + 1,
+            per_page: pagination.value.pageSize,
+            search: search.value,
+        };
+
+        if (props.dateFilterStart) {
+            query.start = new URLSearchParams(window.location.search).get(
+                "start"
+            );
+        }
+        if (props.dateFilterEnd) {
+            query.end = new URLSearchParams(window.location.search).get("end");
+        }
+
+        router.get(route(props.routeName, props.routeParams), query, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
     }
 );
 
@@ -131,21 +144,27 @@ watchDebounced(
     search,
     (newSearch) => {
         pagination.value.pageIndex = 0;
-        router.get(
-            route(props.routeName, props.routeParams),
-            {
-                page: 1,
-                per_page: pagination.value.pageSize,
-                search: newSearch,
-                start: new URLSearchParams(window.location.search).get("start"),
-                end: new URLSearchParams(window.location.search).get("end"),
-            },
-            {
-                preserveScroll: true,
-                preserveState: true,
-                replace: true,
-            }
-        );
+
+        const query = {
+            page: 1,
+            per_page: pagination.value.pageSize,
+            search: newSearch,
+        };
+
+        if (props.dateFilterStart) {
+            query.start = new URLSearchParams(window.location.search).get(
+                "start"
+            );
+        }
+        if (props.dateFilterEnd) {
+            query.end = new URLSearchParams(window.location.search).get("end");
+        }
+
+        router.get(route(props.routeName, props.routeParams), query, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
     },
     { debounce: 300 }
 );
