@@ -54,6 +54,8 @@ const props = defineProps({
 
                 <div class="mt-4">
                     <DataTable
+                        :date-filter-end="true"
+                        :date-filter-start="true"
                         :data="sales.data"
                         :columns="saleColumns"
                         :route-name="'sale.index'"
