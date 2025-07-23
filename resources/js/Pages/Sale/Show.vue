@@ -109,10 +109,17 @@ const props = defineProps({
                         </div>
 
                         <div class="flex items-center justify-end gap-3">
-                            <Button>
-                                <PrinterIcon class="w-4 h-4" />
-                                Print
-                            </Button>
+                            <a
+                                :href="
+                                    route('sale.export-to-pdf', props.sale.id)
+                                "
+                                target="_blank"
+                            >
+                                <Button>
+                                    <PrinterIcon class="w-4 h-4" />
+                                    Print
+                                </Button>
+                            </a>
                         </div>
                     </div>
                 </div>

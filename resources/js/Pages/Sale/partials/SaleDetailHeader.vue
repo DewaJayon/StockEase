@@ -35,7 +35,7 @@ const props = defineProps({
             </span>
 
             <span class="block text-sm text-gray-500 dark:text-gray-400">
-                {{ formatDateTime(props.sale.created_at) }}
+                {{ formatDateTime(props.sale.updated_at) }}
             </span>
         </div>
 

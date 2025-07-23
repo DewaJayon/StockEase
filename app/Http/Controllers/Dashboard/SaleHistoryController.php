@@ -7,6 +7,7 @@ use App\Models\Sale;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SaleHistoryController extends Controller
 {
@@ -81,5 +82,28 @@ class SaleHistoryController extends Controller
         return Inertia::render('Sale/Show', [
             'sale' => $sale
         ]);
+    }
+
+
+    /**
+     * Export the specified sale details to a PDF file.
+     *
+     * Loads related user, sale items, products, and payment transaction details
+     * for the given sale and generates a PDF document.
+     *
+     * @param \App\Models\Sale $sale
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportToPdf(Sale $sale)
+    {
+        $sale->load('user', 'saleItems', 'saleItems.product', 'paymentTransaction');
+
+        $pdf = Pdf::loadView('exports.sales.detail', [
+            'sale' => $sale
+        ]);
+
+        $fileName = "invoice-{$sale->id}.pdf";
+
+        return $pdf->download($fileName);
     }
 }
