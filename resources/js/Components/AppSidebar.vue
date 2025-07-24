@@ -71,7 +71,7 @@ const manageData = [
 const transaction = [
     {
         title: "Pembelian",
-        routeName: "#",
+        routeName: "purcase.index",
         icon: PackageCheck,
     },
     {
