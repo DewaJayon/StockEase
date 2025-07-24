@@ -7,6 +7,7 @@ use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\PosController;
+use App\Http\Controllers\Dashboard\PurcaseController;
 use App\Http\Controllers\Dashboard\SaleHistoryController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,11 @@ Route::middleware('auth', 'role:admin, cashier')->group(function () {
     Route::get('/sale', [SaleHistoryController::class, 'index'])->name('sale.index');
     Route::get('/sale/{sale}', [SaleHistoryController::class, 'show'])->name('sale.show');
     Route::get('/sale/{sale}/export-to-pdf', [SaleHistoryController::class, 'exportToPdf'])->name('sale.export-to-pdf');
+});
+
+// Purcase || Data Transaksi Pembelian Route
+Route::middleware('auth', 'role:admin, warehouse')->group(function () {
+    Route::resource('purcase', PurcaseController::class);
 });
 
 require __DIR__ . '/auth.php';
