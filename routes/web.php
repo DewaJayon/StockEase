@@ -28,7 +28,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 // master data route
-Route::middleware(['auth', 'role:admin, warehouse',])->group(function () {
+Route::middleware(['auth', 'role:admin, warehouse'])->group(function () {
     Route::resource('supplier', SupplierController::class);
     Route::resource('product', ProductController::class);
 });
@@ -53,7 +53,9 @@ Route::middleware('auth', 'role:admin, cashier')->group(function () {
 });
 
 // Purcase || Data Transaksi Pembelian Route
-Route::middleware('auth', 'role:admin, warehouse')->group(function () {
+Route::middleware(['auth', 'role:admin, warehouse'])->group(function () {
+    Route::get('/purcase/search-supplier', [PurcaseController::class, 'searchSupplier'])->name('purcase.search-supplier');
+    Route::get('/purcase/search-product', [PurcaseController::class, 'searchProduct'])->name('purcase.search-product');
     Route::resource('purcase', PurcaseController::class);
 });
 

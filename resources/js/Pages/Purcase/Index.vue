@@ -24,8 +24,6 @@ const props = defineProps({
         required: true,
     },
 });
-
-console.log(props.purcases);
 </script>
 
 <template>
@@ -51,7 +49,7 @@ console.log(props.purcases);
         <div class="flex flex-1 flex-col gap-4 p-4">
             <div class="rounded-xl bg-muted/50 h-full p-4">
                 <div class="flex justify-between items-center">
-                    <h4 class="font-semibold">Pembelian</h4>
+                    <h4 class="font-semibold"> Data Pembelian</h4>
                     <PurcaseCreateForm />
                 </div>
                 <Separator class="my-4" />
