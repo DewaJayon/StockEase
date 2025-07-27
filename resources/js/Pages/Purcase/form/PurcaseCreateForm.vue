@@ -10,6 +10,7 @@ import { watchDebounced } from "@vueuse/core";
 import axios from "axios";
 import ProductTable from "./ProductTable.vue";
 import { Calendar } from "@/Components/ui/calendar";
+import InputError from "@/Components/InputError.vue";
 
 import {
     DateFormatter,
@@ -104,6 +105,7 @@ const submit = () => {
         },
         onError: () => {
             toast.error("Pembelian gagal ditambahkan");
+            console.log(form.errors);
         },
     });
 };
@@ -122,7 +124,10 @@ const submit = () => {
                 <DialogTitle>Form tambah pembelian produk</DialogTitle>
                 <DialogDescription>
                     Silahkan isi form dibawah ini untuk menambahkan pembelian
-                    produk
+                    produk.
+                    <br />
+                    Jika harga produk dan harga jual produk berubah makan akan
+                    mengubah harga jual produk dan harga beli produk.
                 </DialogDescription>
             </DialogHeader>
             <form id="form" @submit.prevent="submit">
@@ -179,6 +184,7 @@ const submit = () => {
                                 </ComboboxGroup>
                             </ComboboxList>
                         </Combobox>
+                        <InputError :message="form.errors.supplier_id" />
                     </div>
                     <div class="grid flex-1 gap-2">
                         <Label for="date"> Tanggal </Label>
@@ -209,11 +215,13 @@ const submit = () => {
                                 <Calendar v-model="date" initial-focus />
                             </PopoverContent>
                         </Popover>
+                        <InputError :message="form.errors.date" />
                     </div>
                 </div>
                 <div class="mt-6">
                     <Label> Produk </Label>
-                    <ProductTable v-model="form.product_items" />
+                    <InputError :message="form.errors.product_items" />
+                    <ProductTable v-model="form.product_items" :form="form" />
                 </div>
             </form>
             <DialogFooter class="flex justify-between">

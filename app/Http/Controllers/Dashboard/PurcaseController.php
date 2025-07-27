@@ -3,10 +3,15 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePurcaseRequest;
 use App\Models\Product;
 use App\Models\Purcase;
+use App\Models\PurcaseItem;
+use App\Models\StockLog;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class PurcaseController extends Controller
@@ -146,10 +151,85 @@ class PurcaseController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     *
+     * @param  \App\Http\Requests\StorePurcaseRequest  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+
+    public function store(StorePurcaseRequest $request)
     {
-        dd($request->toArray());
+        $data = $request->validated();
+
+        DB::beginTransaction();
+
+        try {
+
+            $purchasesParams = [
+                "supplier_id"   => $data['supplier_id'],
+                "user_id"       => Auth::user()->id,
+                "total"         => 0,
+                "date"          => $data['date'],
+            ];
+
+            $purchases = Purcase::create($purchasesParams);
+
+            $totalPurcase = 0;
+
+            $products = Product::whereIn('id', collect($data['product_items'])->pluck('product_id'))->get()->keyBy('id');
+
+            foreach ($data['product_items'] as $item) {
+
+                $subtotal = $item['qty'] * $item['price'];
+                $totalPurcase += $subtotal;
+
+                if ($item['qty'] <= 0 || $item['price'] <= 0) {
+                    throw new \Exception("Qty atau harga tidak boleh 0");
+                }
+
+                PurcaseItem::create([
+                    "purcase_id"    => $purchases->id,
+                    "product_id"    => $item['product_id'],
+                    "qty"           => $item['qty'],
+                    "price"         => $item['price'],
+                ]);
+
+                $product = $products[$item['product_id']];
+
+                $product->update([
+                    "stock" => $product->stock + $item['qty']
+                ]);
+
+                if ($product->purchase_price != $item['price'] || $product->selling_price != $item['selling_price']) {
+
+                    $product->update([
+                        "purchase_price" => $item['price'],
+                        "selling_price"  => $item['selling_price']
+                    ]);
+                }
+
+                StockLog::create([
+                    'product_id'     => $product->id,
+                    'qty'            => $item['qty'],
+                    'type'           => 'in',
+                    'reference_type' => 'Purcase',
+                    'reference_id'   => $purchases->id,
+                    'note'           => 'Pembelian produk ' . $product->name,
+                ]);
+            }
+
+            $purchases->update([
+                "total" => $totalPurcase
+            ]);
+
+            DB::commit();
+
+            return back()->with('success', 'Pembelian berhasil disimpan');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return back()->withErrors([
+                'error' => 'Gagal menyimpan data: ' . $th->getMessage(),
+            ]);
+        }
     }
 
     /**

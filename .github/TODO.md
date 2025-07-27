@@ -27,7 +27,7 @@
 
 | Fitur                            | Status  |
 | -------------------------------- | ------- |
-| Notifikasi                       |         |
+| Notifikasi Dashboard             |         |
 | Payment Gateway                  | Done ✅ |
 | Filter Tanggal di data penjualan | Done ✅ |
 | Print Detail Data Penjualan      | Done ✅ |

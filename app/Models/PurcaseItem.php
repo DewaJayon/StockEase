@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurcaseItem extends Model
 {
+    protected $fillable = [
+        "purcase_id",
+        "product_id",
+        "qty",
+        "price",
+    ];
 
     public function purcase()
     {
