@@ -27,9 +27,11 @@ import {
     ComboboxItemIndicator,
     ComboboxList,
 } from "@/Components/ui/combobox";
+import InputError from "@/Components/InputError.vue";
 
 const props = defineProps({
     modelValue: Array,
+    form: Object,
 });
 
 const searchProduct = ref({});
@@ -158,6 +160,14 @@ function remove(index) {
                             </ComboboxGroup>
                         </ComboboxList>
                     </Combobox>
+                    <p
+                        v-if="
+                            form?.errors?.[`product_items.${index}.product_id`]
+                        "
+                        class="text-red-500 text-sm mt-1"
+                    >
+                        {{ form.errors[`product_items.${index}.product_id`] }}
+                    </p>
                 </TableCell>
                 <TableCell>
                     <Input
@@ -167,6 +177,12 @@ function remove(index) {
                         min="1"
                         class="[&::-webkit-inner-spin-button]:appearance-none"
                     />
+                    <p
+                        v-if="form?.errors?.[`product_items.${index}.qty`]"
+                        class="text-red-500 text-sm mt-1"
+                    >
+                        {{ form.errors[`product_items.${index}.qty`] }}
+                    </p>
                 </TableCell>
 
                 <TableCell> {{ item.unit ?? "-" }} </TableCell>
@@ -178,6 +194,12 @@ function remove(index) {
                         v-model.number="item.price"
                         class="[&::-webkit-inner-spin-button]:appearance-none"
                     />
+                    <p
+                        v-if="form?.errors?.[`product_items.${index}.price`]"
+                        class="text-red-500 text-sm mt-1"
+                    >
+                        {{ form.errors[`product_items.${index}.price`] }}
+                    </p>
                 </TableCell>
                 <TableCell>
                     <Input

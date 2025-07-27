@@ -5,6 +5,7 @@ import { Separator } from "@/Components/ui/separator";
 import { DataTable } from "@/Components/ui/data-table";
 import { Info } from "lucide-vue-next";
 import { purcaseColumns } from "./partials/purcase-columns";
+import PurcaseCreateForm from "./form/PurcaseCreateForm.vue";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 
@@ -16,7 +17,6 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/Components/ui/breadcrumb";
-import PurcaseCreateForm from "./form/PurcaseCreateForm.vue";
 
 const props = defineProps({
     purcases: {
@@ -49,7 +49,7 @@ const props = defineProps({
         <div class="flex flex-1 flex-col gap-4 p-4">
             <div class="rounded-xl bg-muted/50 h-full p-4">
                 <div class="flex justify-between items-center">
-                    <h4 class="font-semibold"> Data Pembelian</h4>
+                    <h4 class="font-semibold">Data Pembelian</h4>
                     <PurcaseCreateForm />
                 </div>
                 <Separator class="my-4" />
