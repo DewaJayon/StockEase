@@ -1,5 +1,7 @@
 import { DataTableColumnHeader } from "@/Components/ui/data-table";
+import { formatPrice } from "@/lib/utils";
 import { h } from "vue";
+import PurcaseActionRow from "./PurcaseActionRow.vue";
 
 const centerClass = "capitalize flex items-center justify-center";
 
@@ -34,7 +36,11 @@ export const purcaseColumns = [
         accessorKey: "total",
         header: "Total Pembelian",
         cell: ({ row }) => {
-            return h("span", { class: centerClass }, row.original.total);
+            return h(
+                "span",
+                { class: centerClass },
+                formatPrice(row.original.total)
+            );
         },
     },
     {
@@ -52,5 +58,9 @@ export const purcaseColumns = [
     {
         accessorKey: "action",
         header: "Aksi",
+        cell: ({ row }) =>
+            h(PurcaseActionRow, {
+                row: row.original,
+            }),
     },
 ];
