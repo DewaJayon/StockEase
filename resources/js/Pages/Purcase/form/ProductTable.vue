@@ -27,7 +27,6 @@ import {
     ComboboxItemIndicator,
     ComboboxList,
 } from "@/Components/ui/combobox";
-import InputError from "@/Components/InputError.vue";
 
 const props = defineProps({
     modelValue: Array,
@@ -56,13 +55,26 @@ watchDebounced(
 watch(selectedProductId, (newValue) => {
     for (const index in productOptions.value) {
         const options = productOptions.value[index];
-        console.log(options);
 
         const product = options.find((product) => product.id === newValue);
         if (product) {
             props.modelValue[index].product_id = product.id;
             props.modelValue[index].price = product.purchase_price;
         }
+    }
+});
+
+props.modelValue.forEach((item, index) => {
+    if (!productOptions.value[index]) {
+        productOptions.value[index] = [
+            {
+                id: item.product_id,
+                label: item.product?.name ?? "-",
+                purchase_price: item.price,
+                selling_price: item.selling_price,
+                unit: item.unit,
+            },
+        ];
     }
 });
 
@@ -215,7 +227,7 @@ function remove(index) {
                 <TableCell>
                     <Button
                         size="icon"
-                        @click="remove(index)"
+                        @click.prevent="remove(index)"
                         variant="ghost"
                         class="dark:hover:bg-red-900"
                     >

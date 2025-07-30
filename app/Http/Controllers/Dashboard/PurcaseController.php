@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePurcaseRequest;
+use App\Http\Requests\UpdatePurcaseRequest;
 use App\Models\Product;
 use App\Models\Purcase;
 use App\Models\PurcaseItem;
@@ -155,7 +156,6 @@ class PurcaseController extends Controller
      * @param  \App\Http\Requests\StorePurcaseRequest  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-
     public function store(StorePurcaseRequest $request)
     {
         $data = $request->validated();
@@ -179,12 +179,12 @@ class PurcaseController extends Controller
 
             foreach ($data['product_items'] as $item) {
 
-                $subtotal = $item['qty'] * $item['price'];
-                $totalPurcase += $subtotal;
-
                 if ($item['qty'] <= 0 || $item['price'] <= 0) {
                     throw new \Exception("Qty atau harga tidak boleh 0");
                 }
+
+                $subtotal = $item['qty'] * $item['price'];
+                $totalPurcase += $subtotal;
 
                 PurcaseItem::create([
                     "purcase_id"    => $purchases->id,
@@ -237,7 +237,7 @@ class PurcaseController extends Controller
      */
     public function show(string $id)
     {
-        //
+        abort(404);
     }
 
     /**
@@ -245,15 +245,119 @@ class PurcaseController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        abort(404);
     }
 
     /**
      * Update the specified resource in storage.
+     *
+     * Update the specified purcase including purcase items and stock products.
+     *
+     * @param  \App\Http\Requests\UpdatePurcaseRequest  $request
+     * @param  \App\Models\Purcase  $purcase
+     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, string $id)
+    public function update(UpdatePurcaseRequest $request, Purcase $purcase)
     {
-        //
+        $data = $request->validated();
+
+        DB::beginTransaction();
+
+        try {
+
+            $purcaseParams = [
+                "supplier_id"   => $data['supplier_id'],
+                "user_id"       => Auth::user()->id,
+                "total"         => $purcase->total,
+                "date"          => $data['date'],
+            ];
+
+            $purcase->update($purcaseParams);
+
+            $totalPurcase = 0;
+
+            $products = Product::whereIn('id', collect($data['product_items'])->pluck('product_id'))->get()->keyBy('id');
+
+            $deletedPurcaseItems = PurcaseItem::where('purcase_id', $purcase->id)
+                ->whereNotIn('product_id', collect($data['product_items'])->pluck('product_id'))
+                ->get();
+
+            if ($deletedPurcaseItems->count() > 0) {
+                foreach ($deletedPurcaseItems as $deletedItem) {
+                    $product = $products[$deletedItem->product_id] ?? Product::find($deletedItem->product_id);
+                    $product->decrement('stock', $deletedItem->qty);
+                    $deletedItem->delete();
+                }
+            }
+
+            foreach ($data['product_items'] as $item) {
+
+                if ($item['qty'] <= 0 || $item['price'] <= 0) {
+                    throw new \Exception("Qty atau harga tidak boleh 0");
+                }
+
+                $subtotal = $item['qty'] * $item['price'];
+                $totalPurcase += $subtotal;
+
+                $product = $products[$item['product_id']];
+
+                $oldPurcaseItems = PurcaseItem::where('purcase_id', $purcase->id)
+                    ->where('product_id', $item['product_id'])
+                    ->first();
+
+                if ($oldPurcaseItems) {
+                    $oldQty = $oldPurcaseItems->qty;
+                    $newQty = $item['qty'];
+
+                    $diffQty = $newQty - $oldQty;
+
+                    $oldPurcaseItems->update([
+                        "qty"   => $newQty,
+                        "price" => $item['price'],
+                    ]);
+
+                    $product->stock += $diffQty;
+                } else {
+                    PurcaseItem::create([
+                        'purcase_id' => $purcase->id,
+                        'product_id' => $item['product_id'],
+                        'qty'        => $item['qty'],
+                        'price'      => $item['price'],
+                    ]);
+
+                    $product->stock += $item['qty'];
+                }
+
+                $product->save();
+
+                if ($product->purchase_price != $item['price'] || $product->selling_price != $item['selling_price']) {
+                    $product->update([
+                        "purchase_price" => $item['price'],
+                        "selling_price"  => $item['selling_price']
+                    ]);
+                }
+
+                StockLog::create([
+                    'product_id'     => $product->id,
+                    'qty'            => $oldPurcaseItems ? $diffQty : $item['qty'],
+                    'type'           => 'adjust',
+                    'reference_type' => 'Purcase',
+                    'reference_id'   => $purcase->id,
+                    'note'           => 'Perubahan pembelian produk ' . $product->name,
+                ]);
+            }
+
+            $purcase->update([
+                "total" => $totalPurcase
+            ]);
+
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return back()->withErrors([
+                'error' => 'Gagal menyimpan data: ' . $th->getMessage(),
+            ]);
+        }
     }
 
     /**

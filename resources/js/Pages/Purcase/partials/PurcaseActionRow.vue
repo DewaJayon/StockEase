@@ -1,13 +1,16 @@
 <script setup>
 import { Button } from "@/Components/ui/button";
 import { Eye, Trash2 } from "lucide-vue-next";
+import PurcaseEditForm from "../form/PurcaseEditForm.vue";
+
+const props = defineProps({
+    row: { type: Object, required: true },
+});
 </script>
 
 <template>
     <div class="flex items-center justify-center">
-        <Button variant="ghost" size="icon" class="group">
-            <Eye class="w-4 h-4 text-green-500 dark:group-hover:text-white" />
-        </Button>
+        <PurcaseEditForm :purcase="row" />
 
         <Button
             variant="ghost"
