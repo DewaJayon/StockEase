@@ -10,6 +10,7 @@ use App\Models\Purcase;
 use App\Models\PurcaseItem;
 use App\Models\StockLog;
 use App\Models\Supplier;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,9 @@ class PurcaseController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
+        $startDate = $request->input('start');
+        $endDate = $request->input('end');
+
         $purchases = Purcase::with('supplier', 'user', 'purcaseItems', 'purcaseItems.product')
             ->when($request->search, function ($query, $search) {
 
@@ -50,7 +54,13 @@ class PurcaseController extends Controller
                     });
                 });
             })
-            ->latest()
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [
+                    Carbon::parse($startDate)->startOfDay(),
+                    Carbon::parse($endDate)->endOfDay(),
+                ]);
+            })
+            ->orderBy('date', 'desc')
             ->paginate($perPage)
             ->withQueryString();
 
