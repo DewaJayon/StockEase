@@ -6,6 +6,7 @@ import { DataTable } from "@/Components/ui/data-table";
 import { Info } from "lucide-vue-next";
 import { purcaseColumns } from "./partials/purcase-columns";
 import PurcaseCreateForm from "./form/PurcaseCreateForm.vue";
+import DateFilter from "./partials/DateFilter.vue";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 
@@ -77,6 +78,9 @@ const props = defineProps({
                 </Card>
 
                 <div class="mt-4">
+                    <div class="mb-4">
+                        <DateFilter />
+                    </div>
                     <DataTable
                         :data="purcases.data"
                         :columns="purcaseColumns"
