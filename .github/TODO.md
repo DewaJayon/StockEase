@@ -31,3 +31,4 @@
 | Payment Gateway                  | Done ✅ |
 | Filter Tanggal di data penjualan | Done ✅ |
 | Print Detail Data Penjualan      | Done ✅ |
+| Filter Tanggal di data pembelian | Done ✅ |

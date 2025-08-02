@@ -76,6 +76,10 @@ props.modelValue.forEach((item, index) => {
             },
         ];
     }
+
+    if (!item.product_name && item.product?.name) {
+        item.product_name = item.product.name;
+    }
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -118,6 +122,7 @@ function remove(index) {
                         @update:modelValue="
                             (val) => {
                                 item.product_id = val.id;
+                                item.product_name = val.label;
                                 item.purchase_price = val.purchase_price;
                                 item.selling_price = val.selling_price;
                                 item.unit = val.unit;
@@ -136,7 +141,11 @@ function remove(index) {
                                             ).find(
                                                 (p) => p.id === item.product_id
                                             );
-                                            return found?.label ?? '';
+                                            return (
+                                                found?.label ??
+                                                item.product_name ??
+                                                ''
+                                            );
                                         }
                                     "
                                     placeholder="Cari Produk..."
