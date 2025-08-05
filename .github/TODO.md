@@ -10,7 +10,7 @@
 | ├─ Kategori                      | admin                       | Done ✅ |
 | └─ Supplier                      | admin, warehouse            | Done ✅ |
 | **Data Transaksi dan Penjualan** |                             |         |
-| ├─ Pembelian                     | admin, warehouse            | WIP     |
+| ├─ Pembelian                     | admin, warehouse            | Done ✅ |
 | └─ Penjualan                     | admin, cashier              | Done ✅ |
 | **Pembayaran**                   |                             |         |
 | └─ Transaksi Pembayaran Qris     | admin, cashier              |         |

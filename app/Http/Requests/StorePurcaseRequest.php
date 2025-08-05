@@ -41,8 +41,24 @@ class StorePurcaseRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if ($this->has("date")) {
+
+            $translatedDate = strtr($this->date, [
+                'Januari' => 'January',
+                'Februari' => 'February',
+                'Maret' => 'March',
+                'April' => 'April',
+                'Mei' => 'May',
+                'Juni' => 'June',
+                'Juli' => 'July',
+                'Agustus' => 'August',
+                'September' => 'September',
+                'Oktober' => 'October',
+                'November' => 'November',
+                'Desember' => 'December',
+            ]);
+
             $this->merge([
-                "date" => Carbon::parse($this->date),
+                "date" => Carbon::parse($translatedDate),
             ]);
         }
     }
