@@ -86,6 +86,8 @@ const props = defineProps({
                         :columns="purcaseColumns"
                         :route-name="'purcase.index'"
                         :pagination="purcases"
+                        :date-filter-end="true"
+                        :date-filter-start="true"
                     />
                 </div>
             </div>

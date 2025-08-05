@@ -372,9 +372,50 @@ class PurcaseController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     *
+     * Remove the specified purcase including purcase items and stock products.
+     *
+     * @param  \App\Models\Purcase  $purcase
+     * @return \Illuminate\Http\Response
      */
-    public function destroy(string $id)
+    public function destroy(Purcase $purcase)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+
+            $purcaseItems = PurcaseItem::where('purcase_id', $purcase->id)->get();
+
+            $products = Product::whereIn('id', $purcaseItems->pluck('product_id'))->get();
+
+            foreach ($purcaseItems as $purcaseItem) {
+
+                $product = $products->firstWhere('id', $purcaseItem->product_id);
+
+                if ($product) {
+                    $product->decrement('stock', $purcaseItem->qty);
+                }
+
+                $purcaseItem->delete();
+
+                StockLog::create([
+                    'product_id'     => $product->id,
+                    'qty'            => $purcaseItem->qty,
+                    'type'           => 'out',
+                    'reference_type' => 'Purcase',
+                    'reference_id'   => $purcase->id,
+                    'note'           => 'Penghapusan pembelian produk dan pengembalian stok produk ' . $product->name,
+                ]);
+            }
+
+            $purcase->delete();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Data pembelian berhasil dihapus!');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal menghapus data pembelian.');
+        }
     }
 }

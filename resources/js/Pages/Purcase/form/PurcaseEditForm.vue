@@ -100,6 +100,22 @@ watch(date, (newDate) => {
     form.date = formatDate(newDate);
 });
 
+watch(
+    () => props.row,
+    () => {
+        (form.supplier_id = selectedSupplier.value?.value ?? ""),
+            (form.date = formatDate(date.value)),
+            (form.product_items = props.purcase.purcase_items.map((item) => ({
+                product_id: item.product_id,
+                qty: item.qty,
+                price: parseFloat(item.price),
+                selling_price: parseFloat(item.product.selling_price),
+                unit: item.product.unit,
+                product: item.product,
+            })));
+    }
+);
+
 const form = useForm({
     supplier_id: selectedSupplier.value?.value ?? "",
     date: formatDate(date.value),
