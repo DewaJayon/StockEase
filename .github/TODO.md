@@ -13,7 +13,7 @@
 | ├─ Pembelian                     | admin, warehouse            | Done ✅ |
 | └─ Penjualan                     | admin, cashier              | Done ✅ |
 | **Pembayaran**                   |                             |         |
-| └─ Transaksi Pembayaran Qris     | admin, cashier              |         |
+| └─ Transaksi Pembayaran Midtrans | admin, cashier              | Done ✅ |
 | **Laporan**                      |                             |         |
 | ├─ Laporan Penjualan             | admin, cashier (opsional)   |         |
 | ├─ Laporan Pembelian             | admin, warehouse (opsional) |         |
@@ -25,10 +25,11 @@
 
 ## Fitur Tambahan
 
-| Fitur                            | Status  |
-| -------------------------------- | ------- |
-| Notifikasi Dashboard             |         |
-| Payment Gateway                  | Done ✅ |
-| Filter Tanggal di data penjualan | Done ✅ |
-| Print Detail Data Penjualan      | Done ✅ |
-| Filter Tanggal di data pembelian | Done ✅ |
+| Fitur                                                     | Status  |
+| --------------------------------------------------------- | ------- |
+| Notifikasi Dashboard                                      |         |
+| Payment Gateway                                           | Done ✅ |
+| Filter Tanggal di data penjualan                          | Done ✅ |
+| Print Detail Data Penjualan                               | Done ✅ |
+| Filter Tanggal di data pembelian                          | Done ✅ |
+| Otomatis menambahkan ke keranjang kasir jika scan barcode |         |
