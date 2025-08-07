@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Dashboard\CategoryController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\MidtransTransactionController;
 use App\Http\Controllers\Dashboard\PaymentController;
 use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\SupplierController;
@@ -58,5 +59,8 @@ Route::middleware(['auth', 'role:admin, warehouse'])->group(function () {
     Route::get('/purcase/search-product', [PurcaseController::class, 'searchProduct'])->name('purcase.search-product');
     Route::resource('purcase', PurcaseController::class);
 });
+
+// Data Transaksi Pembayaran Midtrans Route
+Route::get('/payment/midtrans', [MidtransTransactionController::class, 'index'])->middleware(['auth', 'role:admin, cashier'])->name('midtrans.index');
 
 require __DIR__ . '/auth.php';

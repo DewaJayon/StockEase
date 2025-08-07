@@ -24,6 +24,7 @@ import {
     ShoppingCart,
     ShoppingBag,
     PackageCheck,
+    CircleDollarSign,
 } from "lucide-vue-next";
 
 import {
@@ -78,6 +79,11 @@ const transaction = [
         title: "Penjualan",
         routeName: "sale.index",
         icon: ShoppingBag,
+    },
+    {
+        title: "Transaksi Midtrans",
+        routeName: "midtrans.index",
+        icon: CircleDollarSign,
     },
 ];
 </script>
