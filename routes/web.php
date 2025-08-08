@@ -10,6 +10,7 @@ use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\PosController;
 use App\Http\Controllers\Dashboard\PurcaseController;
 use App\Http\Controllers\Dashboard\SaleHistoryController;
+use App\Http\Controllers\Dashboard\SaleRepotController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,5 +63,14 @@ Route::middleware(['auth', 'role:admin, warehouse'])->group(function () {
 
 // Data Transaksi Pembayaran Midtrans Route
 Route::get('/payment/midtrans', [MidtransTransactionController::class, 'index'])->middleware(['auth', 'role:admin, cashier'])->name('midtrans.index');
+
+// Laporan Route
+Route::prefix('reports')->group(function () {
+
+    // Laporan Penjualan Route
+    Route::middleware('auth', 'role:admin, cashier')->group(function () {
+        Route::get("/sale", [SaleRepotController::class, 'index'])->name('reports.sale.index');
+    });
+});
 
 require __DIR__ . '/auth.php';

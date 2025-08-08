@@ -25,6 +25,7 @@ import {
     ShoppingBag,
     PackageCheck,
     CircleDollarSign,
+    FileText,
 } from "lucide-vue-next";
 
 import {
@@ -84,6 +85,14 @@ const transaction = [
         title: "Transaksi Midtrans",
         routeName: "midtrans.index",
         icon: CircleDollarSign,
+    },
+];
+
+const reports = [
+    {
+        title: "Laporan Penjualan",
+        routeName: "reports.sale.index",
+        icon: FileText,
     },
 ];
 </script>
@@ -196,6 +205,47 @@ const transaction = [
                                                 : route().current(
                                                       item.routeName
                                                   )
+                                        "
+                                    >
+                                        <Link
+                                            :href="
+                                                route().has(item.routeName)
+                                                    ? route(item.routeName)
+                                                    : '#'
+                                            "
+                                        >
+                                            <component :is="item.icon" />
+                                            <span>{{ item.title }}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </CollapsibleContent>
+                </SidebarGroup>
+            </CollapsibleRoot>
+
+            <CollapsibleRoot defaultOpen class="group/collapsible">
+                <SidebarGroup>
+                    <SidebarGroupLabel asChild>
+                        <CollapsibleTrigger>
+                            Laporan
+                            <ChevronDown
+                                class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
+                            />
+                        </CollapsibleTrigger>
+                    </SidebarGroupLabel>
+                    <CollapsibleContent>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem
+                                    v-for="item in reports"
+                                    :key="item.title"
+                                >
+                                    <SidebarMenuButton
+                                        asChild
+                                        :is-active="
+                                            route().current(item.routeName)
                                         "
                                     >
                                         <Link
