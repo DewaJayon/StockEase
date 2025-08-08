@@ -15,7 +15,7 @@
 | **Pembayaran**                   |                             |         |
 | └─ Transaksi Pembayaran Midtrans | admin, cashier              | Done ✅ |
 | **Laporan**                      |                             |         |
-| ├─ Laporan Penjualan             | admin, cashier (opsional)   |         |
+| ├─ Laporan Penjualan             | admin, cashier (opsional)   | WIP     |
 | ├─ Laporan Pembelian             | admin, warehouse (opsional) |         |
 | └─ Laporan Stok                  | admin, warehouse            |         |
 | **Manajemen Stok**               |                             |         |
