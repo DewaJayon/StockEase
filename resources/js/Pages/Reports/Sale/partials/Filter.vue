@@ -1,9 +1,16 @@
 <script setup>
 import DatePicker from "@/Components/DatePicker.vue";
 import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Label } from "@/Components/ui/label";
+import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
+import { cn } from "@/lib/utils";
+import { watchDebounced } from "@vueuse/core";
+import axios from "axios";
+import { toast } from "vue-sonner";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Check, FileSpreadsheet, Printer, Search } from "lucide-vue-next";
 import {
     Select,
     SelectContent,
@@ -13,6 +20,64 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/ui/select";
+
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxItemIndicator,
+    ComboboxList,
+} from "@/Components/ui/combobox";
+
+const searchCashier = ref("");
+const cashierData = ref([]);
+
+watchDebounced(
+    searchCashier,
+    (newsearchCashier) => {
+        axios
+            .get(
+                route("reports.sale.search-cashier", {
+                    search: newsearchCashier,
+                })
+            )
+            .then((response) => {
+                cashierData.value = response.data.data;
+            })
+            .catch((error) => {
+                console.log(error);
+                cashierData.value = [];
+            });
+    },
+    300
+);
+
+const startDate = ref(null);
+const endDate = ref(null);
+const cashier = ref(null);
+const payment = ref(null);
+
+const handleFilter = () => {
+    if (
+        startDate.value == null ||
+        endDate.value == null ||
+        cashier.value == null ||
+        payment.value == null
+    ) {
+        toast.error("Lengkapi data terlebih dahulu!");
+        return;
+    }
+
+    router.get(route("reports.sale.index"), {
+        start_date: startDate.value,
+        end_date: endDate.value,
+        cashier: cashier.value,
+        payment: payment.value,
+    });
+};
 </script>
 
 <template>
@@ -25,61 +90,92 @@ import {
         <CardContent class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="space-y-1">
                 <Label html-for="startDate">Tanggal Mulai</Label>
-                <DatePicker label="Tanggal" class="w-full" id="startDate" />
+                <DatePicker
+                    label="Tanggal"
+                    class="w-full"
+                    id="startDate"
+                    v-model="startDate"
+                />
             </div>
             <div class="space-y-1">
                 <Label html-for="endDate">Tanggal Selesai</Label>
-                <DatePicker label="Tanggal" class="w-full" id="endDate" />
+                <DatePicker
+                    label="Tanggal"
+                    class="w-full"
+                    id="endDate"
+                    v-model="endDate"
+                />
             </div>
             <div class="space-y-1">
                 <Label html-for="cashier">Kasir</Label>
-                <Select id="cashier">
-                    <SelectTrigger class="w-full">
-                        <SelectValue placeholder="Pilih Kasir" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            <SelectLabel>Fruits</SelectLabel>
-                            <SelectItem value="apple"> Apple </SelectItem>
-                            <SelectItem value="banana"> Banana </SelectItem>
-                            <SelectItem value="blueberry">
-                                Blueberry
-                            </SelectItem>
-                            <SelectItem value="grapes"> Grapes </SelectItem>
-                            <SelectItem value="pineapple">
-                                Pineapple
-                            </SelectItem>
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
+                <Combobox by="label" v-model="cashier">
+                    <ComboboxAnchor class="w-full">
+                        <div class="relative w-full max-w-sm items-center">
+                            <ComboboxInput
+                                class="pl-9"
+                                :display-value="(val) => val?.label ?? ''"
+                                placeholder="Cari Kasir..."
+                                v-model="searchCashier"
+                            />
+                            <span
+                                class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
+                            >
+                                <Search class="size-4 text-muted-foreground" />
+                            </span>
+                        </div>
+                    </ComboboxAnchor>
+
+                    <ComboboxList>
+                        <ComboboxEmpty>
+                            Tidak ada kasir ditemukan.
+                        </ComboboxEmpty>
+
+                        <ComboboxGroup>
+                            <ComboboxItem
+                                v-for="cashier in cashierData"
+                                :key="cashier.value"
+                                :value="cashier"
+                                class="cursor-pointer"
+                            >
+                                {{ cashier.label }}
+
+                                <ComboboxItemIndicator>
+                                    <Check :class="cn('ml-auto h-4 w-4')" />
+                                </ComboboxItemIndicator>
+                            </ComboboxItem>
+                        </ComboboxGroup>
+                    </ComboboxList>
+                </Combobox>
             </div>
             <div class="space-y-1">
                 <Label html-for="payment">Metode Pembayaran</Label>
-                <Select id="payment">
+                <Select id="payment" v-model="payment">
                     <SelectTrigger class="w-full">
                         <SelectValue placeholder="Pilih Metode Pembayaran" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            <SelectLabel>Fruits</SelectLabel>
-                            <SelectItem value="apple"> Apple </SelectItem>
-                            <SelectItem value="banana"> Banana </SelectItem>
-                            <SelectItem value="blueberry">
-                                Blueberry
-                            </SelectItem>
-                            <SelectItem value="grapes"> Grapes </SelectItem>
-                            <SelectItem value="pineapple">
-                                Pineapple
-                            </SelectItem>
+                            <SelectLabel>Metode Pembayaran</SelectLabel>
+                            <SelectItem value="cash"> Cash </SelectItem>
+                            <SelectItem value="midtrans"> Midtrans </SelectItem>
                         </SelectGroup>
                     </SelectContent>
                 </Select>
             </div>
 
             <div class="flex space-x-2">
-                <Button>Lihat Laporan</Button>
-                <Button>Lihat Laporan</Button>
-                <Button>Lihat Laporan</Button>
+                <Button @click="handleFilter">
+                    <Search class="h-4 w-4" />
+                    <span>Lihat Laporan</span>
+                </Button>
+                <Button>
+                    <Printer class="h-4 w-4" />
+                    <span>Print PDF</span>
+                </Button>
+                <Button>
+                    <FileSpreadsheet class="h-4 w-4" />
+                    <span>Export Excel</span>
+                </Button>
             </div>
         </CardContent>
     </Card>

@@ -70,6 +70,7 @@ Route::prefix('reports')->group(function () {
     // Laporan Penjualan Route
     Route::middleware('auth', 'role:admin, cashier')->group(function () {
         Route::get("/sale", [SaleRepotController::class, 'index'])->name('reports.sale.index');
+        Route::get("/sale/search-cashier", [SaleRepotController::class, 'searchCashier'])->name('reports.sale.search-cashier');
     });
 });
 
