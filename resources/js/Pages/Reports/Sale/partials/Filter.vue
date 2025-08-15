@@ -55,10 +55,28 @@ watchDebounced(
     300
 );
 
-const startDate = ref(null);
-const endDate = ref(null);
-const cashier = ref(null);
-const payment = ref(null);
+const getDateParam = (key) => {
+    const val = new URLSearchParams(window.location.search).get(key);
+    return val ? new Date(val) : null;
+};
+
+const startDate = ref(getDateParam("start_date"));
+const endDate = ref(getDateParam("end_date"));
+const cashier = ref(
+    new URLSearchParams(window.location.search).get("cashier") || null
+);
+const payment = ref(
+    new URLSearchParams(window.location.search).get("payment") || null
+);
+
+const formatDate = (date) => {
+    if (!date) return null;
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
 
 const handleFilter = () => {
     if (
@@ -71,10 +89,14 @@ const handleFilter = () => {
         return;
     }
 
+    if (payment.value == "midtrans") {
+        payment.value = "qris";
+    }
+
     router.get(route("reports.sale.index"), {
-        start_date: startDate.value,
-        end_date: endDate.value,
-        cashier: cashier.value,
+        start_date: formatDate(startDate.value),
+        end_date: formatDate(endDate.value),
+        cashier: cashier.value.value,
         payment: payment.value,
     });
 };

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Sale;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -12,16 +13,36 @@ class SaleRepotController extends Controller
 {
     public function index(Request $request)
     {
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        $cashier = $request->input('cashier');
-        $payment = $request->input('payment');
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+        $cashier = $request->cashier;
+        $payment = $request->payment;
 
-        // dd($startDate, $endDate, $cashier, $payment);
+        $filteredSales = [];
 
-        // $saleReports = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
+        if ($startDate && $endDate && $cashier && $payment) {
+            $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
+                ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                    return $query->whereBetween('created_at', [
+                        Carbon::parse($startDate)->startOfDay(),
+                        Carbon::parse($endDate)->endOfDay(),
+                    ]);
+                })
+                ->when($cashier, function ($query) use ($cashier) {
+                    return $query->where('user_id', $cashier);
+                })
+                ->when($payment, function ($query) use ($payment) {
+                    return $query->where('payment_method', $payment);
+                })
+                ->get();
 
-        return Inertia::render('Reports/Sale/Index');
+            $filteredSales = $query;
+        }
+
+
+        return Inertia::render('Reports/Sale/Index', [
+            'sales' => $filteredSales
+        ]);
     }
 
     /**
@@ -43,6 +64,7 @@ class SaleRepotController extends Controller
 
             $cashier = User::where("name", "like", "%{$request->search}%")
                 ->where("role", "cashier")
+                ->orWhere("role", "admin")
                 ->select("id as value", "name as label")
                 ->get();
 
