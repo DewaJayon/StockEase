@@ -13,6 +13,15 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/Components/ui/breadcrumb";
+
+const props = defineProps({
+    sales: {
+        type: Object,
+        required: true,
+    },
+});
+
+console.log(props.sales);
 </script>
 
 <template>
