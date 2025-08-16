@@ -47,7 +47,9 @@ const props = defineProps({
                 <CardTitle>Produk Terlaris</CardTitle>
             </CardHeader>
             <CardContent class="p-4 pt-0">
-                <h2 class="text-2xl font-bold">Kopi Arabica</h2>
+                <h2 class="text-2xl font-bold">
+                    {{ props.summary.bestSellingProduct?.product_name ?? "-" }}
+                </h2>
             </CardContent>
         </Card>
     </div>

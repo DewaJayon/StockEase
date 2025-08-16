@@ -158,7 +158,10 @@ watch(
                     @click="selectDate(day)"
                     class="py-1.5 cursor-pointer rounded hover:bg-primary hover:text-primary-foreground"
                     :class="{
-                        'bg-primary ': isSameDay(day, selectedDate),
+                        'bg-primary text-primary-foreground': isSameDay(
+                            day,
+                            selectedDate
+                        ),
                         'text-gray-400': day.getMonth() !== currentMonth,
                     }"
                 >
