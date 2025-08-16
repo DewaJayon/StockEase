@@ -48,7 +48,7 @@ console.log(props.sales);
         </template>
         <div class="flex flex-1 flex-col gap-4 p-4">
             <Filter />
-            <Summary />
+            <Summary :summary="props.sales" />
             <Chart />
         </div>
     </AuthenticatedLayout>

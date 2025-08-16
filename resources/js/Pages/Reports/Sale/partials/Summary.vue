@@ -1,5 +1,13 @@
 <script setup>
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { formatPrice } from "@/lib/utils";
+
+const props = defineProps({
+    summary: {
+        type: Object,
+        required: true,
+    },
+});
 </script>
 
 <template>
@@ -9,7 +17,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
                 <CardTitle>Total Penjualan</CardTitle>
             </CardHeader>
             <CardContent class="p-4 pt-0">
-                <h2 class="text-2xl font-bold">Rp 15.500.000</h2>
+                <h2 class="text-2xl font-bold">
+                    {{ formatPrice(props.summary.sumTotalSale ?? 0) }}
+                </h2>
             </CardContent>
         </Card>
         <Card class="shadow-md">
@@ -17,7 +27,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
                 <CardTitle>Jumlah Transaksi</CardTitle>
             </CardHeader>
             <CardContent class="p-4 pt-0">
-                <h2 class="text-2xl font-bold">100</h2>
+                <h2 class="text-2xl font-bold">
+                    {{ props.summary.transactionCount ?? 0 }}
+                </h2>
             </CardContent>
         </Card>
         <Card class="shadow-md">
@@ -25,7 +37,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
                 <CardTitle>Produk Terjual</CardTitle>
             </CardHeader>
             <CardContent class="p-4 pt-0">
-                <h2 class="text-2xl font-bold">540</h2>
+                <h2 class="text-2xl font-bold">
+                    {{ props.summary.countProductSale ?? 0 }}
+                </h2>
             </CardContent>
         </Card>
         <Card class="shadow-md">

@@ -36,9 +36,17 @@ class SaleRepotController extends Controller
                 })
                 ->get();
 
-            $filteredSales = $query;
-        }
+            $sumTotalSale = $query->sum('total');
+            $transactionCount = $query->where('status', 'completed')->count();
+            $countProductSale = $query->flatMap->saleItems->count();
 
+            $filteredSales = [
+                'sales' => $query,
+                'sumTotalSale' => $sumTotalSale,
+                'transactionCount' => $transactionCount,
+                'countProductSale' => $countProductSale
+            ];
+        }
 
         return Inertia::render('Reports/Sale/Index', [
             'sales' => $filteredSales
