@@ -60,14 +60,32 @@ const getDateParam = (key) => {
     return val ? new Date(val) : null;
 };
 
+const urlParams = new URLSearchParams(window.location.search);
+
+const paymentParam = urlParams.get("payment") || null;
+
+const cashierParam = urlParams.get("cashier") || null;
+
 const startDate = ref(getDateParam("start_date"));
 const endDate = ref(getDateParam("end_date"));
-const cashier = ref(
-    new URLSearchParams(window.location.search).get("cashier") || null
-);
-const payment = ref(
-    new URLSearchParams(window.location.search).get("payment") || null
-);
+const cashier = ref(null);
+const payment = ref(paymentParam === "qris" ? "midtrans" : paymentParam);
+
+if (cashierParam) {
+    axios
+        .get(route("reports.sale.search-cashier", { search: cashierParam }))
+        .then((response) => {
+            const foundCashier = response.data.data.find(
+                (item) => String(item.value) === String(cashierParam)
+            );
+            if (foundCashier) {
+                cashier.value = foundCashier;
+            }
+        })
+        .catch(() => {
+            cashier.value = null;
+        });
+}
 
 const formatDate = (date) => {
     if (!date) return null;
@@ -178,8 +196,12 @@ const handleFilter = () => {
                     <SelectContent>
                         <SelectGroup>
                             <SelectLabel>Metode Pembayaran</SelectLabel>
-                            <SelectItem value="cash"> Cash </SelectItem>
-                            <SelectItem value="midtrans"> Midtrans </SelectItem>
+                            <SelectItem value="cash" class="cursor-pointer">
+                                Cash
+                            </SelectItem>
+                            <SelectItem value="midtrans" class="cursor-pointer">
+                                Midtrans
+                            </SelectItem>
                         </SelectGroup>
                     </SelectContent>
                 </Select>

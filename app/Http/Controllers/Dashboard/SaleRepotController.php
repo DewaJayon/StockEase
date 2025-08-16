@@ -36,15 +36,29 @@ class SaleRepotController extends Controller
                 })
                 ->get();
 
-            $sumTotalSale = $query->sum('total');
-            $transactionCount = $query->where('status', 'completed')->count();
-            $countProductSale = $query->flatMap->saleItems->count();
+            $sumTotalSale       = $query->sum('total');
+            $transactionCount   = $query->where('status', 'completed')->count();
+            $countProductSale   = $query->flatMap->saleItems->count();
+
+            $bestSellingProduct = $query
+                ->flatMap->saleItems
+                ->groupBy('product_id')
+                ->map(function ($items) {
+                    return [
+                        'product_id'   => $items->first()->product_id,
+                        'product_name' => $items->first()->product->name ?? 'Unknown',
+                        'total_sold'   => $items->sum('qty'),
+                    ];
+                })
+                ->sortByDesc('total_sold')
+                ->first();
 
             $filteredSales = [
-                'sales' => $query,
-                'sumTotalSale' => $sumTotalSale,
-                'transactionCount' => $transactionCount,
-                'countProductSale' => $countProductSale
+                'sales'                 => $query,
+                'sumTotalSale'          => $sumTotalSale,
+                'transactionCount'      => $transactionCount,
+                'countProductSale'      => $countProductSale,
+                'bestSellingProduct'    => $bestSellingProduct
             ];
         }
 
