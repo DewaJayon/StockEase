@@ -2,6 +2,13 @@
 import { Card, CardContent } from "@/Components/ui/card";
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 
+const props = defineProps({
+    chart: {
+        type: Object,
+        required: true,
+    },
+});
+
 const isDarkMode = ref(document.documentElement.classList.contains("dark"));
 let observer = null;
 
@@ -19,13 +26,10 @@ onBeforeUnmount(() => {
     if (observer) observer.disconnect();
 });
 
-const series = [
+const salesSeries = [
     {
         name: "Penjualan",
-        data: [
-            12000000, 15000000, 17000000, 9000000, 14000000, 18000000, 22000000,
-            20000000, 24000000, 21000000, 25000000, 30000000,
-        ],
+        data: props.chart.salesTrend?.data ?? [],
     },
 ];
 
@@ -45,20 +49,7 @@ const chartOptions = computed(() => ({
         width: 3,
     },
     xaxis: {
-        categories: [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "Mei",
-            "Jun",
-            "Jul",
-            "Agu",
-            "Sep",
-            "Okt",
-            "Nov",
-            "Des",
-        ],
+        categories: props.chart.salesTrend?.labels ?? [],
     },
     yaxis: {
         labels: {
@@ -72,14 +63,16 @@ const chartOptions = computed(() => ({
     },
 }));
 
-const paymentSeries = [44, 55, 13, 43, 22];
+const productSaleSeries =
+    props.chart.productSalesShare?.map((item) => item.total_sold) ?? [];
 
-const paymentChartOptions = computed(() => ({
+const productSaleOptions = computed(() => ({
     chart: {
         type: "pie",
         background: "transparent",
     },
-    labels: ["Team A", "Team B", "Team C", "Team D", "Team E"],
+    labels:
+        props.chart?.productSalesShare?.map((item) => item.product_name) ?? [],
     responsive: [
         {
             breakpoint: 480,
@@ -100,26 +93,30 @@ const paymentChartOptions = computed(() => ({
 </script>
 
 <template>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card class="shadow-md">
-            <CardContent class="pb-0 pt-3">
-                <apexchart
-                    type="line"
-                    height="350"
-                    :options="chartOptions"
-                    :series="series"
-                />
-            </CardContent>
-        </Card>
-        <Card class="shadow-md">
-            <CardContent class="flex justify-center items-center h-full w-full">
-                <apexchart
-                    type="pie"
-                    width="470"
-                    :options="paymentChartOptions"
-                    :series="paymentSeries"
-                />
-            </CardContent>
-        </Card>
-    </div>
+    <template v-if="salesSeries[0].data.length > 0">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card class="shadow-md">
+                <CardContent class="pb-0 pt-3">
+                    <apexchart
+                        type="line"
+                        height="350"
+                        :options="chartOptions"
+                        :series="salesSeries"
+                    />
+                </CardContent>
+            </Card>
+            <Card class="shadow-md">
+                <CardContent
+                    class="flex justify-center items-center h-full w-full"
+                >
+                    <apexchart
+                        type="pie"
+                        width="470"
+                        :options="productSaleOptions"
+                        :series="productSaleSeries"
+                    />
+                </CardContent>
+            </Card>
+        </div>
+    </template>
 </template>

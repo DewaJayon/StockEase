@@ -11,6 +11,16 @@ use Inertia\Inertia;
 
 class SaleRepotController extends Controller
 {
+
+    /**
+     * Index function handles report sales data based on given request
+     * parameters. It will return Inertia response with filtered sales data.
+     *
+     * @param Request $request The request object containing start_date, end_date,
+     *                        cashier, and payment parameters.
+     *
+     * @return \Inertia\Response
+     */
     public function index(Request $request)
     {
         $startDate = $request->start_date;
@@ -53,12 +63,40 @@ class SaleRepotController extends Controller
                 ->sortByDesc('total_sold')
                 ->first();
 
+            Carbon::setLocale('id');
+
+            $salesTrend = $query
+                ->groupBy(function ($sale) {
+                    return Carbon::parse($sale->created_at)->translatedFormat('M');
+                })
+                ->map(function ($sales) {
+                    return $sales->sum('total');
+                });
+
+            $salesTrend = [
+                'labels' => $salesTrend->keys()->values(),
+                'data'   => $salesTrend->values(),
+            ];
+
+            $productSalesShare = $query
+                ->flatMap->saleItems
+                ->groupBy('product_id')
+                ->map(function ($items) {
+                    return [
+                        'product_name' => $items->first()->product->name ?? 'Unknown',
+                        'total_sold'   => $items->sum('qty'),
+                    ];
+                })
+                ->values();
+
             $filteredSales = [
                 'sales'                 => $query,
                 'sumTotalSale'          => $sumTotalSale,
                 'transactionCount'      => $transactionCount,
                 'countProductSale'      => $countProductSale,
-                'bestSellingProduct'    => $bestSellingProduct
+                'bestSellingProduct'    => $bestSellingProduct,
+                'salesTrend'            => $salesTrend,
+                'productSalesShare'     => $productSalesShare
             ];
         }
 
