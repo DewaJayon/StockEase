@@ -96,6 +96,17 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 };
 
+const checkFilter = () => {
+    if (
+        startDate.value == null ||
+        endDate.value == null ||
+        cashier.value == null ||
+        payment.value == null
+    ) {
+        return false;
+    }
+    return true;
+};
 const handleFilter = () => {
     if (
         startDate.value == null ||
@@ -103,7 +114,7 @@ const handleFilter = () => {
         cashier.value == null ||
         payment.value == null
     ) {
-        toast.error("Lengkapi data terlebih dahulu!");
+        toast.error("Silahkan lengkapi data terlebih dahulu!");
         return;
     }
 
@@ -117,6 +128,20 @@ const handleFilter = () => {
         cashier: cashier.value.value,
         payment: payment.value,
     });
+};
+
+const handlePrintPdf = () => {
+    if (
+        startDate.value == null ||
+        endDate.value == null ||
+        cashier.value == null ||
+        payment.value == null
+    ) {
+        toast.error("Silahkan filter terlebih dahulu!");
+        return;
+    }
+
+    alert("Print PDF");
 };
 </script>
 
@@ -212,11 +237,18 @@ const handleFilter = () => {
                     <Search class="h-4 w-4" />
                     <span>Lihat Laporan</span>
                 </Button>
-                <Button>
+                <Button
+                    @click="handlePrintPdf"
+                    :disabled="!checkFilter()"
+                    class="disabled:cursor-not-allowed disabled:opacity-50"
+                >
                     <Printer class="h-4 w-4" />
                     <span>Print PDF</span>
                 </Button>
-                <Button>
+                <Button
+                    :disabled="!checkFilter()"
+                    class="disabled:cursor-not-allowed disabled:opacity-50"
+                >
                     <FileSpreadsheet class="h-4 w-4" />
                     <span>Export Excel</span>
                 </Button>
