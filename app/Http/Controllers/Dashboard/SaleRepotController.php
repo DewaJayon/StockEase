@@ -141,4 +141,24 @@ class SaleRepotController extends Controller
             ], 200);
         }
     }
+
+    public function printPdf(Request $request)
+    {
+        $data = [
+            'start_date' => '27 July 2025',
+            'end_date' => '06 September 2025',
+            'cashier_name' => 'Dewa Jayon',
+            'payment' => 'Midtrans',
+            'total_sales' => 90000,
+            'transaction_count' => 2,
+            'product_sold' => 4,
+            'best_selling_product' => 'Apel Merah',
+            'sales' => collect([
+                (object)['date' => '2025-07-27', 'product_name' => 'Apel Merah', 'quantity' => 2, 'total' => 45000],
+                (object)['date' => '2025-08-01', 'product_name' => 'Nugget Ayam', 'quantity' => 2, 'total' => 45000],
+            ]),
+        ];
+
+        return view('exports.sales.report', $data);
+    }
 }
