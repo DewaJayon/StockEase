@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SaleRepotController extends Controller
 {
@@ -142,23 +143,87 @@ class SaleRepotController extends Controller
         }
     }
 
+    /**
+     * Generate a PDF report for a given date range, cashier, and payment method.
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
     public function printPdf(Request $request)
     {
+        $request->validate([
+            'start_date'    => 'required|date',
+            'end_date'      => 'required|date',
+            'cashier'       => 'required',
+            'payment'       => 'required'
+        ]);
+
+        $startDate  = $request->start_date;
+        $endDate    = $request->end_date;
+        $cashier    = $request->cashier;
+        $payment    = $request->payment;
+
+        $cashierUser = User::find($cashier);
+
+        $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
+            ->where('payment_method', '!=', 'pending')
+            ->whereBetween('created_at', [
+                Carbon::parse($startDate)->startOfDay(),
+                Carbon::parse($endDate)->endOfDay(),
+            ])
+            ->when($payment, function ($query) use ($payment) {
+                return $query->where('payment_method', $payment);
+            })
+            ->get();
+
+        $totalSale = $query->sum('total');
+        $transactionCount = $query->where('status', 'completed')->count();
+        $productSold = $query->flatMap->saleItems->count();
+
+        $bestSellingProduct = $query
+            ->flatMap->saleItems
+            ->groupBy('product_id')
+            ->map(function ($items) {
+                return (object) [
+                    'product_id'   => $items->first()->product_id,
+                    'product_name' => $items->first()->product->name ?? 'Unknown',
+                    'total_sold'   => $items->sum('qty'),
+                ];
+            })
+            ->sortByDesc('total_sold')
+            ->first();
+
+        $saleProducts = $query->flatMap->saleItems
+            ->groupBy('product_id')
+            ->map(function ($items) {
+
+                $firstItem = $items->first();
+
+                return (object) [
+                    'date'          => $firstItem->sale->created_at,
+                    'product_name'  => $firstItem->product->name ?? 'Unknown',
+                    'quantity'      => $items->sum('qty'),
+                    'total'         => $items->sum('price'),
+                ];
+            })
+            ->values();
+
         $data = [
-            'start_date' => '27 July 2025',
-            'end_date' => '06 September 2025',
-            'cashier_name' => 'Dewa Jayon',
-            'payment' => 'Midtrans',
-            'total_sales' => 90000,
-            'transaction_count' => 2,
-            'product_sold' => 4,
-            'best_selling_product' => 'Apel Merah',
-            'sales' => collect([
-                (object)['date' => '2025-07-27', 'product_name' => 'Apel Merah', 'quantity' => 2, 'total' => 45000],
-                (object)['date' => '2025-08-01', 'product_name' => 'Nugget Ayam', 'quantity' => 2, 'total' => 45000],
-            ]),
+            'start_date'            => Carbon::parse($startDate)->translatedFormat('d F Y'),
+            'end_date'              => Carbon::parse($endDate)->translatedFormat('d F Y'),
+            'cashier_name'          => $cashierUser?->name ?? 'Unknown',
+            'payment'               => $payment,
+            'total_sales'           => $totalSale,
+            'transaction_count'     => $transactionCount,
+            'product_sold'          => $productSold,
+            'best_selling_product'  => $bestSellingProduct,
+            'sales'                 => $saleProducts,
         ];
 
-        return view('exports.sales.report', $data);
+        $pdf = Pdf::loadView('exports.sales.report', $data);
+
+        $fileName = "Sale Report {$startDate} - {$endDate} StockEase.pdf";
+
+        return $pdf->download($fileName);
     }
 }

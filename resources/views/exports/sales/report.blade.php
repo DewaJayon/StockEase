@@ -88,7 +88,9 @@
         </div>
         <div class="card">
             <h2>Produk Terlaris</h2>
-            <p>{{ $best_selling_product }}</p>
+            @if ($best_selling_product)
+                <p>{{ $best_selling_product->product_name }}</p>
+            @endif
         </div>
     </div>
 
@@ -107,10 +109,10 @@
             @foreach ($sales as $index => $sale)
                 <tr>
                     <td class="center">{{ $index + 1 }}</td>
-                    <td>{{ $sale->date }}</td>
+                    <td>{{ $sale->date->format('d M Y') }}</td>
                     <td>{{ $sale->product_name }}</td>
                     <td class="center">{{ $sale->quantity }}</td>
-                    <td>Rp {{ number_format($sale->total, 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($sale->total) }}</td>
                 </tr>
             @endforeach
         </tbody>
