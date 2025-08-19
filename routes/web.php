@@ -71,7 +71,8 @@ Route::prefix('reports')->group(function () {
     Route::middleware('auth', 'role:admin, cashier')->group(function () {
         Route::get("/sale", [SaleRepotController::class, 'index'])->name('reports.sale.index');
         Route::get("/sale/search-cashier", [SaleRepotController::class, 'searchCashier'])->name('reports.sale.search-cashier');
-        Route::get('/sale/print-pdf', [SaleRepotController::class, 'printPdf'])->name('reports.sale.print-pdf');
+        Route::get('/sale/export-to-pdf', [SaleRepotController::class, 'exportToPdf'])->name('reports.sale.export-to-pdf');
+        Route::get('/sale/export-to-excel', [SaleRepotController::class, 'exportToExcel'])->name('reports.sale.export-to-excel');
     });
 });
 

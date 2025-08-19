@@ -141,7 +141,7 @@ const handlePrintPdf = () => {
     }
 
     window.open(
-        route("reports.sale.print-pdf", {
+        route("reports.sale.export-to-pdf", {
             start_date: formatDate(startDate.value),
             end_date: formatDate(endDate.value),
             cashier: cashier.value.value,
@@ -152,7 +152,24 @@ const handlePrintPdf = () => {
 };
 
 const handleExportExcel = () => {
-    alert("export excel");
+    if (!checkFilter()) {
+        toast.error("Silahkan filter terlebih dahulu!");
+        return;
+    }
+
+    if (payment.value == "midtrans") {
+        payment.value = "qris";
+    }
+
+    window.open(
+        route("reports.sale.export-to-excel", {
+            start_date: formatDate(startDate.value),
+            end_date: formatDate(endDate.value),
+            cashier: cashier.value.value,
+            payment: payment.value,
+        }),
+        "_blank"
+    );
 };
 </script>
 
