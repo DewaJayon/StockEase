@@ -131,17 +131,28 @@ const handleFilter = () => {
 };
 
 const handlePrintPdf = () => {
-    if (
-        startDate.value == null ||
-        endDate.value == null ||
-        cashier.value == null ||
-        payment.value == null
-    ) {
+    if (!checkFilter()) {
         toast.error("Silahkan filter terlebih dahulu!");
         return;
     }
 
-    alert("Print PDF");
+    if (payment.value == "midtrans") {
+        payment.value = "qris";
+    }
+
+    window.open(
+        route("reports.sale.print-pdf", {
+            start_date: formatDate(startDate.value),
+            end_date: formatDate(endDate.value),
+            cashier: cashier.value.value,
+            payment: payment.value,
+        }),
+        "_blank"
+    );
+};
+
+const handleExportExcel = () => {
+    alert("export excel");
 };
 </script>
 
@@ -238,7 +249,7 @@ const handlePrintPdf = () => {
                     <span>Lihat Laporan</span>
                 </Button>
                 <Button
-                    @click="handlePrintPdf"
+                    @click="handlePrintPdf()"
                     :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -246,6 +257,7 @@ const handlePrintPdf = () => {
                     <span>Print PDF</span>
                 </Button>
                 <Button
+                    @click="handleExportExcel()"
                     :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
                 >
