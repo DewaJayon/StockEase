@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Exports\SalesReportExport;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SaleRepotController extends Controller
 {
@@ -149,7 +152,7 @@ class SaleRepotController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
-    public function printPdf(Request $request)
+    public function exportToPdf(Request $request)
     {
         $request->validate([
             'start_date'    => 'required|date',
@@ -225,5 +228,66 @@ class SaleRepotController extends Controller
         $fileName = "Sale Report {$startDate} - {$endDate} StockEase.pdf";
 
         return $pdf->download($fileName);
+    }
+
+    /**
+     * Generate an Excel report for a given date range, cashier, and payment method.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportToExcel(Request $request)
+    {
+        $request->validate([
+            'start_date'    => 'required|date',
+            'end_date'      => 'required|date',
+            'cashier'       => 'required',
+            'payment'       => 'required'
+        ]);
+
+        $filters = [
+            'start_date' => $request->start_date,
+            'end_date'   => $request->end_date,
+            'cashier'    => $request->cashier,
+            'payment'    => $request->payment,
+        ];
+
+        $query = Sale::with(['user', 'saleItems.product'])
+            ->when($filters['start_date'], function ($query) use ($filters) {
+                return $query->whereDate('created_at', '>=', $filters['start_date']);
+            })
+            ->when($filters['end_date'], function ($query) use ($filters) {
+                return $query->whereDate('created_at', '<=', $filters['end_date']);
+            })
+            ->when($filters['cashier'], function ($query) use ($filters) {
+                return $query->where('user_id', $filters['cashier']);
+            })
+            ->when($filters['payment'], function ($query) use ($filters) {
+                return $query->where('payment_method', $filters['payment']);
+            })
+            ->get();
+
+        $cashierName = $filters['cashier']
+            ? User::find($filters['cashier'])->name
+            : 'Semua';
+
+        $summary = [
+            'total_sales'       => number_format($query->sum('total')),
+            'transaction_count' => $query->count(),
+            'product_count'     => $query->flatMap->saleItems->sum('qty'),
+            'best_product'      => $query->flatMap->saleItems
+                ->groupBy('product_id')
+                ->map->sum('quantity')
+                ->sortDesc()
+                ->keys()
+                ->map(fn($id) => Product::find($id)->name)
+                ->first() ?? '-',
+        ];
+
+        $filters['cashier'] = $cashierName;
+
+        $fileName = "Sale Report {$filters['start_date']} - {$filters['end_date']} StockEase.xlsx";
+
+        return Excel::download(new SalesReportExport($query, $filters, $summary), $fileName);
     }
 }
