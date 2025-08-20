@@ -10,7 +10,7 @@ use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\PosController;
 use App\Http\Controllers\Dashboard\PurcaseController;
 use App\Http\Controllers\Dashboard\SaleHistoryController;
-use App\Http\Controllers\Dashboard\SaleRepotController;
+use App\Http\Controllers\Dashboard\SaleReportController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -69,10 +69,10 @@ Route::prefix('reports')->group(function () {
 
     // Laporan Penjualan Route
     Route::middleware('auth', 'role:admin, cashier')->group(function () {
-        Route::get("/sale", [SaleRepotController::class, 'index'])->name('reports.sale.index');
-        Route::get("/sale/search-cashier", [SaleRepotController::class, 'searchCashier'])->name('reports.sale.search-cashier');
-        Route::get('/sale/export-to-pdf', [SaleRepotController::class, 'exportToPdf'])->name('reports.sale.export-to-pdf');
-        Route::get('/sale/export-to-excel', [SaleRepotController::class, 'exportToExcel'])->name('reports.sale.export-to-excel');
+        Route::get("/sale", [SaleReportController::class, 'index'])->name('reports.sale.index');
+        Route::get("/sale/search-cashier", [SaleReportController::class, 'searchCashier'])->name('reports.sale.search-cashier');
+        Route::get('/sale/export-to-pdf', [SaleReportController::class, 'exportToPdf'])->name('reports.sale.export-to-pdf');
+        Route::get('/sale/export-to-excel', [SaleReportController::class, 'exportToExcel'])->name('reports.sale.export-to-excel');
     });
 });
 

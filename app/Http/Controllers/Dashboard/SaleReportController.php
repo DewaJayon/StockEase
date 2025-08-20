@@ -13,7 +13,7 @@ use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 
-class SaleRepotController extends Controller
+class SaleReportController extends Controller
 {
 
     /**
@@ -126,11 +126,11 @@ class SaleRepotController extends Controller
                 ], 200);
             }
 
-            $cashier = User::where("name", "like", "%{$request->search}%")
-                ->where("role", "cashier")
-                ->orWhere("role", "admin")
-                ->select("id as value", "name as label")
-                ->get();
+            $cashier = User::where(function ($q) use ($request) {
+                $q->where("name", "like", "%{$request->search}%")
+                    ->orWhere("id", "like", "%{$request->search}%")
+                    ->whereIn("role", ["cashier", "admin"]);
+            })->select("id as value", "name as label")->get();
 
             if ($cashier->isEmpty()) {
                 return response()->json([
