@@ -26,6 +26,7 @@ import {
     PackageCheck,
     CircleDollarSign,
     FileText,
+    FileBox,
 } from "lucide-vue-next";
 
 import {
@@ -93,6 +94,11 @@ const reports = [
         title: "Laporan Penjualan",
         routeName: "reports.sale.index",
         icon: FileText,
+    },
+    {
+        title: "Laporan Pembelian",
+        routeName: "reports.purchase.index",
+        icon: FileBox,
     },
 ];
 </script>

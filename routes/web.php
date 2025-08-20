@@ -9,6 +9,7 @@ use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\PosController;
 use App\Http\Controllers\Dashboard\PurcaseController;
+use App\Http\Controllers\Dashboard\PurchaseReportController;
 use App\Http\Controllers\Dashboard\SaleHistoryController;
 use App\Http\Controllers\Dashboard\SaleReportController;
 use App\Http\Controllers\ProfileController;
@@ -73,6 +74,13 @@ Route::prefix('reports')->group(function () {
         Route::get("/sale/search-cashier", [SaleReportController::class, 'searchCashier'])->name('reports.sale.search-cashier');
         Route::get('/sale/export-to-pdf', [SaleReportController::class, 'exportToPdf'])->name('reports.sale.export-to-pdf');
         Route::get('/sale/export-to-excel', [SaleReportController::class, 'exportToExcel'])->name('reports.sale.export-to-excel');
+    });
+
+    // Laporan Pembelian Route
+    Route::middleware('auth', 'role:admin, warehouse')->group(function () {
+        Route::get('/purchase', [PurchaseReportController::class, 'index'])->name('reports.purchase.index');
+        Route::get('/purchase/search-supplier', [PurchaseReportController::class, 'searchSupplier'])->name('reports.purchase.search-supplier');
+        Route::get('/purchase/search-user', [PurchaseReportController::class, 'searchUser'])->name('reports.purchase.search-user');
     });
 });
 
