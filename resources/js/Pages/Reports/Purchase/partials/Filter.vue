@@ -24,11 +24,6 @@ import {
     ComboboxList,
 } from "@/Components/ui/combobox";
 
-const startDate = ref(null);
-const endDate = ref(null);
-const supplier = ref(null);
-const user = ref(null);
-
 const searchSupplier = ref("");
 const searchSupplierData = ref([]);
 
@@ -73,6 +68,24 @@ watchDebounced(
     300
 );
 
+const urlParams = new URLSearchParams(window.location.search);
+
+const getDateParam = (key) => {
+    const val = new URLSearchParams(window.location.search).get(key);
+    return val ? new Date(val) : null;
+};
+
+const allUserParam = urlParams.get("user") === "semua-user" ? true : false;
+const allSupplierParam =
+    urlParams.get("supplier") === "semua-supplier" ? true : false;
+
+const startDate = ref(getDateParam("start_date"));
+const endDate = ref(getDateParam("end_date"));
+const supplier = ref(urlParams.get("supplier") || null);
+const user = ref(urlParams.get("user") || null);
+const allUser = ref(allUserParam);
+const allSupplier = ref(allSupplierParam);
+
 const formatDate = (date) => {
     if (!date) return null;
     const d = new Date(date);
@@ -83,10 +96,48 @@ const formatDate = (date) => {
 };
 
 const checkFilter = () => {
-    //
+    if (!startDate.value || !endDate.value) {
+        toast.error("Tanggal mulai dan tanggal selesai wajib diisi!");
+        return false;
+    }
+
+    if (!allSupplier.value && !supplier.value) {
+        toast.error("Silahkan pilih supplier atau centang Semua Supplier!");
+        return false;
+    }
+
+    if (!allUser.value && !user.value) {
+        toast.error("Silahkan pilih user atau centang Semua User!");
+        return false;
+    }
+
+    return true;
 };
+
 const handleFilter = () => {
-    alert("filter");
+    if (!checkFilter()) return;
+
+    let supplierParam = null;
+    let userParam = null;
+
+    if (allSupplier.value) {
+        supplierParam = "semua-supplier";
+    } else if (supplier.value) {
+        supplierParam = supplier.value.value;
+    }
+
+    if (allUser.value) {
+        userParam = "semua-user";
+    } else if (user.value) {
+        userParam = user.value.value;
+    }
+
+    router.get(route("reports.purchase.index"), {
+        start_date: formatDate(startDate.value),
+        end_date: formatDate(endDate.value),
+        supplier: supplierParam,
+        user: userParam,
+    });
 };
 
 const handleExportPdf = () => {
@@ -165,7 +216,7 @@ const handleExportExcel = () => {
                     </ComboboxList>
                 </Combobox>
                 <div class="items-top flex gap-x-2 pt-2">
-                    <Checkbox id="all-supplier" />
+                    <Checkbox id="all-supplier" v-model="allSupplier" />
                     <div class="grid gap-1.5 leading-none">
                         <label
                             for="all-supplier"
@@ -219,10 +270,10 @@ const handleExportExcel = () => {
                 </Combobox>
 
                 <div class="items-top flex gap-x-2 pt-2">
-                    <Checkbox id="all-supplier" />
+                    <Checkbox id="all-user" v-model="allUser" />
                     <div class="grid gap-1.5 leading-none">
                         <label
-                            for="all-supplier"
+                            for="all-user"
                             class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
                             Semua User
