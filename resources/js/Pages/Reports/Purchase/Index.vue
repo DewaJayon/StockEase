@@ -14,13 +14,16 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import Filter from "./partials/Filter.vue";
+import Summary from "./partials/Summary.vue";
 
-// const props = defineProps({
-//     sales: {
-//         type: Object,
-//         required: true,
-//     },
-// });
+const props = defineProps({
+    filters: {
+        type: Object,
+        required: true,
+    },
+});
+
+console.log(props.filters);
 </script>
 
 <template>
@@ -69,8 +72,8 @@ import Filter from "./partials/Filter.vue";
                 </CardContent>
             </Card>
             <Filter />
-            <!-- <Summary :summary="props.sales" /> 
-            <Chart :chart="props.sales" /> -->
+            <Summary :summary="props.filters" />
+            <!-- <Chart :chart="props.sales" /> -->
         </div>
     </AuthenticatedLayout>
 </template>
