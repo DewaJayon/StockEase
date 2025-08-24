@@ -11,10 +11,10 @@ const props = defineProps({
 </script>
 
 <template>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card class="shadow-md">
             <CardHeader class="gap-y-0 p-4">
-                <CardTitle>Total Pembelian Produk</CardTitle>
+                <CardTitle>Total Transaksi Produk</CardTitle>
             </CardHeader>
             <CardContent class="p-4 pt-0">
                 <h2 class="text-2xl font-bold">
@@ -24,31 +24,21 @@ const props = defineProps({
         </Card>
         <Card class="shadow-md">
             <CardHeader class="gap-y-0 p-4">
-                <CardTitle>Jumlah Transaksi</CardTitle>
+                <CardTitle>Total Item Dibeli</CardTitle>
             </CardHeader>
             <CardContent class="p-4 pt-0">
                 <h2 class="text-2xl font-bold">
-                    <!-- {{ props.summary.transactionCount ?? 0 }} -->
+                    {{ props.summary.totalItemsPurchased ?? 0 }}
                 </h2>
             </CardContent>
         </Card>
         <Card class="shadow-md">
             <CardHeader class="gap-y-0 p-4">
-                <CardTitle>Produk Terjual</CardTitle>
+                <CardTitle>Total Pembelian</CardTitle>
             </CardHeader>
             <CardContent class="p-4 pt-0">
                 <h2 class="text-2xl font-bold">
-                    <!-- {{ props.summary.countProductSale ?? 0 }} -->
-                </h2>
-            </CardContent>
-        </Card>
-        <Card class="shadow-md">
-            <CardHeader class="gap-y-0 p-4">
-                <CardTitle>Produk Terlaris</CardTitle>
-            </CardHeader>
-            <CardContent class="p-4 pt-0">
-                <h2 class="text-2xl font-bold">
-                    <!-- {{ props.summary.bestSellingProduct?.product_name ?? "-" }} -->
+                    {{ props.summary.totalTransaction ?? 0 }}
                 </h2>
             </CardContent>
         </Card>

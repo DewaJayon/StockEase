@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import Filter from "./partials/Filter.vue";
 import Summary from "./partials/Summary.vue";
+import Chart from "./partials/Chart.vue";
 
 const props = defineProps({
     filters: {
@@ -22,8 +23,6 @@ const props = defineProps({
         required: true,
     },
 });
-
-console.log(props.filters);
 </script>
 
 <template>
@@ -73,7 +72,7 @@ console.log(props.filters);
             </Card>
             <Filter />
             <Summary :summary="props.filters" />
-            <!-- <Chart :chart="props.sales" /> -->
+            <Chart :chart="props.filters" />
         </div>
     </AuthenticatedLayout>
 </template>

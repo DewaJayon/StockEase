@@ -6,11 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Models\Purcase;
 use App\Models\Supplier;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PurchaseReportController extends Controller
 {
+
+    /**
+     * Handles purchase report filtering and rendering.
+     * 
+     * The function expects start_date, end_date, supplier, and user parameters
+     * to be passed in the request. It will filter purchases based on the given
+     * parameters and return an Inertia response with the filtered purchases data.
+     * 
+     * @param \Illuminate\Http\Request $request
+     * 
+     * @return \Inertia\Response
+     */
     public function index(Request $request)
     {
 
@@ -42,17 +55,40 @@ class PurchaseReportController extends Controller
                 })
                 ->get();
 
-            // TODO: summary purchases
-
             $sumTotalPurchase = $query->sum('total');
+            $totalItemsPurchased = $query->flatMap->purcaseItems->sum('qty');
+            $totalTransaction = $query->count();
+
+            Carbon::setLocale('id');
+
+            $purchaseTrends = $query->groupBy(function ($item) {
+                return Carbon::parse($item->created_at)->translatedFormat('M');
+            })->map(function ($item) {
+                return $item->sum('total');
+            });
+
+            $purchaseTrends = [
+                'labels' => $purchaseTrends->keys()->values(),
+                'data'   => $purchaseTrends->values(),
+            ];
+
+            $topSupplier = $query->groupBy('supplier_id')->map(function ($items) {
+                return [
+                    'supplier_name' => $items->first()->supplier->name,
+                    'total_purchase' => $items->sum('total'),
+                    'transaction_count' => $items->count(),
+                ];
+            })->sortByDesc('total_purchase')->take(5)->values();
 
             $filteredPurchases = [
                 'filters'               => $query->toArray(),
-                'sumTotalPurchase'      => $sumTotalPurchase
+                'sumTotalPurchase'      => $sumTotalPurchase,
+                'totalItemsPurchased'   => $totalItemsPurchased,
+                'totalTransaction'      => $totalTransaction,
+                'purchaseTrends'        => $purchaseTrends,
+                'topSupplier'           => $topSupplier
             ];
         }
-
-        // dump($filters, $filteredPurchases);
 
         return Inertia::render('Reports/Purchase/Index', [
             'filters' => $filteredPurchases
