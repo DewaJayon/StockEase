@@ -2,7 +2,7 @@
 import DatePicker from "@/Components/DatePicker.vue";
 import { Button } from "@/Components/ui/button";
 import { Label } from "@/Components/ui/label";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { cn } from "@/lib/utils";
 import { watchDebounced } from "@vueuse/core";
@@ -85,6 +85,75 @@ const supplier = ref(urlParams.get("supplier") || null);
 const user = ref(urlParams.get("user") || null);
 const allUser = ref(allUserParam);
 const allSupplier = ref(allSupplierParam);
+
+// Jika user pilih supplier manual → allSupplier = false
+watch(supplier, (newVal) => {
+    if (newVal) {
+        allSupplier.value = false;
+    }
+});
+
+// Jika user centang Semua Supplier → supplier = null
+watch(allSupplier, (newVal) => {
+    if (newVal) {
+        supplier.value = null;
+    }
+});
+
+// Jika user pilih user manual → allUser = false
+watch(user, (newVal) => {
+    if (newVal) {
+        allUser.value = false;
+    }
+});
+
+// Jika user centang Semua User → user = null
+watch(allUser, (newVal) => {
+    if (newVal) {
+        user.value = null;
+    }
+});
+
+if (supplier) {
+    axios
+        .get(
+            route("reports.purchase.search-supplier", {
+                search: supplier.value,
+            })
+        )
+        .then((response) => {
+            const foundSupplier = response.data.data.find(
+                (item) => String(item.value) === String(supplier.value)
+            );
+
+            if (foundSupplier) {
+                supplier.value = foundSupplier;
+            }
+        })
+        .catch(() => {
+            supplier.value = null;
+        });
+}
+
+if (user) {
+    axios
+        .get(
+            route("reports.purchase.search-user", {
+                search: user.value,
+            })
+        )
+        .then((response) => {
+            const foundUser = response.data.data.find(
+                (item) => String(item.value) === String(user.value)
+            );
+            if (foundUser) {
+                user.value = foundUser;
+            }
+        })
+        .catch(() => {
+            user.value = null;
+        });
+}
 
 const formatDate = (date) => {
     if (!date) return null;
@@ -236,7 +305,7 @@ const handleExportExcel = () => {
                             <ComboboxInput
                                 class="pl-9"
                                 :display-value="(val) => val?.label ?? ''"
-                                placeholder="Cari Supplier..."
+                                placeholder="Cari User..."
                                 v-model="searchUser"
                             />
                             <span
