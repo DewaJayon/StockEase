@@ -210,11 +210,61 @@ const handleFilter = () => {
 };
 
 const handleExportPdf = () => {
-    alert("print pdf");
+    if (!checkFilter()) return;
+
+    let supplierParam = null;
+    let userParam = null;
+
+    if (allSupplier.value) {
+        supplierParam = "semua-supplier";
+    } else if (supplier.value) {
+        supplierParam = supplier.value.value;
+    }
+
+    if (allUser.value) {
+        userParam = "semua-user";
+    } else if (user.value) {
+        userParam = user.value.value;
+    }
+
+    window.open(
+        route("reports.purchase.export-to-pdf", {
+            start_date: formatDate(startDate.value),
+            end_date: formatDate(endDate.value),
+            supplier: supplierParam,
+            user: userParam,
+        }),
+        "_blank"
+    );
 };
 
 const handleExportExcel = () => {
-    alert("export excel");
+    if (!checkFilter()) return;
+
+    let supplierParam = null;
+    let userParam = null;
+
+    if (allSupplier.value) {
+        supplierParam = "semua-supplier";
+    } else if (supplier.value) {
+        supplierParam = supplier.value.value;
+    }
+
+    if (allUser.value) {
+        userParam = "semua-user";
+    } else if (user.value) {
+        userParam = user.value.value;
+    }
+
+    window.open(
+        route("reports.purchase.export-to-excel", {
+            start_date: formatDate(startDate.value),
+            end_date: formatDate(endDate.value),
+            supplier: supplierParam,
+            user: userParam,
+        }),
+        "_blank"
+    );
 };
 </script>
 
@@ -357,7 +407,8 @@ const handleExportExcel = () => {
                     <span>Lihat Laporan</span>
                 </Button>
                 <Button
-                    @click="handleExportPdf()"
+                    @click="handleExportPdf"
+                    :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Printer class="h-4 w-4" />
@@ -365,6 +416,7 @@ const handleExportExcel = () => {
                 </Button>
                 <Button
                     @click="handleExportExcel()"
+                    :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <FileSpreadsheet class="h-4 w-4" />
