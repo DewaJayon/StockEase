@@ -16,7 +16,7 @@
 | └─ Transaksi Pembayaran Midtrans | admin, cashier              | Done ✅ |
 | **Laporan**                      |                             |         |
 | ├─ Laporan Penjualan             | admin, cashier (opsional)   | Done ✅ |
-| ├─ Laporan Pembelian             | admin, warehouse (opsional) | WIP     |
+| ├─ Laporan Pembelian             | admin, warehouse (opsional) | Done ✅ |
 | └─ Laporan Stok                  | admin, warehouse            |         |
 | **Manajemen Stok**               |                             |         |
 | └─ Log Stok                      | admin, warehouse            |         |
@@ -34,4 +34,6 @@
 | Filter Tanggal di data pembelian                          | Done ✅ |
 | Export laporan penjualan ke excel                         | Done ✅ |
 | Export laporan penjualan ke pdf                           | Done ✅ |
+| Export laporan pembelian ke excel                         | Done ✅ |
+| Export laporan pembelian ke pdf                           | Done ✅ |
 | Otomatis menambahkan ke keranjang kasir jika scan barcode |         |

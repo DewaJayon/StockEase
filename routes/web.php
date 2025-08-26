@@ -81,6 +81,8 @@ Route::prefix('reports')->group(function () {
         Route::get('/purchase', [PurchaseReportController::class, 'index'])->name('reports.purchase.index');
         Route::get('/purchase/search-supplier', [PurchaseReportController::class, 'searchSupplier'])->name('reports.purchase.search-supplier');
         Route::get('/purchase/search-user', [PurchaseReportController::class, 'searchUser'])->name('reports.purchase.search-user');
+        Route::get('/purchase/export-to-pdf', [PurchaseReportController::class, 'exportToPdf'])->name('reports.purchase.export-to-pdf');
+        Route::get('/purchase/export-to-excel', [PurchaseReportController::class, 'exportToExcel'])->name('reports.purchase.export-to-excel');
     });
 });
 
