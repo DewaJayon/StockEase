@@ -14,21 +14,21 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import Filter from "./partials/Filter.vue";
-import Summary from "./partials/Summary.vue";
-import Chart from "./partials/Chart.vue";
 
 const props = defineProps({
-    filters: {
+    filteredStocks: {
         type: Object,
         required: true,
     },
 });
+
+console.log(props.filteredStocks);
 </script>
 
 <template>
     <AuthenticatedLayout>
         <Head>
-            <title>Laporan Pembelian</title>
+            <title>Laporan Stock</title>
         </Head>
         <template #breadcrumb>
             <Breadcrumb>
@@ -40,9 +40,7 @@ const props = defineProps({
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
-                        <BreadcrumbPage>
-                            Data Laporan Pembelian
-                        </BreadcrumbPage>
+                        <BreadcrumbPage> Data Laporan Stock </BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
@@ -63,16 +61,16 @@ const props = defineProps({
                                 melihat laporan
                             </p>
                             <p class="text-sm text-muted-foreground">
-                                Laporan pembelian akan muncul ketika filter
-                                sudah diisi
+                                Laporan stock akan muncul ketika filter sudah
+                                diisi
                             </p>
                         </div>
                     </div>
                 </CardContent>
             </Card>
             <Filter />
-            <Summary :summary="props.filters" />
-            <Chart :chart="props.filters" />
+            <!-- <Summary :summary="props.filters" />
+            <Chart :chart="props.filters" /> -->
         </div>
     </AuthenticatedLayout>
 </template>

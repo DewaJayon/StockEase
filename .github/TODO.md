@@ -17,7 +17,7 @@
 | **Laporan**                      |                             |         |
 | ├─ Laporan Penjualan             | admin, cashier (opsional)   | Done ✅ |
 | ├─ Laporan Pembelian             | admin, warehouse (opsional) | Done ✅ |
-| └─ Laporan Stok                  | admin, warehouse            |         |
+| └─ Laporan Stok                  | admin, warehouse            | WIP     |
 | **Manajemen Stok**               |                             |         |
 | └─ Log Stok                      | admin, warehouse            |         |
 | **Pengaturan**                   |                             |         |

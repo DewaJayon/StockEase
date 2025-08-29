@@ -12,8 +12,12 @@ use App\Http\Controllers\Dashboard\PurcaseController;
 use App\Http\Controllers\Dashboard\PurchaseReportController;
 use App\Http\Controllers\Dashboard\SaleHistoryController;
 use App\Http\Controllers\Dashboard\SaleReportController;
+use App\Http\Controllers\Dashboard\StockReportController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+
+// Auth Route
+require __DIR__ . '/auth.php';
 
 // dashboard & general route
 Route::middleware('auth')->group(function () {
@@ -84,6 +88,11 @@ Route::prefix('reports')->group(function () {
         Route::get('/purchase/export-to-pdf', [PurchaseReportController::class, 'exportToPdf'])->name('reports.purchase.export-to-pdf');
         Route::get('/purchase/export-to-excel', [PurchaseReportController::class, 'exportToExcel'])->name('reports.purchase.export-to-excel');
     });
-});
 
-require __DIR__ . '/auth.php';
+    // Route Laporan Stock
+    Route::middleware('auth', 'role:admin, warehouse')->group(function () {
+        Route::get('/stock', [StockReportController::class, 'index'])->name('reports.stock.index');
+        Route::get('/stock/searchCategory', [StockReportController::class, 'searchCategory'])->name('reports.stock.searchCategory');
+        Route::get('/stock/searchSupplier', [StockReportController::class, 'searchSupplier'])->name('reports.stock.searchSupplier');
+    });
+});
