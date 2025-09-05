@@ -14,6 +14,8 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import Filter from "./partials/Filter.vue";
+import { DataTable } from "@/Components/ui/data-table";
+import { filteredStockColumns } from "./partials/filtered-stock-column";
 
 const props = defineProps({
     filteredStocks: {
@@ -69,8 +71,12 @@ console.log(props.filteredStocks);
                 </CardContent>
             </Card>
             <Filter />
-            <!-- <Summary :summary="props.filters" />
-            <Chart :chart="props.filters" /> -->
+            <DataTable
+                :data="filteredStocks.data"
+                :columns="filteredStockColumns"
+                :route-name="'reports.stock.index'"
+                :pagination="filteredStocks"
+            />
         </div>
     </AuthenticatedLayout>
 </template>
