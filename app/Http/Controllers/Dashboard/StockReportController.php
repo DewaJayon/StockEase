@@ -61,8 +61,22 @@ class StockReportController extends Controller
                 ->paginate(10)
                 ->withQueryString();
 
-            $filteredStocks = $query;
+            $filteredStocks = $query->through(function ($product) {
+                $firstPurchase = $product->purchaseItems->first();
+                $supplierName = $firstPurchase ? $firstPurchase->purcase->supplier->name : '-';
+
+                return [
+                    'id'            => $product->id,
+                    'name'          => $product->name,
+                    'category'      => $product->category->name,
+                    'stock'         => $product->stock,
+                    'alert_stock'   => $product->alert_stock,
+                    'supplier'      => $supplierName,
+                ];
+            });
         }
+
+        // dump($filteredStocks->toArray());
 
         return Inertia::render('Reports/Stock/Index', [
             'filteredStocks'    => $filteredStocks
@@ -83,6 +97,7 @@ class StockReportController extends Controller
 
             $query = Category::query()
                 ->where('name', 'like', '%' . $request->search . '%')
+                ->orWhere('id', 'like', '%' . $request->search . '%')
                 ->limit(5)
                 ->get();
 
@@ -114,6 +129,7 @@ class StockReportController extends Controller
 
             $query = Supplier::query()
                 ->where('name', 'like', '%' . $request->search . '%')
+                ->orWhere('id', 'like', '%' . $request->search . '%')
                 ->limit(5)
                 ->get();
 

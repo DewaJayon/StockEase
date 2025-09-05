@@ -6,7 +6,7 @@ import { ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { cn } from "@/lib/utils";
 import { watchDebounced } from "@vueuse/core";
-import axios, { all } from "axios";
+import axios from "axios";
 import { toast } from "vue-sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
@@ -33,12 +33,24 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 };
 
-const startDate = ref(null);
-const endDate = ref(null);
+const getDateParam = (key) => {
+    const val = new URLSearchParams(window.location.search).get(key);
+    return val ? new Date(val) : null;
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+
+const allCategoryParam =
+    urlParams.get("category") === "semua-kategori" ? true : false;
+const allSupplierParam =
+    urlParams.get("supplier") === "semua-supplier" ? true : false;
+
+const startDate = ref(getDateParam("start_date") || null);
+const endDate = ref(getDateParam("end_date") || null);
 const selectedCategory = ref(null);
 const selectedSupplier = ref(null);
-const allCategory = ref(false);
-const allSupplier = ref(false);
+const allCategory = ref(allCategoryParam);
+const allSupplier = ref(allSupplierParam);
 
 watch(selectedCategory, (newVal) => {
     if (newVal) {
