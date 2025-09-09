@@ -38,14 +38,6 @@ export const filteredStockColumns = [
             }),
     },
     {
-        accessorKey: "category",
-        header: ({ column }) =>
-            h(DataTableColumnHeader, {
-                column: column,
-                title: "Kategori",
-            }),
-    },
-    {
         accessorKey: "stock",
         header: ({ column }) =>
             h(DataTableColumnHeader, {

@@ -94,5 +94,7 @@ Route::prefix('reports')->group(function () {
         Route::get('/stock', [StockReportController::class, 'index'])->name('reports.stock.index');
         Route::get('/stock/searchCategory', [StockReportController::class, 'searchCategory'])->name('reports.stock.searchCategory');
         Route::get('/stock/searchSupplier', [StockReportController::class, 'searchSupplier'])->name('reports.stock.searchSupplier');
+        Route::get('/stock/export-to-pdf', [StockReportController::class, 'exportToPdf'])->name('reports.stock.export-to-pdf');
+        Route::get('/stock/export-to-excel', [StockReportController::class, 'exportToExcel'])->name('reports.stock.export-to-excel');
     });
 });

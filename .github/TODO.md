@@ -17,7 +17,7 @@
 | **Laporan**                      |                             |         |
 | ├─ Laporan Penjualan             | admin, cashier (opsional)   | Done ✅ |
 | ├─ Laporan Pembelian             | admin, warehouse (opsional) | Done ✅ |
-| └─ Laporan Stok                  | admin, warehouse            | WIP     |
+| └─ Laporan Stok                  | admin, warehouse            | Done ✅ |
 | **Manajemen Stok**               |                             |         |
 | └─ Log Stok                      | admin, warehouse            |         |
 | **Pengaturan**                   |                             |         |
@@ -36,4 +36,6 @@
 | Export laporan penjualan ke pdf                           | Done ✅ |
 | Export laporan pembelian ke excel                         | Done ✅ |
 | Export laporan pembelian ke pdf                           | Done ✅ |
+| Export laporan stock ke pdf                               | Done ✅ |
+| Export laporan stock ke excel                             | Done ✅ |
 | Otomatis menambahkan ke keranjang kasir jika scan barcode |         |

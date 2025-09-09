@@ -10,7 +10,13 @@ import axios from "axios";
 import { toast } from "vue-sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Check, FileSpreadsheet, Printer, Search } from "lucide-vue-next";
+import {
+    Check,
+    FileSpreadsheet,
+    Loader2,
+    Printer,
+    Search,
+} from "lucide-vue-next";
 
 import {
     Combobox,
@@ -145,7 +151,37 @@ const checkFilter = () => {
 
     return true;
 };
+
+const isFilterLoading = ref(false);
+
 const handleFilter = () => {
+    if (!checkFilter()) return;
+
+    isFilterLoading.value = true;
+
+    let supplierParam = null;
+    let categoryParam = null;
+
+    allSupplier.value == true
+        ? (supplierParam = "semua-supplier")
+        : (supplierParam = selectedSupplier.value.value);
+    allCategory.value == true
+        ? (categoryParam = "semua-kategori")
+        : (categoryParam = selectedCategory.value.value);
+
+    router
+        .get(route("reports.stock.index"), {
+            start_date: formatDate(startDate.value),
+            end_date: formatDate(endDate.value),
+            supplier: supplierParam,
+            category: categoryParam,
+        })
+        .then(() => {
+            isFilterLoading.value = false;
+        });
+};
+
+const handleExportPdf = () => {
     if (!checkFilter()) return;
 
     let supplierParam = null;
@@ -158,20 +194,39 @@ const handleFilter = () => {
         ? (categoryParam = "semua-kategori")
         : (categoryParam = selectedCategory.value.value);
 
-    router.get(route("reports.stock.index"), {
-        start_date: formatDate(startDate.value),
-        end_date: formatDate(endDate.value),
-        supplier: supplierParam,
-        category: categoryParam,
-    });
-};
-
-const handleExportPdf = () => {
-    alert("export pdf");
+    window.open(
+        route("reports.stock.export-to-pdf", {
+            start_date: formatDate(startDate.value),
+            end_date: formatDate(endDate.value),
+            supplier: supplierParam,
+            category: categoryParam,
+        }),
+        "_blank"
+    );
 };
 
 const handleExportExcel = () => {
-    alert("export excel");
+    if (!checkFilter()) return;
+
+    let supplierParam = null;
+    let categoryParam = null;
+
+    allSupplier.value == true
+        ? (supplierParam = "semua-supplier")
+        : (supplierParam = selectedSupplier.value.value);
+    allCategory.value == true
+        ? (categoryParam = "semua-kategori")
+        : (categoryParam = selectedCategory.value.value);
+
+    window.open(
+        route("reports.stock.export-to-excel", {
+            start_date: formatDate(startDate.value),
+            end_date: formatDate(endDate.value),
+            supplier: supplierParam,
+            category: categoryParam,
+        }),
+        "_blank"
+    );
 };
 </script>
 
@@ -315,12 +370,22 @@ const handleExportExcel = () => {
             </div>
 
             <div class="flex space-x-2">
-                <Button @click="handleFilter">
-                    <Search class="h-4 w-4" />
+                <Button
+                    @click="handleFilter"
+                    :disabled="isFilterLoading || !checkFilter()"
+                    class="disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    <Loader2
+                        v-if="isFilterLoading"
+                        class="w-4 h-4 animate-spin"
+                    />
+
+                    <Search class="h-4 w-4" v-else />
                     <span>Lihat Laporan</span>
                 </Button>
                 <Button
                     @click="handleExportPdf()"
+                    :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Printer class="h-4 w-4" />
@@ -328,6 +393,7 @@ const handleExportExcel = () => {
                 </Button>
                 <Button
                     @click="handleExportExcel()"
+                    :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <FileSpreadsheet class="h-4 w-4" />

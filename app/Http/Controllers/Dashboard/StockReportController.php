@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Exports\StockExportExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Supplier;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockReportController extends Controller
 {
@@ -76,8 +80,6 @@ class StockReportController extends Controller
             });
         }
 
-        // dump($filteredStocks->toArray());
-
         return Inertia::render('Reports/Stock/Index', [
             'filteredStocks'    => $filteredStocks
         ]);
@@ -145,5 +147,152 @@ class StockReportController extends Controller
                 "data"      => $query
             ]);
         }
+    }
+
+    /**
+     * Export the stock report to a PDF file.
+     * 
+     * This function validates the request for the required parameters:
+     * start_date, end_date, category, and supplier.
+     * 
+     * It then filters the products based on the given parameters and
+     * generates a PDF report using the Blade template
+     * exports.stock-report.export-pdf.
+     * 
+     * The PDF is then downloaded with a filename that includes the
+     * start and end dates of the report.
+     * 
+     * @param \Illuminate\Http\Request $request
+     * 
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportToPdf(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'start_date'    => 'required|date',
+            'end_date'      => 'required|date',
+            'category'      => 'required',
+            'supplier'      => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('reports.stock.index')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $filters = $validator->validated();
+
+        $query = Product::with(['category', 'purchaseItems.purcase.supplier'])
+            ->whereHas('purchaseItems')
+            ->when($filters['category'] && $filters['category'] !== 'semua-kategori', function ($query) use ($filters) {
+                return $query->where('category_id', $filters['category']);
+            })
+            ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
+                return $query->whereHas('purchaseItems.purcase.supplier', function ($q) use ($filters) {
+                    $q->where('id', $filters['supplier']);
+                });
+            })
+            ->when($filters['start_date'], function ($query) use ($filters) {
+                return $query->whereHas('purchaseItems.purcase', function ($q) use ($filters) {
+                    $q->whereDate('date', '>=', $filters['start_date']);
+                });
+            })
+            ->when($filters['end_date'], function ($query) use ($filters) {
+                return $query->whereHas('purchaseItems.purcase', function ($q) use ($filters) {
+                    $q->whereDate('date', '<=', $filters['end_date']);
+                });
+            })
+            ->get();
+
+        $filteredStocks = $query->map(function ($product) {
+            $firstPurchase = $product->purchaseItems->first();
+            $supplierName = $firstPurchase ? $firstPurchase->purcase->supplier->name : '-';
+
+            return (object) [
+                'id'            => $product->id,
+                'name'          => $product->name,
+                'category'      => $product->category->name,
+                'stock'         => $product->stock,
+                'alert_stock'   => $product->alert_stock,
+                'supplier'      => $supplierName,
+            ];
+        });
+
+        $pdf = Pdf::loadView('exports.stock-report.export-pdf', [
+            "filters"           => $filters,
+            "filteredStocks"    => $filteredStocks
+        ]);
+
+        $fileName = "Stock Report {$filters['start_date']} - {$filters['end_date']} StockEase.pdf";
+
+        return $pdf->download($fileName);
+    }
+
+    /**
+     * Export the stock report to an Excel file.
+     * 
+     * @param \Illuminate\Http\Request $request
+     * 
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportToExcel(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'start_date'    => 'required|date',
+            'end_date'      => 'required|date',
+            'category'      => 'required',
+            'supplier'      => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('reports.stock.index')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $filters = $validator->validated();
+
+        $query = Product::with(['category', 'purchaseItems.purcase.supplier'])
+            ->whereHas('purchaseItems')
+            ->when($filters['category'] && $filters['category'] !== 'semua-kategori', function ($query) use ($filters) {
+                return $query->where('category_id', $filters['category']);
+            })
+            ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
+                return $query->whereHas('purchaseItems.purcase.supplier', function ($q) use ($filters) {
+                    $q->where('id', $filters['supplier']);
+                });
+            })
+            ->when($filters['start_date'], function ($query) use ($filters) {
+                return $query->whereHas('purchaseItems.purcase', function ($q) use ($filters) {
+                    $q->whereDate('date', '>=', $filters['start_date']);
+                });
+            })
+            ->when($filters['end_date'], function ($query) use ($filters) {
+                return $query->whereHas('purchaseItems.purcase', function ($q) use ($filters) {
+                    $q->whereDate('date', '<=', $filters['end_date']);
+                });
+            })
+            ->get();
+
+        $filteredStocks = $query->map(function ($product) {
+            $firstPurchase = $product->purchaseItems->first();
+            $supplierName = $firstPurchase ? $firstPurchase->purcase->supplier->name : '-';
+
+            return (object) [
+                'id'            => $product->id,
+                'name'          => $product->name,
+                'category'      => $product->category->name,
+                'stock'         => $product->stock,
+                'alert_stock'   => $product->alert_stock,
+                'supplier'      => $supplierName,
+            ];
+        });
+
+        $fileName = "Stock Report {$filters['start_date']} - {$filters['end_date']} StockEase.xlsx";
+
+        return Excel::download(new StockExportExcel($filters, $filteredStocks), $fileName);
     }
 }

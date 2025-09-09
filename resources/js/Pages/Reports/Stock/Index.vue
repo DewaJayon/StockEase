@@ -71,12 +71,25 @@ console.log(props.filteredStocks);
                 </CardContent>
             </Card>
             <Filter />
-            <DataTable
-                :data="filteredStocks.data"
-                :columns="filteredStockColumns"
-                :route-name="'reports.stock.index'"
-                :pagination="filteredStocks"
-            />
+            <template v-if="filteredStocks.data?.length > 0">
+                <DataTable
+                    :data="filteredStocks.data"
+                    :columns="filteredStockColumns"
+                    :route-name="'reports.stock.index'"
+                    :pagination="filteredStocks"
+                />
+            </template>
+            <template v-else>
+                <div
+                    class="flex flex-col items-center justify-center mt-4 text-center"
+                >
+                    <h1 class="text-2xl font-semibold">Tidak ada data</h1>
+                    <p class="text-sm text-muted-foreground">
+                        Tidak ada data laporan stock, silahkan lakukan filter
+                        lebih lanjut.
+                    </p>
+                </div>
+            </template>
         </div>
     </AuthenticatedLayout>
 </template>
