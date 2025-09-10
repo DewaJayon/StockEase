@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Report;
 
-use App\Exports\PurchaseExportExcel;
-use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use App\Models\User;
+use Inertia\Inertia;
 use App\Models\Purcase;
 use App\Models\Supplier;
-use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\PurchaseExportExcel;
+use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Validator;
 
 class PurchaseReportController extends Controller
 {
@@ -185,19 +186,21 @@ class PurchaseReportController extends Controller
      */
     public function exportToPdf(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'start_date' => 'required|date',
             'end_date'   => 'required|date',
             'supplier'   => 'required',
             'user'       => 'required',
         ]);
 
-        $filters = [
-            'start_date' => $request->start_date,
-            'end_date'   => $request->end_date,
-            'supplier'   => $request->supplier,
-            'user'       => $request->user,
-        ];
+        if ($validator->fails()) {
+            return redirect()
+                ->route('reports.purchase.index')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $filters = $validator->validated();
 
         $query = Purcase::with('supplier', 'user', 'purcaseItems', 'purcaseItems.product', 'purcaseItems.purcase')
             ->when($filters['start_date'], function ($query) use ($filters) {
@@ -259,19 +262,21 @@ class PurchaseReportController extends Controller
      */
     public function exportToExcel(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'start_date' => 'required|date',
             'end_date'   => 'required|date',
             'supplier'   => 'required',
             'user'       => 'required',
         ]);
 
-        $filters = [
-            'start_date' => $request->start_date,
-            'end_date'   => $request->end_date,
-            'supplier'   => $request->supplier,
-            'user'       => $request->user,
-        ];
+        if ($validator->fails()) {
+            return redirect()
+                ->route('reports.purchase.index')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $filters = $validator->validated();
 
         $query = Purcase::with('supplier', 'user', 'purcaseItems', 'purcaseItems.product', 'purcaseItems.purcase')
             ->when($filters['start_date'], function ($query) use ($filters) {

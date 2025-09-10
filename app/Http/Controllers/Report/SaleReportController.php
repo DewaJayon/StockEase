@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Report;
 
 use App\Exports\SalesReportExport;
 use App\Http\Controllers\Controller;
@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SaleReportController extends Controller
@@ -154,12 +155,20 @@ class SaleReportController extends Controller
      */
     public function exportToPdf(Request $request)
     {
-        $request->validate([
+
+        $validator = Validator::make($request->all(), [
             'start_date'    => 'required|date',
             'end_date'      => 'required|date',
             'cashier'       => 'required',
             'payment'       => 'required'
         ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('reports.sale.index')
+                ->withErrors($validator)
+                ->withInput();
+        }
 
         $startDate  = $request->start_date;
         $endDate    = $request->end_date;
@@ -238,19 +247,21 @@ class SaleReportController extends Controller
      */
     public function exportToExcel(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'start_date'    => 'required|date',
             'end_date'      => 'required|date',
             'cashier'       => 'required',
             'payment'       => 'required'
         ]);
 
-        $filters = [
-            'start_date' => $request->start_date,
-            'end_date'   => $request->end_date,
-            'cashier'    => $request->cashier,
-            'payment'    => $request->payment,
-        ];
+        if ($validator->fails()) {
+            return redirect()
+                ->route('reports.sale.index')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $filters = $validator->validated();
 
         $query = Sale::with(['user', 'saleItems.product'])
             ->when($filters['start_date'], function ($query) use ($filters) {

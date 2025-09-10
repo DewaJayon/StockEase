@@ -9,10 +9,10 @@ use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\PosController;
 use App\Http\Controllers\Dashboard\PurcaseController;
-use App\Http\Controllers\Dashboard\PurchaseReportController;
+use App\Http\Controllers\Report\PurchaseReportController;
 use App\Http\Controllers\Dashboard\SaleHistoryController;
-use App\Http\Controllers\Dashboard\SaleReportController;
-use App\Http\Controllers\Dashboard\StockReportController;
+use App\Http\Controllers\Report\SaleReportController;
+use App\Http\Controllers\Report\StockReportController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
