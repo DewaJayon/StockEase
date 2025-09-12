@@ -2,7 +2,7 @@
 import DatePicker from "@/Components/DatePicker.vue";
 import { Button } from "@/Components/ui/button";
 import { Label } from "@/Components/ui/label";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { cn } from "@/lib/utils";
 import { watchDebounced } from "@vueuse/core";
@@ -31,6 +31,7 @@ import {
     ComboboxItemIndicator,
     ComboboxList,
 } from "@/Components/ui/combobox";
+import { Checkbox } from "@/Components/ui/checkbox";
 
 const searchCashier = ref("");
 const cashierData = ref([]);
@@ -71,6 +72,22 @@ const endDate = ref(getDateParam("end_date"));
 const cashier = ref(null);
 const payment = ref(paymentParam === "qris" ? "midtrans" : paymentParam);
 
+const allCashierParam =
+    urlParams.get("cashier") === "semua-cashier" ? true : false;
+const allCashier = ref(allCashierParam);
+
+watch(allCashier, (newVal) => {
+    if (newVal) {
+        cashier.value = null;
+    }
+});
+
+watch(cashier, (newVal) => {
+    if (newVal) {
+        allCashier.value = false;
+    }
+});
+
 if (cashierParam) {
     axios
         .get(route("reports.sale.search-cashier", { search: cashierParam }))
@@ -97,54 +114,61 @@ const formatDate = (date) => {
 };
 
 const checkFilter = () => {
-    if (
-        startDate.value == null ||
-        endDate.value == null ||
-        cashier.value == null ||
-        payment.value == null
-    ) {
+    if (!startDate.value || !endDate.value) {
+        toast.error("Tanggal mulai dan tanggal selesai wajib diisi!");
         return false;
     }
+
+    if (!allCashier.value && !cashier.value) {
+        toast.error("Silahkan pilih cashier atau centang Semua Cashier!");
+        return false;
+    }
+
     return true;
 };
 const handleFilter = () => {
-    if (
-        startDate.value == null ||
-        endDate.value == null ||
-        cashier.value == null ||
-        payment.value == null
-    ) {
-        toast.error("Silahkan lengkapi data terlebih dahulu!");
-        return;
-    }
+    if (!checkFilter()) return;
 
     if (payment.value == "midtrans") {
         payment.value = "qris";
+    }
+
+    let allCashierParam = null;
+
+    if (allCashier.value) {
+        allCashierParam = "semua-cashier";
+    } else if (cashier.value) {
+        allCashierParam = cashier.value.value;
     }
 
     router.get(route("reports.sale.index"), {
         start_date: formatDate(startDate.value),
         end_date: formatDate(endDate.value),
-        cashier: cashier.value.value,
+        cashier: allCashierParam,
         payment: payment.value,
     });
 };
 
 const handlePrintPdf = () => {
-    if (!checkFilter()) {
-        toast.error("Silahkan filter terlebih dahulu!");
-        return;
-    }
+    if (!checkFilter()) return;
 
     if (payment.value == "midtrans") {
         payment.value = "qris";
+    }
+
+    let allCashierParam = null;
+
+    if (allCashier.value) {
+        allCashierParam = "semua-cashier";
+    } else if (cashier.value) {
+        allCashierParam = cashier.value.value;
     }
 
     window.open(
         route("reports.sale.export-to-pdf", {
             start_date: formatDate(startDate.value),
             end_date: formatDate(endDate.value),
-            cashier: cashier.value.value,
+            cashier: allCashierParam,
             payment: payment.value,
         }),
         "_blank"
@@ -152,20 +176,25 @@ const handlePrintPdf = () => {
 };
 
 const handleExportExcel = () => {
-    if (!checkFilter()) {
-        toast.error("Silahkan filter terlebih dahulu!");
-        return;
-    }
+    if (!checkFilter()) return;
 
     if (payment.value == "midtrans") {
         payment.value = "qris";
+    }
+
+    let allCashierParam = null;
+
+    if (allCashier.value) {
+        allCashierParam = "semua-cashier";
+    } else if (cashier.value) {
+        allCashierParam = allCashierParam;
     }
 
     window.open(
         route("reports.sale.export-to-excel", {
             start_date: formatDate(startDate.value),
             end_date: formatDate(endDate.value),
-            cashier: cashier.value.value,
+            cashier: allCashierParam,
             payment: payment.value,
         }),
         "_blank"
@@ -239,6 +268,17 @@ const handleExportExcel = () => {
                         </ComboboxGroup>
                     </ComboboxList>
                 </Combobox>
+                <div class="items-top flex gap-x-2 pt-2">
+                    <Checkbox id="all-supplier" v-model="allCashier" />
+                    <div class="grid gap-1.5 leading-none">
+                        <label
+                            for="all-supplier"
+                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Semua Kasir
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="space-y-1">
                 <Label html-for="payment">Metode Pembayaran</Label>
@@ -249,6 +289,12 @@ const handleExportExcel = () => {
                     <SelectContent>
                         <SelectGroup>
                             <SelectLabel>Metode Pembayaran</SelectLabel>
+                            <SelectItem
+                                value="semua-metode"
+                                class="cursor-pointer"
+                            >
+                                Semua Metode
+                            </SelectItem>
                             <SelectItem value="cash" class="cursor-pointer">
                                 Cash
                             </SelectItem>
