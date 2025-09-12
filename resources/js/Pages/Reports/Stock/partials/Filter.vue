@@ -51,16 +51,71 @@ const allCategoryParam =
 const allSupplierParam =
     urlParams.get("supplier") === "semua-supplier" ? true : false;
 
+const selectedCategoryParam = urlParams.get("category") || null;
+const selectedSupplierParam = urlParams.get("supplier") || null;
+
 const startDate = ref(getDateParam("start_date") || null);
 const endDate = ref(getDateParam("end_date") || null);
-const selectedCategory = ref(null);
-const selectedSupplier = ref(null);
+const selectedCategory = ref(selectedCategoryParam);
+const selectedSupplier = ref(selectedSupplierParam);
 const allCategory = ref(allCategoryParam);
 const allSupplier = ref(allSupplierParam);
 
+if (selectedCategoryParam) {
+    axios
+        .get(
+            route("reports.stock.searchCategory", {
+                search: selectedCategoryParam,
+            })
+        )
+        .then((response) => {
+            const categoriesData = response.data.data.map((item) => ({
+                label: item.name,
+                value: item.id,
+            }));
+
+            const foundCategory = categoriesData.find(
+                (item) => String(item.value) === String(selectedCategoryParam)
+            );
+
+            if (foundCategory) {
+                selectedCategory.value = foundCategory;
+            }
+        })
+        .catch(() => {
+            selectedCategory.value = null;
+        });
+}
+
+if (selectedSupplierParam) {
+    axios
+        .get(
+            route("reports.stock.searchSupplier", {
+                search: selectedSupplierParam,
+            })
+        )
+        .then((response) => {
+            const suppliersData = response.data.data.map((item) => ({
+                label: item.name,
+                value: item.id,
+            }));
+
+            const foundSupplier = suppliersData.find(
+                (item) => String(item.value) === String(selectedSupplierParam)
+            );
+
+            if (foundSupplier) {
+                selectedSupplier.value = foundSupplier;
+            }
+        })
+        .catch(() => {
+            selectedSupplier.value = null;
+        });
+}
+
 watch(selectedCategory, (newVal) => {
     if (newVal) {
-        allSupplier.value = false;
+        allCategory.value = false;
     }
 });
 watch(allCategory, (newVal) => {
@@ -95,7 +150,7 @@ watchDebounced(
                 categories.value = response.data.data.map((item) => {
                     return {
                         label: item.name,
-                        value: item.slug,
+                        value: item.id,
                     };
                 });
             })
@@ -122,7 +177,7 @@ watchDebounced(
                 suppliers.value = response.data.data.map((item) => {
                     return {
                         label: item.name,
-                        value: item.slug,
+                        value: item.id,
                     };
                 });
             })

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Exports\PurchaseExportExcel;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
 
@@ -249,7 +250,16 @@ class PurchaseReportController extends Controller
 
         $pdf = Pdf::loadView('exports.purchase-report.export-pdf', $data);
 
-        $fileName = "Laporan Pembelian {$filters['start_date']}-{$filters['end_date']} StockEase.pdf";
+        $fileName = "Laporan Pembelian "
+            . Carbon::parse($filters['start_date'])->translatedFormat('d F Y') . " - "
+            . Carbon::parse($filters['end_date'])->translatedFormat('d F Y') . " StockEase.pdf";
+
+        $filePath = "reports/purchase/"
+            . Carbon::now('Asia/Shanghai')->format('Y') . "/"
+            . Carbon::now('Asia/Shanghai')->translatedFormat('F') . "/"
+            . $fileName;
+
+        Storage::put($filePath, $pdf->output());
 
         return $pdf->download($fileName);
     }
@@ -333,7 +343,16 @@ class PurchaseReportController extends Controller
             'suppliers'             => $suppliers
         ];
 
-        $fileName = "Purchase Report {$filters['start_date']} - {$filters['end_date']} StockEase.xlsx";
+        $fileName = "Laporan Pembelian "
+            . Carbon::parse($filters['start_date'])->translatedFormat('d F Y') . " - "
+            . Carbon::parse($filters['end_date'])->translatedFormat('d F Y') . " StockEase.xlsx";
+
+        $filePath = "reports/purchase/"
+            . Carbon::now('Asia/Shanghai')->format('Y') . "/"
+            . Carbon::now('Asia/Shanghai')->translatedFormat('F') . "/"
+            . $fileName;
+
+        Excel::store(new PurchaseExportExcel($query, $filters, $summary), $filePath, "local");
 
         return Excel::download(new PurchaseExportExcel($query, $filters, $summary), $fileName);
     }

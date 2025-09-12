@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -28,27 +29,32 @@ class SaleReportController extends Controller
      */
     public function index(Request $request)
     {
-        $startDate = $request->start_date;
-        $endDate = $request->end_date;
-        $cashier = $request->cashier;
-        $payment = $request->payment;
+
+        $filters = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'cashier' => $request->cashier,
+            'payment' => $request->payment
+        ];
 
         $filteredSales = [];
 
-        if ($startDate && $endDate && $cashier && $payment) {
+        if ($filters['start_date'] || $filters['end_date'] || $filters['cashier'] || $filters['payment']) {
+
             $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
-                ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
-                    return $query->whereBetween('created_at', [
-                        Carbon::parse($startDate)->startOfDay(),
-                        Carbon::parse($endDate)->endOfDay(),
-                    ]);
+                ->when($filters['start_date'], function ($query) use ($filters) {
+                    return $query->whereDate('created_at', '>=', $filters['start_date']);
                 })
-                ->when($cashier, function ($query) use ($cashier) {
-                    return $query->where('user_id', $cashier);
+                ->when($filters['end_date'], function ($query) use ($filters) {
+                    return $query->whereDate('created_at', '<=', $filters['end_date']);
                 })
-                ->when($payment, function ($query) use ($payment) {
-                    return $query->where('payment_method', $payment);
+                ->when($filters['cashier'] && $filters['cashier'] !== 'semua-cashier', function ($query) use ($filters) {
+                    return $query->where('user_id', $filters['cashier']);
                 })
+                ->when($filters['payment'] && $filters['payment'] !== 'semua-metode', function ($query) use ($filters) {
+                    return $query->where('payment_method', $filters['payment']);
+                })
+                ->whereHas('paymentTransaction')
                 ->get();
 
             $sumTotalSale       = $query->sum('total');
@@ -170,22 +176,24 @@ class SaleReportController extends Controller
                 ->withInput();
         }
 
-        $startDate  = $request->start_date;
-        $endDate    = $request->end_date;
-        $cashier    = $request->cashier;
-        $payment    = $request->payment;
+        $filters = $validator->validated();
 
-        $cashierUser = User::find($cashier);
+        $cashierUser = User::find($filters['cashier']);
 
         $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
-            ->where('payment_method', '!=', 'pending')
-            ->whereBetween('created_at', [
-                Carbon::parse($startDate)->startOfDay(),
-                Carbon::parse($endDate)->endOfDay(),
-            ])
-            ->when($payment, function ($query) use ($payment) {
-                return $query->where('payment_method', $payment);
+            ->when($filters['start_date'], function ($query) use ($filters) {
+                return $query->whereDate('created_at', '>=', $filters['start_date']);
             })
+            ->when($filters['end_date'], function ($query) use ($filters) {
+                return $query->whereDate('created_at', '<=', $filters['end_date']);
+            })
+            ->when($filters['cashier'] && $filters['cashier'] !== 'semua-cashier', function ($query) use ($filters) {
+                return $query->where('user_id', $filters['cashier']);
+            })
+            ->when($filters['payment'] && $filters['payment'] !== 'semua-metode', function ($query) use ($filters) {
+                return $query->where('payment_method', $filters['payment']);
+            })
+            ->whereHas('paymentTransaction')
             ->get();
 
         $totalSale = $query->sum('total');
@@ -221,10 +229,10 @@ class SaleReportController extends Controller
             ->values();
 
         $data = [
-            'start_date'            => Carbon::parse($startDate)->translatedFormat('d F Y'),
-            'end_date'              => Carbon::parse($endDate)->translatedFormat('d F Y'),
-            'cashier_name'          => $cashierUser?->name ?? 'Unknown',
-            'payment'               => $payment,
+            'start_date'            => Carbon::parse($filters['start_date'])->translatedFormat('d F Y'),
+            'end_date'              => Carbon::parse($filters['end_date'])->translatedFormat('d F Y'),
+            'cashier_name'          => $cashierUser?->name ?? 'Semua Cashier',
+            'payment'               => $filters['payment'],
             'total_sales'           => $totalSale,
             'transaction_count'     => $transactionCount,
             'product_sold'          => $productSold,
@@ -234,7 +242,16 @@ class SaleReportController extends Controller
 
         $pdf = Pdf::loadView('exports.sales.report', $data);
 
-        $fileName = "Sale Report {$startDate} - {$endDate} StockEase.pdf";
+        $fileName = "Laporan Penjualan "
+            . Carbon::parse($filters['start_date'])->translatedFormat('d F Y') . " - "
+            . Carbon::parse($filters['end_date'])->translatedFormat('d F Y') . " StockEase.pdf";
+
+        $filePath = "reports/sales/"
+            . Carbon::now('Asia/Shanghai')->format('Y') . "/"
+            . Carbon::now('Asia/Shanghai')->translatedFormat('F') . "/"
+            . $fileName;
+
+        Storage::put($filePath, $pdf->output());
 
         return $pdf->download($fileName);
     }
@@ -263,24 +280,28 @@ class SaleReportController extends Controller
 
         $filters = $validator->validated();
 
-        $query = Sale::with(['user', 'saleItems.product'])
+        $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
             ->when($filters['start_date'], function ($query) use ($filters) {
                 return $query->whereDate('created_at', '>=', $filters['start_date']);
             })
             ->when($filters['end_date'], function ($query) use ($filters) {
                 return $query->whereDate('created_at', '<=', $filters['end_date']);
             })
-            ->when($filters['cashier'], function ($query) use ($filters) {
+            ->when($filters['cashier'] && $filters['cashier'] !== 'semua-cashier', function ($query) use ($filters) {
                 return $query->where('user_id', $filters['cashier']);
             })
-            ->when($filters['payment'], function ($query) use ($filters) {
+            ->when($filters['payment'] && $filters['payment'] !== 'semua-metode', function ($query) use ($filters) {
                 return $query->where('payment_method', $filters['payment']);
             })
+            ->whereHas('paymentTransaction')
             ->get();
 
-        $cashierName = $filters['cashier']
-            ? User::find($filters['cashier'])->name
-            : 'Semua';
+        if ($filters['cashier'] !== 'semua-cashier') {
+            $cashier = User::find($filters['cashier']);
+            $cashierName = $cashier ? $cashier->name : 'Kasir Tidak Ditemukan';
+        } else {
+            $cashierName = 'Semua Cashier';
+        }
 
         $summary = [
             'total_sales'       => number_format($query->sum('total')),
@@ -297,7 +318,16 @@ class SaleReportController extends Controller
 
         $filters['cashier'] = $cashierName;
 
-        $fileName = "Sale Report {$filters['start_date']} - {$filters['end_date']} StockEase.xlsx";
+        $fileName = "Laporan Penjualan "
+            . Carbon::parse($filters['start_date'])->translatedFormat('d F Y') . " - "
+            . Carbon::parse($filters['end_date'])->translatedFormat('d F Y') . " StockEase.xlsx";
+
+        $filePath = "reports/sales/"
+            . Carbon::now('Asia/Shanghai')->format('Y') . "/"
+            . Carbon::now('Asia/Shanghai')->translatedFormat('F') . "/"
+            . $fileName;
+
+        Excel::store(new SalesReportExport($query, $filters, $summary), $filePath, 'local');
 
         return Excel::download(new SalesReportExport($query, $filters, $summary), $fileName);
     }

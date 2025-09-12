@@ -8,7 +8,9 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Supplier;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
@@ -98,8 +100,11 @@ class StockReportController extends Controller
         if ($request->expectsJson()) {
 
             $query = Category::query()
-                ->where('name', 'like', '%' . $request->search . '%')
-                ->orWhere('id', 'like', '%' . $request->search . '%')
+                ->when(is_numeric($request->search), function ($q) use ($request) {
+                    $q->where('id', $request->search);
+                }, function ($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->search . '%');
+                })
                 ->limit(5)
                 ->get();
 
@@ -130,8 +135,11 @@ class StockReportController extends Controller
         if ($request->expectsJson()) {
 
             $query = Supplier::query()
-                ->where('name', 'like', '%' . $request->search . '%')
-                ->orWhere('id', 'like', '%' . $request->search . '%')
+                ->when(is_numeric($request->search), function ($q) use ($request) {
+                    $q->where('id', $request->search);
+                }, function ($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->search . '%');
+                })
                 ->limit(5)
                 ->get();
 
@@ -225,7 +233,16 @@ class StockReportController extends Controller
             "filteredStocks"    => $filteredStocks
         ]);
 
-        $fileName = "Stock Report {$filters['start_date']} - {$filters['end_date']} StockEase.pdf";
+        $fileName = "Laporan Stock "
+            . Carbon::parse($filters['start_date'])->translatedFormat('d F Y') . " - "
+            . Carbon::parse($filters['end_date'])->translatedFormat('d F Y') . " StockEase.pdf";
+
+        $filePath = "reports/stock/"
+            . Carbon::now('Asia/Shanghai')->format('Y') . "/"
+            . Carbon::now('Asia/Shanghai')->translatedFormat('F') . "/"
+            . $fileName;
+
+        Storage::put($filePath, $pdf->output());
 
         return $pdf->download($fileName);
     }
@@ -291,7 +308,16 @@ class StockReportController extends Controller
             ];
         });
 
-        $fileName = "Stock Report {$filters['start_date']} - {$filters['end_date']} StockEase.xlsx";
+        $fileName = "Laporan Stock "
+            . Carbon::parse($filters['start_date'])->translatedFormat('d F Y') . " - "
+            . Carbon::parse($filters['end_date'])->translatedFormat('d F Y') . " StockEase.xlsx";
+
+        $filePath = "reports/stock/"
+            . Carbon::now('Asia/Shanghai')->format('Y') . "/"
+            . Carbon::now('Asia/Shanghai')->translatedFormat('F') . "/"
+            . $fileName;
+
+        Excel::store(new StockExportExcel($filters, $filteredStocks), $filePath, 'local');
 
         return Excel::download(new StockExportExcel($filters, $filteredStocks), $fileName);
     }
