@@ -14,6 +14,7 @@ use App\Http\Controllers\Dashboard\SaleHistoryController;
 use App\Http\Controllers\Report\SaleReportController;
 use App\Http\Controllers\Report\StockReportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Report\LogStockController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Route
@@ -97,4 +98,9 @@ Route::prefix('reports')->group(function () {
         Route::get('/stock/export-to-pdf', [StockReportController::class, 'exportToPdf'])->name('reports.stock.export-to-pdf');
         Route::get('/stock/export-to-excel', [StockReportController::class, 'exportToExcel'])->name('reports.stock.export-to-excel');
     });
+});
+
+// Log Stock
+Route::middleware('auth', 'role:admin, warehouse')->group(function () {
+    Route::get('/log-stock', [LogStockController::class, 'index'])->name('log-stock.index');
 });

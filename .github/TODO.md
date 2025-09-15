@@ -18,9 +18,10 @@
 | ├─ Laporan Penjualan             | admin, cashier (opsional)   | Done ✅ |
 | ├─ Laporan Pembelian             | admin, warehouse (opsional) | Done ✅ |
 | └─ Laporan Stok                  | admin, warehouse            | Done ✅ |
-| **Manajemen Stok**               |                             |         |
-| └─ Log Stok                      | admin, warehouse            |         |
-| **Pengaturan**                   |                             |         |
+| **Lainnya**                      |                             |         |
+| └─ Log Stok                      | admin, warehouse            | WIP     |
+| ├─ File Manager                  | admin, cashier, warehouse   |         |
+| ├─ Profile                       | admin, cashier, warehouse   |         |
 | └─ Pengaturan                    | admin                       |         |
 
 ## Fitur Tambahan

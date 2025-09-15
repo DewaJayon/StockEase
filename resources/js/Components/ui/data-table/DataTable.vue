@@ -40,6 +40,8 @@ import {
     PaginationPrevious,
 } from "@/Components/ui/pagination";
 import { Search } from "lucide-vue-next";
+import { Button } from "../button";
+import { DoubleArrowLeftIcon, DoubleArrowRightIcon } from "@radix-icons/vue";
 
 const props = defineProps({
     data: Array,
@@ -64,6 +66,15 @@ const pagination = ref({
     pageIndex: props.pagination.current_page - 1,
     pageSize: props.pagination.per_page,
 });
+
+watch(
+    () => props.pagination,
+    (newPagination) => {
+        pagination.value.pageIndex = newPagination.current_page - 1;
+        pagination.value.pageSize = newPagination.per_page;
+    },
+    { immediate: true, deep: true }
+);
 
 const table = useVueTable({
     get data() {
@@ -102,10 +113,24 @@ const table = useVueTable({
     },
 });
 
+const currentPage = computed({
+    get: () => props.pagination.current_page,
+    set: (val) => {
+        pagination.value.pageIndex = val - 1;
+    },
+});
 const goToNextPage = () => {
     if (!isLastPage.value) {
         pagination.value.pageIndex += 1;
     }
+};
+
+const goToFirstPage = () => {
+    pagination.value.pageIndex = 0;
+};
+
+const goToLastPage = () => {
+    pagination.value.pageIndex = props.pagination.last_page - 1;
 };
 
 const isLastPage = computed(() => {
@@ -281,9 +306,19 @@ watchDebounced(
                         v-slot="{ page }"
                         :items-per-page="props.pagination.per_page"
                         :total="props.pagination.total"
-                        :default-page="props.pagination.current_page"
+                        v-model:page="currentPage"
                     >
                         <PaginationContent v-slot="{ items }" class="flex">
+                            <Button
+                                variant="outline"
+                                class="hidden w-8 h-8 p-0 lg:flex"
+                                :disabled="!table.getCanPreviousPage()"
+                                @click="goToFirstPage"
+                            >
+                                <span class="sr-only">Go to first page</span>
+                                <DoubleArrowLeftIcon class="w-4 h-4" />
+                            </Button>
+
                             <PaginationPrevious
                                 class="border"
                                 :disabled="!table.getCanPreviousPage()"
@@ -311,6 +346,15 @@ watchDebounced(
                                 :disabled="isLastPage"
                                 @click="goToNextPage"
                             />
+                            <Button
+                                variant="outline"
+                                class="hidden w-8 h-8 p-0 lg:flex"
+                                :disabled="isLastPage"
+                                @click="goToLastPage"
+                            >
+                                <span class="sr-only">Go to last page</span>
+                                <DoubleArrowRightIcon class="w-4 h-4" />
+                            </Button>
                         </PaginationContent>
                     </Pagination>
                 </div>
