@@ -228,6 +228,11 @@ class StockReportController extends Controller
             ];
         });
 
+        $filters = array_merge($filters, [
+            'category'      =>  $filters['category'] === 'semua-kategori' ? 'Semua Kategori' : Category::find($filters['category'])->name,
+            'supplier'      => $filters['supplier'] === 'semua-supplier' ? 'Semua Supplier' : Supplier::find($filters['supplier'])->name
+        ]);
+
         $pdf = Pdf::loadView('exports.stock-report.export-pdf', [
             "filters"           => $filters,
             "filteredStocks"    => $filteredStocks
@@ -307,6 +312,11 @@ class StockReportController extends Controller
                 'supplier'      => $supplierName,
             ];
         });
+
+        $filters = array_merge($filters, [
+            'category'      =>  $filters['category'] === 'semua-kategori' ? 'Semua Kategori' : Category::find($filters['category'])->name,
+            'supplier'      => $filters['supplier'] === 'semua-supplier' ? 'Semua Supplier' : Supplier::find($filters['supplier'])->name
+        ]);
 
         $fileName = "Laporan Stock "
             . Carbon::parse($filters['start_date'])->translatedFormat('d F Y') . " - "
