@@ -28,6 +28,7 @@ import {
     FileText,
     FileBox,
     Warehouse,
+    Logs,
 } from "lucide-vue-next";
 
 import {
@@ -105,6 +106,14 @@ const reports = [
         title: "Laporan Stock",
         routeName: "reports.stock.index",
         icon: Warehouse,
+    },
+];
+
+const other = [
+    {
+        title: "Log Stock",
+        routeName: "log-stock.index",
+        icon: Logs,
     },
 ];
 </script>
@@ -252,6 +261,47 @@ const reports = [
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in reports"
+                                    :key="item.title"
+                                >
+                                    <SidebarMenuButton
+                                        asChild
+                                        :is-active="
+                                            route().current(item.routeName)
+                                        "
+                                    >
+                                        <Link
+                                            :href="
+                                                route().has(item.routeName)
+                                                    ? route(item.routeName)
+                                                    : '#'
+                                            "
+                                        >
+                                            <component :is="item.icon" />
+                                            <span>{{ item.title }}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </CollapsibleContent>
+                </SidebarGroup>
+            </CollapsibleRoot>
+
+            <CollapsibleRoot defaultOpen class="group/collapsible">
+                <SidebarGroup>
+                    <SidebarGroupLabel asChild>
+                        <CollapsibleTrigger>
+                            Lainnya
+                            <ChevronDown
+                                class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
+                            />
+                        </CollapsibleTrigger>
+                    </SidebarGroupLabel>
+                    <CollapsibleContent>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem
+                                    v-for="item in other"
                                     :key="item.title"
                                 >
                                     <SidebarMenuButton
