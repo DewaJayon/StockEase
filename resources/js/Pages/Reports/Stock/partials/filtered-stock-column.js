@@ -1,5 +1,6 @@
 import { DataTableColumnHeader } from "@/Components/ui/data-table";
 import { h } from "vue";
+import StockRow from "./StockRow.vue";
 
 const centerClass = "capitalize flex items-center justify-center";
 
@@ -60,5 +61,6 @@ export const filteredStockColumns = [
                 column: column,
                 title: "Status",
             }),
+        cell: ({ row }) => h(StockRow, { row: row.original }),
     },
 ];
