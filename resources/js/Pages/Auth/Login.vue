@@ -70,6 +70,7 @@ const showPassword = () => {
                                         type="email"
                                         placeholder="m@gmail.com"
                                         required
+                                        autocomplete="off"
                                     />
                                     <InputError
                                         class="mt-2"
@@ -87,6 +88,7 @@ const showPassword = () => {
                                             v-model="form.password"
                                             required
                                             class="pr-10"
+                                            autocomplete="off"
                                         />
 
                                         <span
