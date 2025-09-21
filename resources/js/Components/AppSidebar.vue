@@ -29,6 +29,7 @@ import {
     FileBox,
     Warehouse,
     Logs,
+    File,
 } from "lucide-vue-next";
 
 import {
@@ -114,6 +115,11 @@ const other = [
         title: "Log Stock",
         routeName: "log-stock.index",
         icon: Logs,
+    },
+    {
+        title: "File Manager",
+        routeName: "file-manager.index",
+        icon: File,
     },
 ];
 </script>

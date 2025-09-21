@@ -11,6 +11,7 @@ use App\Http\Controllers\Dashboard\PosController;
 use App\Http\Controllers\Dashboard\PurcaseController;
 use App\Http\Controllers\Report\PurchaseReportController;
 use App\Http\Controllers\Dashboard\SaleHistoryController;
+use App\Http\Controllers\Media\FileManagerController;
 use App\Http\Controllers\Report\SaleReportController;
 use App\Http\Controllers\Report\StockReportController;
 use App\Http\Controllers\ProfileController;
@@ -26,6 +27,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // file manager route
+    Route::get('/file-manager', [FileManagerController::class, 'index'])->name('file-manager.index');
 });
 
 // admin route
