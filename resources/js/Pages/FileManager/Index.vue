@@ -1,8 +1,13 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import FileCard from "./partials/FileCard.vue";
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
 import { Separator } from "@/Components/ui/separator";
+import { Input } from "@/Components/ui/input";
+import { Plus, Search } from "lucide-vue-next";
+import { Button } from "@/Components/ui/button";
+import { computed } from "vue";
+import FilePagination from "./partials/FilePagination.vue";
 
 import {
     Breadcrumb,
@@ -13,18 +18,25 @@ import {
     BreadcrumbSeparator,
 } from "@/Components/ui/breadcrumb";
 
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/Components/ui/pagination";
+const props = defineProps({
+    files: {
+        type: Object,
+        required: true,
+    },
+});
 
-import { Input } from "@/Components/ui/input";
-import { Plus, Search } from "lucide-vue-next";
-import { Button } from "@/Components/ui/button";
+const pagination = computed(() => props.files);
+const files = computed(() => props.files.data ?? []);
+
+const reloadPage = () => {
+    router.reload({
+        preserveScroll: true,
+        preserveState: true,
+        only: ["files"],
+    });
+};
+
+console.log(files.value);
 </script>
 
 <template>
@@ -83,42 +95,31 @@ import { Button } from "@/Components/ui/button";
                     </Button>
                 </div>
 
-                <div
-                    class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-                >
-                    <FileCard v-for="i in 20" :key="i" />
-                </div>
+                <template v-if="files.length > 0">
+                    <div
+                        class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                    >
+                        <FileCard
+                            v-for="(file, index) in files"
+                            :key="index"
+                            :file="file"
+                            @delete="reloadPage"
+                        />
+                    </div>
+                </template>
+
+                <template v-else>
+                    <div class="flex items-center justify-center">
+                        <p class="text-sm text-muted-foreground">
+                            Tidak ada data
+                        </p>
+                    </div>
+                </template>
 
                 <Separator class="my-4" />
 
                 <div class="mt-4">
-                    <Pagination
-                        v-slot="{ page }"
-                        :items-per-page="10"
-                        :total="30"
-                        :default-page="2"
-                    >
-                        <PaginationContent v-slot="{ items }">
-                            <PaginationPrevious />
-
-                            <template
-                                v-for="(item, index) in items"
-                                :key="index"
-                            >
-                                <PaginationItem
-                                    v-if="item.type === 'page'"
-                                    :value="item.value"
-                                    :is-active="item.value === page"
-                                >
-                                    {{ item.value }}
-                                </PaginationItem>
-                            </template>
-
-                            <PaginationEllipsis :index="4" />
-
-                            <PaginationNext />
-                        </PaginationContent>
-                    </Pagination>
+                    <FilePagination :files="pagination" />
                 </div>
             </div>
         </div>
