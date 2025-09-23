@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/file-manager', [FileManagerController::class, 'index'])->name('file-manager.index');
     Route::get('/file-manager/download/{file}', [FileManagerController::class, 'download'])->where('file', '.*')->name('file-manager.download');
     Route::delete('/file-manager/{file}', [FileManagerController::class, 'destroy'])->where('file', '.*')->name('file-manager.destroy');
+    Route::post('/file-manager/upload', [FileManagerController::class, 'store'])->name('file-manager.store');
 });
 
 // admin route
