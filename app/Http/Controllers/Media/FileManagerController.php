@@ -2,19 +2,25 @@
 
 namespace App\Http\Controllers\Media;
 
-use App\Helpers\FormatBytes;
-use App\Http\Controllers\Controller;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
+use App\Helpers\FormatBytes;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\Media\StoreFileRequest;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class FileManagerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $files = $this->_getFiles();
+
+        if ($request->filled('search')) {
+            $files = $this->_search($request->search);
+        }
 
         return Inertia::render('FileManager/Index', [
             'files' => $files
@@ -64,6 +70,44 @@ class FileManagerController extends Controller
                 'query' => request()->query()
             ]
         );
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \App\Http\Requests\Media\StoreFileRequest  $request
+     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @throws \Throwable
+     */
+    public function store(StoreFileRequest $request)
+    {
+        try {
+            $data = $request->validated();
+            $files = $data['file'];
+            $filePath = "uploads";
+            $disk = Storage::disk('local');
+
+            foreach ($files as $file) {
+
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $extension    = $file->getClientOriginalExtension();
+
+                $fileName = $originalName . '.' . $extension;
+                $counter  = 1;
+
+                while ($disk->exists($filePath . '/' . $fileName)) {
+                    $fileName = $originalName . " ({$counter})." . $extension;
+                    $counter++;
+                }
+
+                $disk->put($filePath . '/' . $fileName, file_get_contents($file));
+            }
+
+            return redirect()->back()->with('success', 'File uploaded successfully');
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'File upload failed');
+        }
     }
 
     /**
@@ -120,5 +164,34 @@ class FileManagerController extends Controller
                 'data' => $th->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Search for files by name
+     *
+     * @param string $search
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    private function _search($search)
+    {
+        $files = $this->_getFiles();
+
+        $filteredFiles = $files->filter(function ($file) use ($search) {
+            return Str::contains($file['name'], $search);
+        });
+
+        $page = request()->input('page', 1);
+        $perPage = 20;
+
+        return new LengthAwarePaginator(
+            $filteredFiles->forPage($page, $perPage),
+            $filteredFiles->count(),
+            $perPage,
+            $page,
+            [
+                'path' => request()->url(),
+                'query' => request()->query()
+            ]
+        );
     }
 }

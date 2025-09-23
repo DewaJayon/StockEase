@@ -3,11 +3,9 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import FileCard from "./partials/FileCard.vue";
 import { Head, Link, router } from "@inertiajs/vue3";
 import { Separator } from "@/Components/ui/separator";
-import { Input } from "@/Components/ui/input";
-import { Plus, Search } from "lucide-vue-next";
-import { Button } from "@/Components/ui/button";
 import { computed } from "vue";
 import FilePagination from "./partials/FilePagination.vue";
+import FileUploadForm from "./partials/FileUploadForm.vue";
 
 import {
     Breadcrumb,
@@ -17,6 +15,8 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/Components/ui/breadcrumb";
+import FileSearch from "./partials/FileSearch.vue";
+import FileTypeFilter from "./partials/FileTypeFilter.vue";
 
 const props = defineProps({
     files: {
@@ -35,8 +35,6 @@ const reloadPage = () => {
         only: ["files"],
     });
 };
-
-console.log(files.value);
 </script>
 
 <template>
@@ -74,27 +72,18 @@ console.log(files.value);
                 <Separator class="my-4" />
 
                 <div class="flex items-center justify-between w-full mb-4">
-                    <div class="relative w-full max-w-sm">
-                        <Input
-                            id="search"
-                            type="text"
-                            placeholder="Search..."
-                            autocomplete="off"
-                            class="pl-10 shadow-md focus:ring-0 focus:ring-offset-0 w-full"
-                        />
-                        <span
-                            class="absolute start-0 inset-y-0 flex items-center justify-center px-2"
-                        >
-                            <Search class="w-5 h-5 text-muted-foreground" />
-                        </span>
+                    <div class="flex items-center gap-2 w-full max-w-lg">
+                        <div class="flex-1 relative">
+                            <FileSearch />
+                        </div>
+
+                        <div class="shrink-0">
+                            <FileTypeFilter />
+                        </div>
                     </div>
 
-                    <Button class="ml-3 flex items-center gap-2">
-                        <Plus class="w-4 h-4" />
-                        Upload File
-                    </Button>
+                    <FileUploadForm />
                 </div>
-
                 <template v-if="files.length > 0">
                     <div
                         class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
@@ -109,8 +98,9 @@ console.log(files.value);
                 </template>
 
                 <template v-else>
+                    <Separator class="my-4" />
                     <div class="flex items-center justify-center">
-                        <p class="text-sm text-muted-foreground">
+                        <p class="text-sm font-bold text-muted-foreground">
                             Tidak ada data
                         </p>
                     </div>
