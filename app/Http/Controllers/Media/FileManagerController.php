@@ -14,16 +14,51 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class FileManagerController extends Controller
 {
+
+    /**
+     * Display a listing of files with optional search and filter functionality.
+     *
+     * This method retrieves all files from storage, applies search and filter
+     * conditions (if provided in the request), and returns a paginated result
+     * to be rendered with Inertia.
+     *
+     * Query Parameters:
+     * - search (string, optional): Filter files by matching name.
+     * - file_filter (string, optional): Filter files by extension/type.
+     *   Use "all" to disable this filter.
+     * - page (int, optional): Current page for pagination (default: 1).
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Inertia\Response
+     */
     public function index(Request $request)
     {
         $files = $this->_getFiles();
 
         if ($request->filled('search')) {
-            $files = $this->_search($request->search);
+            $files = $this->_search($files, $request->search);
         }
 
+        if ($request->filled('file_filter') && $request->file_filter !== 'all') {
+            $files = $this->_fileTypeFilter($files, $request->file_filter);
+        }
+
+        $page = $request->input('page', 1);
+        $perPage = 20;
+
+        $paginated = new LengthAwarePaginator(
+            $files->forPage($page, $perPage),
+            $files->count(),
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query()
+            ]
+        );
+
         return Inertia::render('FileManager/Index', [
-            'files' => $files
+            'files' => $paginated
         ]);
     }
 
@@ -45,7 +80,7 @@ class FileManagerController extends Controller
             return [];
         }
 
-        $files = $allFiles->map(function ($file) use ($disk) {
+        return $allFiles->map(function ($file) use ($disk) {
             return [
                 'path'           => $file,
                 'name'           => basename($file),
@@ -56,20 +91,6 @@ class FileManagerController extends Controller
         })
             ->sortByDesc('last_modified')
             ->values();
-
-        $page = request()->input('page', 1);
-        $perPage = 20;
-
-        return new LengthAwarePaginator(
-            $files->forPage($page, $perPage),
-            $files->count(),
-            $perPage,
-            $page,
-            [
-                'path' => request()->url(),
-                'query' => request()->query()
-            ]
-        );
     }
 
     /**
@@ -172,26 +193,25 @@ class FileManagerController extends Controller
      * @param string $search
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    private function _search($search)
+    private function _search($files, $search)
     {
-        $files = $this->_getFiles();
+        return $files->filter(function ($file) use ($search) {
+            return Str::contains(Str::lower($file['name']), Str::lower($search));
+        })->values();
+    }
 
-        $filteredFiles = $files->filter(function ($file) use ($search) {
-            return Str::contains($file['name'], $search);
-        });
-
-        $page = request()->input('page', 1);
-        $perPage = 20;
-
-        return new LengthAwarePaginator(
-            $filteredFiles->forPage($page, $perPage),
-            $filteredFiles->count(),
-            $perPage,
-            $page,
-            [
-                'path' => request()->url(),
-                'query' => request()->query()
-            ]
-        );
+    /**
+     * Filter files by extension/type.
+     *
+     * @param \Illuminate\Support\Collection $files
+     * @param string $file_filter The file extension/type to filter by.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function _fileTypeFilter($files, $file_filter)
+    {
+        return $files->filter(function ($file) use ($file_filter) {
+            return $file['file_extension'] === $file_filter;
+        })->values();
     }
 }

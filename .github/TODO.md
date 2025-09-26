@@ -20,7 +20,7 @@
 | └─ Laporan Stok                  | admin, warehouse            | Done ✅ |
 | **Lainnya**                      |                             |         |
 | └─ Log Stok                      | admin, warehouse            | Done ✅ |
-| ├─ File Manager                  | admin, cashier, warehouse   |         |
+| ├─ File Manager                  | admin, cashier, warehouse   | Done ✅ |
 | ├─ Profile                       | admin, cashier, warehouse   |         |
 | └─ Pengaturan                    | admin                       |         |
 
