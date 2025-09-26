@@ -1,9 +1,10 @@
 <script setup>
 import InputError from "@/Components/InputError.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import TextInput from "@/Components/TextInput.vue";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
 import { useForm } from "@inertiajs/vue3";
+import { Eye, Pencil } from "lucide-vue-next";
 import { ref } from "vue";
 
 const passwordInput = ref(null);
@@ -14,6 +15,20 @@ const form = useForm({
     password: "",
     password_confirmation: "",
 });
+
+const showPassword = ref({
+    current_password: false,
+    password: false,
+    password_confirmation: false,
+});
+
+const togglePasswordVisibility = (field) => {
+    showPassword.value[field] = !showPassword.value[field];
+    const input = document.getElementById(field);
+    if (input) {
+        input.type = showPassword.value[field] ? "text" : "password";
+    }
+};
 
 const updatePassword = () => {
     form.put(route("password.update"), {
@@ -34,87 +49,129 @@ const updatePassword = () => {
 </script>
 
 <template>
-    <section>
-        <header>
-            <h2 class="text-lg font-medium text-gray-900">Update Password</h2>
+    <div
+        class="mb-6 rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800"
+    >
+        <div
+            class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between"
+        >
+            <div class="w-full">
+                <div class="mb-6">
+                    <h2 class="text-lg font-medium">Update Password</h2>
 
-            <p class="mt-1 text-sm text-gray-600">
-                Ensure your account is using a long, random password to stay
-                secure.
-            </p>
-        </header>
-
-        <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
-            <div>
-                <InputLabel for="current_password" value="Current Password" />
-
-                <TextInput
-                    id="current_password"
-                    ref="currentPasswordInput"
-                    v-model="form.current_password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    autocomplete="current-password"
-                />
-
-                <InputError
-                    :message="form.errors.current_password"
-                    class="mt-2"
-                />
-            </div>
-
-            <div>
-                <InputLabel for="password" value="New Password" />
-
-                <TextInput
-                    id="password"
-                    ref="passwordInput"
-                    v-model="form.password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    autocomplete="new-password"
-                />
-
-                <InputError :message="form.errors.password" class="mt-2" />
-            </div>
-
-            <div>
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
-
-                <TextInput
-                    id="password_confirmation"
-                    v-model="form.password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    autocomplete="new-password"
-                />
-
-                <InputError
-                    :message="form.errors.password_confirmation"
-                    class="mt-2"
-                />
-            </div>
-
-            <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
-
-                <Transition
-                    enter-active-class="transition ease-in-out"
-                    enter-from-class="opacity-0"
-                    leave-active-class="transition ease-in-out"
-                    leave-to-class="opacity-0"
-                >
-                    <p
-                        v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
-                    >
-                        Saved.
+                    <p class="mt-1 text-muted-foreground text-sm">
+                        Pastikan akun Anda menggunakan kata sandi yang panjang
+                        dan acak agar tetap aman.
                     </p>
-                </Transition>
+                </div>
+
+                <form
+                    @submit.prevent="updatePassword"
+                    class="w-full"
+                    id="passwordForm"
+                >
+                    <div
+                        class="grid grid-cols-1 gap-4 lg:grid-cols-2 w-full mt-4"
+                    >
+                        <div class="w-full">
+                            <Label for="current_password">
+                                Kata Sandi Lama
+                            </Label>
+                            <div class="relative">
+                                <Input
+                                    id="current_password"
+                                    ref="currentPasswordInput"
+                                    v-model="form.current_password"
+                                    type="password"
+                                    class="w-full h-11 py-3 rounded-lg border pr-10"
+                                    autocomplete="current-password"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3"
+                                    @click="
+                                        togglePasswordVisibility(
+                                            'current_password'
+                                        )
+                                    "
+                                >
+                                    <Eye class="size-5 text-muted-foreground" />
+                                </button>
+                            </div>
+                            <InputError
+                                :message="form.errors.current_password"
+                            />
+                        </div>
+
+                        <div class="w-full">
+                            <Label for="password">Kata Sandi Baru</Label>
+                            <div class="relative">
+                                <Input
+                                    id="password"
+                                    ref="passwordInput"
+                                    v-model="form.password"
+                                    type="password"
+                                    class="w-full h-11 py-3 rounded-lg border pr-10"
+                                    autocomplete="new-password"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3"
+                                    @click="
+                                        togglePasswordVisibility('password')
+                                    "
+                                >
+                                    <Eye class="size-5 text-muted-foreground" />
+                                </button>
+                            </div>
+                            <InputError :message="form.errors.password" />
+                        </div>
+
+                        <div class="w-full lg:col-span-2">
+                            <Label for="password_confirmation">
+                                Konfirmasi Kata Sandi Baru
+                            </Label>
+                            <div class="relative">
+                                <Input
+                                    id="password_confirmation"
+                                    v-model="form.password_confirmation"
+                                    type="password"
+                                    class="w-full h-11 py-3 rounded-lg border pr-10"
+                                    autocomplete="new-password"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3"
+                                    @click="
+                                        togglePasswordVisibility(
+                                            'password_confirmation'
+                                        )
+                                    "
+                                >
+                                    <Eye class="size-5 text-muted-foreground" />
+                                </button>
+                            </div>
+                            <InputError
+                                :message="form.errors.password_confirmation"
+                            />
+                        </div>
+                    </div>
+                </form>
             </div>
-        </form>
-    </section>
+
+            <Button
+                type="submit"
+                form="passwordForm"
+                variant="secondary"
+                class="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+                :disabled="form.processing"
+            >
+                <Pencil class="w-4 h-4" />
+                Simpan
+            </Button>
+        </div>
+    </div>
 </template>
