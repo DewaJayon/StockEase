@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
+import { getCurrentUrlQuery } from "@/lib/utils";
 
 import {
     Select,
@@ -12,23 +13,34 @@ import {
     SelectValue,
 } from "@/Components/ui/select";
 
-const FileTypeFilter = ref(
+const fileTypeFilter = ref(
     new URLSearchParams(window.location.search).get("file_filter") ?? null
 );
 
-watch(FileTypeFilter, (newValue) => {
+watch(fileTypeFilter, (newValue) => {
     if (newValue === "all") {
-        router.get(route("file-manager.index"));
-    } else {
         router.get(route("file-manager.index"), {
-            file_filter: FileTypeFilter.value,
+            ...getCurrentUrlQuery(),
+            file_filter: null,
         });
+    } else {
+        router.get(
+            route("file-manager.index"),
+            {
+                ...getCurrentUrlQuery(["page"]),
+                file_filter: newValue,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
     }
 });
 </script>
 
 <template>
-    <Select v-model="FileTypeFilter">
+    <Select v-model="fileTypeFilter">
         <SelectTrigger>
             <SelectValue placeholder="File Type" />
         </SelectTrigger>

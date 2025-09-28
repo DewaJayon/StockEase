@@ -46,7 +46,7 @@ const isLoading = ref(false);
 const isDialogOpen = ref(false);
 
 const handleDownload = (filePath) => {
-    window.open(route("file-manager.download", filePath), "_blank");
+    window.open(route("file-manager.download", { file: filePath }), "_blank");
 };
 
 const handleDelete = async (filePath) => {
@@ -54,7 +54,9 @@ const handleDelete = async (filePath) => {
     isDialogOpen.value = true;
 
     await axios
-        .delete(route("file-manager.destroy", filePath))
+        .delete(route("file-manager.destroy"), {
+            data: { file: filePath },
+        })
         .then((response) => {
             emit("delete");
             toast.success(response.data.message);

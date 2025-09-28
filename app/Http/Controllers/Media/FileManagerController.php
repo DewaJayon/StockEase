@@ -33,14 +33,14 @@ class FileManagerController extends Controller
      */
     public function index(Request $request)
     {
-        $files = $this->_getFiles();
+        $files = collect($this->_getFiles());
 
         if ($request->filled('search')) {
-            $files = $this->_search($files, $request->search);
+            $files = collect($this->_search($files, $request->search));
         }
 
         if ($request->filled('file_filter') && $request->file_filter !== 'all') {
-            $files = $this->_fileTypeFilter($files, $request->file_filter);
+            $files = collect($this->_fileTypeFilter($files, $request->file_filter));
         }
 
         $page = $request->input('page', 1);
@@ -53,7 +53,7 @@ class FileManagerController extends Controller
             $page,
             [
                 'path' => $request->url(),
-                'query' => $request->query()
+                'query' => $request->query(),
             ]
         );
 
@@ -138,8 +138,10 @@ class FileManagerController extends Controller
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function download($file)
+    public function download(Request $request)
     {
+
+        $file = $request->input('file');
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
 
@@ -160,8 +162,11 @@ class FileManagerController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function destroy($filePath)
+    public function destroy(Request $request)
     {
+
+        $filePath = $request->input('file');
+
         try {
             $disk = Storage::disk('local');
             $exists = $disk->exists($filePath);

@@ -4,19 +4,25 @@ import { watchDebounced } from "@vueuse/core";
 import { Search } from "lucide-vue-next";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
+import { getCurrentUrlQuery } from "@/lib/utils";
 
-const search = ref(
-    new URLSearchParams(window.location.search).get("search") ?? ""
-);
+const urlParams = new URLSearchParams(window.location.search);
+const search = ref(urlParams.get("search") ?? "");
 
 watchDebounced(
     search,
     (newSearch) => {
-        console.log(newSearch);
-
-        router.get(route("file-manager.index"), {
-            search: newSearch,
-        });
+        router.get(
+            route("file-manager.index"),
+            {
+                ...getCurrentUrlQuery(["page"]),
+                search: newSearch,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
     },
     { debounce: 300 }
 );

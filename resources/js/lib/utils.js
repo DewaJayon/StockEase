@@ -34,3 +34,13 @@ export function formatDate(datetime) {
 export function formatTime(datetime) {
     return dayjs(datetime).format("HH:mm"); // 21:04
 }
+
+export function getCurrentUrlQuery(exclude = []) {
+    const params = Object.fromEntries(
+        new URLSearchParams(window.location.search)
+    );
+    exclude.forEach((key) => {
+        delete params[key];
+    });
+    return params;
+}
