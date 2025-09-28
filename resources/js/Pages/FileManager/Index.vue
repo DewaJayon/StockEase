@@ -25,8 +25,8 @@ const props = defineProps({
     },
 });
 
+const files = computed(() => Object.values(props.files.data ?? {}));
 const pagination = computed(() => props.files);
-const files = computed(() => props.files.data ?? []);
 
 const reloadPage = () => {
     router.reload({
@@ -84,12 +84,12 @@ const reloadPage = () => {
 
                     <FileUploadForm />
                 </div>
-                <template v-if="files.length > 0">
+                <template v-if="files.length">
                     <div
                         class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
                     >
                         <FileCard
-                            v-for="(file, index) in files"
+                            v-for="(file, index) in Object.values(files)"
                             :key="index"
                             :file="file"
                             @delete="reloadPage"
