@@ -21,8 +21,8 @@
 | **Lainnya**                      |                             |         |
 | └─ Log Stok                      | admin, warehouse            | Done ✅ |
 | ├─ File Manager                  | admin, cashier, warehouse   | Done ✅ |
-| ├─ Profile                       | admin, cashier, warehouse   | WIP     |
-| └─ Pengaturan                    | admin                       |         |
+| ├─ Profile                       | admin, cashier, warehouse   | Done ✅ |
+| └─ Pengaturan                    | admin                       | WIP     |
 
 ## Fitur Tambahan
 

@@ -14,10 +14,8 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use Cviebrock\EloquentSluggable\Services\SlugService;
 
-
 class ProductController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      */
@@ -83,7 +81,7 @@ class ProductController extends Controller
 
             $imageName = time() . '.' . $image->getClientOriginalExtension();
 
-            Storage::disk('public')->putFileAs($imagePath, $image, $imageName);
+            Storage::disk('public')->put($imagePath . '/' . $imageName, file_get_contents($image));
 
             $data['image_path'] = "storage/{$imagePath}/{$imageName}";
         }
@@ -151,7 +149,7 @@ class ProductController extends Controller
 
             $imageName = time() . '.' . $image->getClientOriginalExtension();
 
-            Storage::disk('public')->putFileAs($imagePath, $image, $imageName);
+            Storage::disk('public')->put($imagePath . '/' . $imageName, file_get_contents($image));
 
             $data['image_path'] = "storage/{$imagePath}/{$imageName}";
         } else {
