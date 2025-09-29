@@ -1,6 +1,19 @@
 <script setup>
-import { Button } from "@/Components/ui/button";
-import { Pencil } from "lucide-vue-next";
+import ProfilePicture from "./ProfilePicture.vue";
+import PhotoProfileForm from "./PhotoProfileForm.vue";
+import { computed } from "vue";
+import { usePage, router } from "@inertiajs/vue3";
+
+const page = usePage();
+const photoProfile = computed(() => page.props.auth.user.photo_profile);
+
+const reloadPage = () => {
+    router.reload({
+        preserveScroll: true,
+        preserveState: true,
+        only: ["auth"],
+    });
+};
 </script>
 
 <template>
@@ -14,9 +27,11 @@ import { Pencil } from "lucide-vue-next";
                 <div
                     class="h-20 w-20 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800"
                 >
+                    <ProfilePicture v-if="!photoProfile" />
                     <img
-                        src="https://dummyimage.com/200x200/000/fff"
-                        alt="user"
+                        v-else
+                        :src="`/${photoProfile}`"
+                        class="h-full w-full"
                     />
                 </div>
                 <div class="order-3 xl:order-2">
@@ -35,13 +50,7 @@ import { Pencil } from "lucide-vue-next";
                 </div>
             </div>
 
-            <Button
-                variant="secondary"
-                class="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
-            >
-                <Pencil class="w-4 h-4" />
-                Edit
-            </Button>
+            <PhotoProfileForm @photo-updated="reloadPage" />
         </div>
     </div>
 </template>

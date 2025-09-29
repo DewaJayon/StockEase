@@ -5,7 +5,8 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 
 import { useForm, usePage } from "@inertiajs/vue3";
-import { Pencil } from "lucide-vue-next";
+import { Loader2, Pencil } from "lucide-vue-next";
+import { toast } from "vue-sonner";
 
 defineProps({
     status: {
@@ -19,6 +20,18 @@ const form = useForm({
     name: user.name,
     email: user.email,
 });
+
+const submit = () => {
+    form.patch(route("profile.update"), {
+        preserveScroll: true,
+        showProgress: false,
+        onSuccess: () => {
+            toast.success("Profil berhasil diperbarui", {
+                description: `Profil ${form.name} berhasil diperbarui oleh ${user}`,
+            });
+        },
+    });
+};
 </script>
 
 <template>
@@ -37,7 +50,11 @@ const form = useForm({
                     </p>
                 </div>
 
-                <form id="form" @submit.prevent="submit" class="w-full">
+                <form
+                    id="update-profile-information-form"
+                    @submit.prevent="submit"
+                    class="w-full"
+                >
                     <div
                         class="grid grid-cols-1 gap-4 lg:grid-cols-2 w-full mt-4"
                     >
@@ -74,9 +91,12 @@ const form = useForm({
 
             <Button
                 variant="secondary"
-                class="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+                :disable="form.processing"
+                form="update-profile-information-form"
+                class="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 disabled:pointer-events-none disabled:opacity-50"
             >
-                <Pencil class="w-4 h-4" />
+                <Loader2 v-if="form.processing" class="w-4 h-4 animate-spin" />
+                <Pencil class="w-4 h-4" v-else />
                 Edit
             </Button>
         </div>
