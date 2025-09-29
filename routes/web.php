@@ -23,10 +23,16 @@ require __DIR__ . '/auth.php';
 
 // dashboard & general route
 Route::middleware('auth')->group(function () {
+
+    // Dashboard route
     Route::get('/', [DashboardController::class, 'index'])->name('home');
+
+    // profile route
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/photo-profile', [ProfileController::class, 'storePhotoProfile'])->name('profile.photo-profile');
+    Route::delete('/profile/photo-profile', [ProfileController::class, 'destroyPhotoProfile'])->name('profile.destroy-photo-profile');
 
     // file manager route
     Route::get('/file-manager', [FileManagerController::class, 'index'])->name('file-manager.index');
