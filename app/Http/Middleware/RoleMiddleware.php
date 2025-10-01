@@ -16,6 +16,8 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
+        $roles = array_map('trim', $roles);
+
         if (!Auth::check() || !in_array(Auth::user()->role, $roles)) {
             abort(403, 'Unauthorized access.');
         }
