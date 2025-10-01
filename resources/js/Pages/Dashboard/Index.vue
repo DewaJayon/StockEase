@@ -1,5 +1,10 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import AdminDashboard from "./Admin/AdminDashboard.vue";
+import { Head, usePage } from "@inertiajs/vue3";
+import CashierDashboard from "./Cashier/CashierDashboard.vue";
+import WarehouseDashboard from "./Warehouse/WarehouseDashboard.vue";
+
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -7,7 +12,26 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/Components/ui/breadcrumb";
-import { Head } from "@inertiajs/vue3";
+
+const page = usePage();
+
+// Data Admin
+const salesSummary = page.props.data?.salesSummary;
+const lowStock = page.props.data?.lowStock;
+const activities = page.props.data?.activities;
+const weeklySalesChart = page.props.data?.weeklySalesChart;
+
+// Data Cashier
+const cashierSalesSummary = page.props.data?.cashierSalesSummary;
+const cashierRecentTrasactions = page.props.data?.recentTransaction;
+const cashierWeeklySalesChart = page.props.data?.weeklySalesChart;
+
+// Data Warehouse
+const warehouseSummary = page.props.data?.warehouseSummary;
+const activityLogWarehouse = page.props.data?.activityLogWarehouse;
+const warehouseChart = page.props.data?.warehouseChart;
+
+const role = page.props.auth.user.role;
 </script>
 
 <template>
@@ -25,13 +49,27 @@ import { Head } from "@inertiajs/vue3";
                 </BreadcrumbList>
             </Breadcrumb>
         </template>
-        <div class="flex flex-1 flex-col gap-4 p-4">
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div class="aspect-video rounded-xl bg-muted/50" />
-                <div class="aspect-video rounded-xl bg-muted/50" />
-                <div class="aspect-video rounded-xl bg-muted/50" />
-            </div>
-            <div class="rounded-xl bg-muted/50 min-h-[100vh]" />
-        </div>
+
+        <AdminDashboard
+            v-if="role === 'admin'"
+            :sales-summary="salesSummary"
+            :low-stock="lowStock"
+            :activities="activities"
+            :weekly-sales-chart="weeklySalesChart"
+        />
+
+        <CashierDashboard
+            v-if="role === 'cashier'"
+            :cashier-sales-summary="cashierSalesSummary"
+            :cashier-recent-trasactions="cashierRecentTrasactions"
+            :cashier-weekly-sales-chart="cashierWeeklySalesChart"
+        />
+
+        <WarehouseDashboard
+            v-if="role === 'warehouse'"
+            :warehouse-summary="warehouseSummary"
+            :activity-log-warehouse="activityLogWarehouse"
+            :warehouse-chart="warehouseChart"
+        />
     </AuthenticatedLayout>
 </template>

@@ -52,3 +52,7 @@ export function getCurrentUrlQuery(exclude = []) {
     });
     return params;
 }
+
+export function filterMenuByRole(menu, role) {
+    return menu.filter((item) => item.roles.includes(role));
+}
