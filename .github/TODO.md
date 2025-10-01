@@ -2,7 +2,7 @@
 
 | Sidebar Menu                     | Role Akses                  | Status  |
 | -------------------------------- | --------------------------- | ------- |
-| Dashboard                        | admin, cashier, warehouse   |         |
+| Dashboard                        | admin, cashier, warehouse   | WIP     |
 | POS (Kasir)                      | admin, cashier              | Done ✅ |
 | User                             | admin                       | Done ✅ |
 | **Manajemen Data**               |                             |         |
@@ -39,4 +39,4 @@
 | Export laporan pembelian ke pdf                           | Done ✅ |
 | Export laporan stock ke pdf                               | Done ✅ |
 | Export laporan stock ke excel                             | Done ✅ |
-| Otomatis menambahkan ke keranjang kasir jika scan barcode |         |
+| Otomatis menambahkan ke keranjang kasir jika scan barcode | Pending |

@@ -1,5 +1,5 @@
 <script setup>
-import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -51,6 +51,11 @@ const avatarColor = getColorFromName(user.name);
             <Avatar
                 class="h-8 w-8 flex items-center justify-center rounded-full overflow-hidden"
             >
+                <AvatarImage
+                    v-if="user.photo_profile"
+                    :src="user.photo_profile"
+                    :alt="user.name"
+                />
                 <AvatarFallback
                     :class="[
                         avatarColor,

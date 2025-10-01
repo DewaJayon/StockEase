@@ -3,6 +3,10 @@ import GuestLayout from "@/Layouts/GuestLayout.vue";
 import InputError from "@/Components/InputError.vue";
 import { Head, useForm } from "@inertiajs/vue3";
 import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Eye, Loader2 } from "lucide-vue-next";
+
 import {
     Card,
     CardContent,
@@ -10,9 +14,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/Components/ui/card";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Eye, Loader2 } from "lucide-vue-next";
+
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 
 defineProps({
     canResetPassword: {
@@ -51,6 +54,19 @@ const showPassword = () => {
             <title>Login</title>
         </Head>
         <div class="flex flex-col gap-6">
+            <Alert>
+                <AlertTitle class="flex items-center w-full justify-center pb-3"
+                    >Demo Aplikasi</AlertTitle
+                >
+                <AlertDescription>
+                    Aplikasi ini hanya untuk keperluan demo.
+                    <br class="mt-2" />
+                    Gunakan email: dewajayon3@gmail.com
+                    <br />
+                    dan password: password
+                </AlertDescription>
+            </Alert>
+
             <Card>
                 <CardHeader class="text-center">
                     <CardTitle class="text-xl"> Selamat Datang </CardTitle>
