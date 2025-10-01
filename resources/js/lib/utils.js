@@ -2,7 +2,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
-dayjs.locale("id");
+import relativeTime from "dayjs/plugin/relativeTime";
 
 export function cn(...inputs) {
     return twMerge(clsx(inputs));
@@ -22,6 +22,9 @@ export const formatPrice = (price) =>
         minimumFractionDigits: 0,
     }).format(price);
 
+dayjs.locale("id");
+dayjs.extend(relativeTime);
+
 // Fungsi format created at lengkap
 export function formatDateTime(datetime) {
     return dayjs(datetime).format("DD MMM YYYY HH:mm"); // 17 Jul 2025 21:04
@@ -33,6 +36,11 @@ export function formatDate(datetime) {
 
 export function formatTime(datetime) {
     return dayjs(datetime).format("HH:mm"); // 21:04
+}
+
+// ⏳ Format relative time → contoh: "2 hari yang lalu"
+export function formatRelative(datetime) {
+    return dayjs(datetime).fromNow();
 }
 
 export function getCurrentUrlQuery(exclude = []) {
