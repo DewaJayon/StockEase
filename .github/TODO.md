@@ -22,13 +22,13 @@
 | └─ Log Stok                      | admin, warehouse            | Done ✅ |
 | ├─ File Manager                  | admin, cashier, warehouse   | Done ✅ |
 | ├─ Profile                       | admin, cashier, warehouse   | Done ✅ |
-| └─ Pengaturan                    | admin                       | WIP     |
+| └─ Pengaturan                    | admin                       | Pending |
 
 ## Fitur Tambahan
 
 | Fitur                                                     | Status  |
 | --------------------------------------------------------- | ------- |
-| Notifikasi Dashboard                                      |         |
+| Notifikasi Dashboard                                      | Done ✅ |
 | Payment Gateway                                           | Done ✅ |
 | Filter Tanggal di data penjualan                          | Done ✅ |
 | Print Detail Data Penjualan                               | Done ✅ |
