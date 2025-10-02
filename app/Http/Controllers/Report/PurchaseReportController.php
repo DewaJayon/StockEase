@@ -45,20 +45,7 @@ class PurchaseReportController extends Controller
 
         if ($filters['start_date'] || $filters['end_date'] || $filters['supplier'] || $filters['user']) {
 
-            $query = Purcase::with('supplier', 'user', 'purcaseItems', 'purcaseItems.product')
-                ->when($filters['start_date'], function ($query) use ($filters) {
-                    return $query->whereDate('created_at', '>=', $filters['start_date']);
-                })
-                ->when($filters['end_date'], function ($query) use ($filters) {
-                    return $query->whereDate('created_at', '<=', $filters['end_date']);
-                })
-                ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
-                    return $query->where('supplier_id', $filters['supplier']);
-                })
-                ->when($filters['user'] && $filters['user'] !== 'semua-user', function ($query) use ($filters) {
-                    return $query->where('user_id', $filters['user']);
-                })
-                ->get();
+            $query = $this->getFilterQuery($filters);
 
             $sumTotalPurchase = $query->sum('total');
             $totalItemsPurchased = $query->flatMap->purcaseItems->sum('qty');
@@ -203,20 +190,7 @@ class PurchaseReportController extends Controller
 
         $filters = $validator->validated();
 
-        $query = Purcase::with('supplier', 'user', 'purcaseItems', 'purcaseItems.product', 'purcaseItems.purcase')
-            ->when($filters['start_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '>=', $filters['start_date']);
-            })
-            ->when($filters['end_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '<=', $filters['end_date']);
-            })
-            ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
-                return $query->where('supplier_id', $filters['supplier']);
-            })
-            ->when($filters['user'] && $filters['user'] !== 'semua-user', function ($query) use ($filters) {
-                return $query->where('user_id', $filters['user']);
-            })
-            ->get();
+        $query = $this->getFilterQuery($filters);
 
         $sumTotalPurchase = $query->sum('total');
         $totalItemsPurchased = $query->flatMap->purcaseItems->sum('qty');
@@ -288,20 +262,7 @@ class PurchaseReportController extends Controller
 
         $filters = $validator->validated();
 
-        $query = Purcase::with('supplier', 'user', 'purcaseItems', 'purcaseItems.product', 'purcaseItems.purcase')
-            ->when($filters['start_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '>=', $filters['start_date']);
-            })
-            ->when($filters['end_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '<=', $filters['end_date']);
-            })
-            ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
-                return $query->where('supplier_id', $filters['supplier']);
-            })
-            ->when($filters['user'] && $filters['user'] !== 'semua-user', function ($query) use ($filters) {
-                return $query->where('user_id', $filters['user']);
-            })
-            ->get();
+        $query = $this->getFilterQuery($filters);
 
         $user = $filters['user'] === 'semua-user' ? 'Semua User' : User::find($filters['user'])->name;
         $supplier = $filters['supplier'] === 'semua-supplier' ? 'Semua Supplier' : Supplier::find($filters['supplier'])->name;
@@ -355,5 +316,31 @@ class PurchaseReportController extends Controller
         Excel::store(new PurchaseExportExcel($query, $filters, $summary), $filePath, "local");
 
         return Excel::download(new PurchaseExportExcel($query, $filters, $summary), $fileName);
+    }
+
+    /**
+     * Generate a query based on the given filters.
+     *
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function getFilterQuery(array $filters)
+    {
+        $query = Purcase::with('supplier', 'user', 'purcaseItems', 'purcaseItems.product')
+            ->when($filters['start_date'], function ($query) use ($filters) {
+                return $query->whereDate('created_at', '>=', $filters['start_date']);
+            })
+            ->when($filters['end_date'], function ($query) use ($filters) {
+                return $query->whereDate('created_at', '<=', $filters['end_date']);
+            })
+            ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
+                return $query->where('supplier_id', $filters['supplier']);
+            })
+            ->when($filters['user'] && $filters['user'] !== 'semua-user', function ($query) use ($filters) {
+                return $query->where('user_id', $filters['user']);
+            })
+            ->get();
+
+        return $query;
     }
 }

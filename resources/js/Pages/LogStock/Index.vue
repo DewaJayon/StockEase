@@ -12,6 +12,7 @@ import { Head, Link } from "@inertiajs/vue3";
 import { Separator } from "@/Components/ui/separator";
 import { DataTable } from "@/Components/ui/data-table";
 import { stockLogColumns } from "./partials/StockLogColumn";
+import DateFilter from "@/Components/DateFilter.vue";
 
 const props = defineProps({
     logStocks: {
@@ -45,6 +46,7 @@ const props = defineProps({
             <div class="rounded-xl bg-muted/50 h-full p-4">
                 <div class="flex justify-between items-center">
                     <h4 class="font-semibold">Log Stock</h4>
+                    <DateFilter :route-name="'log-stock.index'" />
                 </div>
                 <Separator class="my-4" />
 
@@ -54,6 +56,8 @@ const props = defineProps({
                         :columns="stockLogColumns"
                         :route-name="'log-stock.index'"
                         :pagination="logStocks"
+                        :date-filter-end="true"
+                        :date-filter-start="true"
                     />
                 </div>
             </div>

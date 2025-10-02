@@ -1,14 +1,14 @@
 <script setup>
 import InputError from "@/Components/InputError.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import TextInput from "@/Components/TextInput.vue";
-import { Link, useForm, usePage } from "@inertiajs/vue3";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+
+import { useForm, usePage } from "@inertiajs/vue3";
+import { Loader2, Pencil } from "lucide-vue-next";
+import { toast } from "vue-sonner";
 
 defineProps({
-    mustVerifyEmail: {
-        type: Boolean,
-    },
     status: {
         type: String,
     },
@@ -20,93 +20,85 @@ const form = useForm({
     name: user.name,
     email: user.email,
 });
+
+const submit = () => {
+    form.patch(route("profile.update"), {
+        preserveScroll: true,
+        showProgress: false,
+        onSuccess: () => {
+            toast.success("Profil berhasil diperbarui", {
+                description: `Profil ${form.name} berhasil diperbarui oleh ${user}`,
+            });
+        },
+    });
+};
 </script>
 
 <template>
-    <section>
-        <header>
-            <h2 class="text-lg font-medium text-gray-900">
-                Profile Information
-            </h2>
-
-            <p class="mt-1 text-sm text-gray-600">
-                Update your account's profile information and email address.
-            </p>
-        </header>
-
-        <form
-            @submit.prevent="form.patch(route('profile.update'))"
-            class="mt-6 space-y-6"
+    <div
+        class="mb-6 rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800"
+    >
+        <div
+            class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between"
         >
-            <div>
-                <InputLabel for="name" value="Name" />
+            <div class="w-full">
+                <div class="mb-6">
+                    <h2 class="text-lg font-medium">Informasi Pribadi</h2>
 
-                <TextInput
-                    id="name"
-                    type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.name"
-                    required
-                    autofocus
-                    autocomplete="name"
-                />
-
-                <InputError class="mt-2" :message="form.errors.name" />
-            </div>
-
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div v-if="mustVerifyEmail && user.email_verified_at === null">
-                <p class="mt-2 text-sm text-gray-800">
-                    Your email address is unverified.
-                    <Link
-                        :href="route('verification.send')"
-                        method="post"
-                        as="button"
-                        class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Click here to re-send the verification email.
-                    </Link>
-                </p>
-
-                <div
-                    v-show="status === 'verification-link-sent'"
-                    class="mt-2 text-sm font-medium text-green-600"
-                >
-                    A new verification link has been sent to your email address.
-                </div>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
-
-                <Transition
-                    enter-active-class="transition ease-in-out"
-                    enter-from-class="opacity-0"
-                    leave-active-class="transition ease-in-out"
-                    leave-to-class="opacity-0"
-                >
-                    <p
-                        v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
-                    >
-                        Saved.
+                    <p class="mt-1 text-muted-foreground text-sm">
+                        Perbarui informasi profil akun dan alamat email Anda.
                     </p>
-                </Transition>
+                </div>
+
+                <form
+                    id="update-profile-information-form"
+                    @submit.prevent="submit"
+                    class="w-full"
+                >
+                    <div
+                        class="grid grid-cols-1 gap-4 lg:grid-cols-2 w-full mt-4"
+                    >
+                        <div class="w-full">
+                            <Label for="name">Nama</Label>
+                            <Input
+                                type="text"
+                                id="name"
+                                placeholder="Nama"
+                                v-model="form.name"
+                                required
+                                autocomplete="off"
+                                class="w-full h-11 py-3 rounded-lg border"
+                            />
+                            <InputError :message="form.errors.name" />
+                        </div>
+
+                        <div class="w-full">
+                            <Label for="email">Email</Label>
+                            <Input
+                                type="text"
+                                id="email"
+                                placeholder="Email"
+                                v-model="form.email"
+                                required
+                                autocomplete="off"
+                                class="w-full h-11 py-3 rounded-lg border"
+                            />
+                            <InputError :message="form.errors.email" />
+                        </div>
+                    </div>
+                </form>
             </div>
-        </form>
-    </section>
+
+            <Button
+                variant="secondary"
+                :disable="form.processing"
+                form="update-profile-information-form"
+                class="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 disabled:pointer-events-none disabled:opacity-50"
+            >
+                <Loader2 v-if="form.processing" class="w-4 h-4 animate-spin" />
+                <Pencil class="w-4 h-4" v-else />
+                Edit
+            </Button>
+        </div>
+    </div>
 </template>

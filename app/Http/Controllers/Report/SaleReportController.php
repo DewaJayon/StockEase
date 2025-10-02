@@ -31,31 +31,17 @@ class SaleReportController extends Controller
     {
 
         $filters = [
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'cashier' => $request->cashier,
-            'payment' => $request->payment
+            'start_date'    => $request->start_date,
+            'end_date'      => $request->end_date,
+            'cashier'       => $request->cashier,
+            'payment'       => $request->payment
         ];
 
         $filteredSales = [];
 
         if ($filters['start_date'] || $filters['end_date'] || $filters['cashier'] || $filters['payment']) {
 
-            $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
-                ->when($filters['start_date'], function ($query) use ($filters) {
-                    return $query->whereDate('created_at', '>=', $filters['start_date']);
-                })
-                ->when($filters['end_date'], function ($query) use ($filters) {
-                    return $query->whereDate('created_at', '<=', $filters['end_date']);
-                })
-                ->when($filters['cashier'] && $filters['cashier'] !== 'semua-cashier', function ($query) use ($filters) {
-                    return $query->where('user_id', $filters['cashier']);
-                })
-                ->when($filters['payment'] && $filters['payment'] !== 'semua-metode', function ($query) use ($filters) {
-                    return $query->where('payment_method', $filters['payment']);
-                })
-                ->whereHas('paymentTransaction')
-                ->get();
+            $query = $this->getFilterQuery($filters);
 
             $sumTotalSale       = $query->sum('total');
             $transactionCount   = $query->where('status', 'completed')->count();
@@ -180,21 +166,7 @@ class SaleReportController extends Controller
 
         $cashierUser = User::find($filters['cashier']);
 
-        $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
-            ->when($filters['start_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '>=', $filters['start_date']);
-            })
-            ->when($filters['end_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '<=', $filters['end_date']);
-            })
-            ->when($filters['cashier'] && $filters['cashier'] !== 'semua-cashier', function ($query) use ($filters) {
-                return $query->where('user_id', $filters['cashier']);
-            })
-            ->when($filters['payment'] && $filters['payment'] !== 'semua-metode', function ($query) use ($filters) {
-                return $query->where('payment_method', $filters['payment']);
-            })
-            ->whereHas('paymentTransaction')
-            ->get();
+        $query = $this->getFilterQuery($filters);
 
         $totalSale = $query->sum('total');
         $transactionCount = $query->where('status', 'completed')->count();
@@ -214,16 +186,12 @@ class SaleReportController extends Controller
             ->first();
 
         $saleProducts = $query->flatMap->saleItems
-            ->groupBy('product_id')
-            ->map(function ($items) {
-
-                $firstItem = $items->first();
-
+            ->map(function ($item) {
                 return (object) [
-                    'date'          => $firstItem->sale->created_at,
-                    'product_name'  => $firstItem->product->name ?? 'Unknown',
-                    'quantity'      => $items->sum('qty'),
-                    'total'         => $items->sum('price'),
+                    'date'          => $item->sale->created_at,
+                    'product_name'  => $item->product->name ?? 'Unknown',
+                    'quantity'      => $item->qty,
+                    'total'         => $item->qty * $item->price,
                 ];
             })
             ->values();
@@ -280,21 +248,7 @@ class SaleReportController extends Controller
 
         $filters = $validator->validated();
 
-        $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
-            ->when($filters['start_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '>=', $filters['start_date']);
-            })
-            ->when($filters['end_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '<=', $filters['end_date']);
-            })
-            ->when($filters['cashier'] && $filters['cashier'] !== 'semua-cashier', function ($query) use ($filters) {
-                return $query->where('user_id', $filters['cashier']);
-            })
-            ->when($filters['payment'] && $filters['payment'] !== 'semua-metode', function ($query) use ($filters) {
-                return $query->where('payment_method', $filters['payment']);
-            })
-            ->whereHas('paymentTransaction')
-            ->get();
+        $query = $this->getFilterQuery($filters);
 
         if ($filters['cashier'] !== 'semua-cashier') {
             $cashier = User::find($filters['cashier']);
@@ -330,5 +284,33 @@ class SaleReportController extends Controller
         Excel::store(new SalesReportExport($query, $filters, $summary), $filePath, 'local');
 
         return Excel::download(new SalesReportExport($query, $filters, $summary), $fileName);
+    }
+
+    /**
+     * Generate a query based on the given filters.
+     *
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function getFilterQuery(array $filters)
+    {
+        $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
+            ->where('status', '!=', 'draft')
+            ->when($filters['start_date'], function ($query) use ($filters) {
+                return $query->whereDate('date', '>=', $filters['start_date']);
+            })
+            ->when($filters['end_date'], function ($query) use ($filters) {
+                return $query->whereDate('date', '<=', $filters['end_date']);
+            })
+            ->when($filters['cashier'] && $filters['cashier'] !== 'semua-cashier', function ($query) use ($filters) {
+                return $query->where('user_id', $filters['cashier']);
+            })
+            ->when($filters['payment'] && $filters['payment'] !== 'semua-metode', function ($query) use ($filters) {
+                return $query->where('payment_method', $filters['payment']);
+            })
+
+            ->get();
+
+        return $query;
     }
 }

@@ -2,7 +2,7 @@
 
 | Sidebar Menu                     | Role Akses                  | Status  |
 | -------------------------------- | --------------------------- | ------- |
-| Dashboard                        | admin, cashier, warehouse   |         |
+| Dashboard                        | admin, cashier, warehouse   | WIP     |
 | POS (Kasir)                      | admin, cashier              | Done ✅ |
 | User                             | admin                       | Done ✅ |
 | **Manajemen Data**               |                             |         |
@@ -19,16 +19,16 @@
 | ├─ Laporan Pembelian             | admin, warehouse (opsional) | Done ✅ |
 | └─ Laporan Stok                  | admin, warehouse            | Done ✅ |
 | **Lainnya**                      |                             |         |
-| └─ Log Stok                      | admin, warehouse            | WIP     |
-| ├─ File Manager                  | admin, cashier, warehouse   |         |
-| ├─ Profile                       | admin, cashier, warehouse   |         |
-| └─ Pengaturan                    | admin                       |         |
+| └─ Log Stok                      | admin, warehouse            | Done ✅ |
+| ├─ File Manager                  | admin, cashier, warehouse   | Done ✅ |
+| ├─ Profile                       | admin, cashier, warehouse   | Done ✅ |
+| └─ Pengaturan                    | admin                       | Pending |
 
 ## Fitur Tambahan
 
 | Fitur                                                     | Status  |
 | --------------------------------------------------------- | ------- |
-| Notifikasi Dashboard                                      |         |
+| Notifikasi Dashboard                                      | Done ✅ |
 | Payment Gateway                                           | Done ✅ |
 | Filter Tanggal di data penjualan                          | Done ✅ |
 | Print Detail Data Penjualan                               | Done ✅ |
@@ -39,4 +39,4 @@
 | Export laporan pembelian ke pdf                           | Done ✅ |
 | Export laporan stock ke pdf                               | Done ✅ |
 | Export laporan stock ke excel                             | Done ✅ |
-| Otomatis menambahkan ke keranjang kasir jika scan barcode |         |
+| Otomatis menambahkan ke keranjang kasir jika scan barcode | Pending |
