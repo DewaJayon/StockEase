@@ -444,7 +444,7 @@ const handleExportExcel = () => {
                     class="disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Printer class="h-4 w-4" />
-                    <span>Print PDF</span>
+                    <span>Export PDF</span>
                 </Button>
                 <Button
                     @click="handleExportExcel()"

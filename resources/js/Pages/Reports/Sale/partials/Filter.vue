@@ -10,7 +10,13 @@ import axios from "axios";
 import { toast } from "vue-sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Check, FileSpreadsheet, Printer, Search } from "lucide-vue-next";
+import {
+    Check,
+    FileSpreadsheet,
+    Loader2,
+    Printer,
+    Search,
+} from "lucide-vue-next";
 import {
     Select,
     SelectContent,
@@ -126,8 +132,13 @@ const checkFilter = () => {
 
     return true;
 };
+
+const isFilterLoading = ref(false);
+
 const handleFilter = () => {
     if (!checkFilter()) return;
+
+    isFilterLoading.value = true;
 
     if (payment.value == "midtrans") {
         payment.value = "qris";
@@ -141,12 +152,16 @@ const handleFilter = () => {
         allCashierParam = cashier.value.value;
     }
 
-    router.get(route("reports.sale.index"), {
-        start_date: formatDate(startDate.value),
-        end_date: formatDate(endDate.value),
-        cashier: allCashierParam,
-        payment: payment.value,
-    });
+    router
+        .get(route("reports.sale.index"), {
+            start_date: formatDate(startDate.value),
+            end_date: formatDate(endDate.value),
+            cashier: allCashierParam,
+            payment: payment.value,
+        })
+        .then(() => {
+            isFilterLoading.value = false;
+        });
 };
 
 const handlePrintPdf = () => {
@@ -307,8 +322,17 @@ const handleExportExcel = () => {
             </div>
 
             <div class="flex space-x-2">
-                <Button @click="handleFilter">
-                    <Search class="h-4 w-4" />
+                <Button
+                    @click="handleFilter"
+                    :disabled="isFilterLoading || !checkFilter()"
+                    class="disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    <Loader2
+                        v-if="isFilterLoading"
+                        class="w-4 h-4 animate-spin"
+                    />
+
+                    <Search class="h-4 w-4" v-else />
                     <span>Lihat Laporan</span>
                 </Button>
                 <Button
@@ -317,7 +341,7 @@ const handleExportExcel = () => {
                     class="disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Printer class="h-4 w-4" />
-                    <span>Print PDF</span>
+                    <span>Export PDF</span>
                 </Button>
                 <Button
                     @click="handleExportExcel()"

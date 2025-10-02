@@ -11,7 +11,13 @@ import { toast } from "vue-sonner";
 import { Checkbox } from "@/Components/ui/checkbox";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Check, FileSpreadsheet, Printer, Search } from "lucide-vue-next";
+import {
+    Check,
+    FileSpreadsheet,
+    Loader2,
+    Printer,
+    Search,
+} from "lucide-vue-next";
 
 import {
     Combobox,
@@ -183,8 +189,12 @@ const checkFilter = () => {
     return true;
 };
 
+const isFilterLoading = ref(false);
+
 const handleFilter = () => {
     if (!checkFilter()) return;
+
+    isFilterLoading.value = true;
 
     let supplierParam = null;
     let userParam = null;
@@ -201,12 +211,16 @@ const handleFilter = () => {
         userParam = user.value.value;
     }
 
-    router.get(route("reports.purchase.index"), {
-        start_date: formatDate(startDate.value),
-        end_date: formatDate(endDate.value),
-        supplier: supplierParam,
-        user: userParam,
-    });
+    router
+        .get(route("reports.purchase.index"), {
+            start_date: formatDate(startDate.value),
+            end_date: formatDate(endDate.value),
+            supplier: supplierParam,
+            user: userParam,
+        })
+        .then(() => {
+            isFilterLoading.value = false;
+        });
 };
 
 const handleExportPdf = () => {
@@ -402,10 +416,20 @@ const handleExportExcel = () => {
             </div>
 
             <div class="flex space-x-2">
-                <Button @click="handleFilter">
-                    <Search class="h-4 w-4" />
+                <Button
+                    @click="handleFilter"
+                    :disabled="isFilterLoading || !checkFilter()"
+                    class="disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    <Loader2
+                        v-if="isFilterLoading"
+                        class="w-4 h-4 animate-spin"
+                    />
+
+                    <Search class="h-4 w-4" v-else />
                     <span>Lihat Laporan</span>
                 </Button>
+
                 <Button
                     @click="handleExportPdf"
                     :disabled="!checkFilter()"
