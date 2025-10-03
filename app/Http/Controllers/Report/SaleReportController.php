@@ -186,12 +186,17 @@ class SaleReportController extends Controller
             ->first();
 
         $saleProducts = $query->flatMap->saleItems
-            ->map(function ($item) {
+            ->groupBy('product_id')
+            ->map(function ($items) {
+                $firstItem = $items->first();
+
                 return (object) [
-                    'date'          => $item->sale->created_at,
-                    'product_name'  => $item->product->name ?? 'Unknown',
-                    'quantity'      => $item->qty,
-                    'total'         => $item->qty * $item->price,
+                    'date'          => $firstItem->sale->created_at,
+                    'product_name'  => $firstItem->product->name ?? 'Unknown',
+                    'quantity'      => $items->sum('qty'),
+                    'total'         => $items->sum(function ($i) {
+                        return $i->qty * $i->price;
+                    }),
                 ];
             })
             ->values();

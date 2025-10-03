@@ -1,11 +1,18 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "dewa-jayon/stockease",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "StockEase - Sistem Manajemen Gudang dan Point of Sale (POS) berbasis Laravel + Inertia.js",
     "keywords": [
         "laravel",
-        "framework"
+        "inertia",
+        "vue",
+        "pos",
+        "warehouse",
+        "stock management",
+        "midtrans",
+        "excel",
+        "pdf"
     ],
     "license": "MIT",
     "require": {
