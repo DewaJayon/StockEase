@@ -62,7 +62,7 @@ Route::prefix('pos')->middleware('auth', 'role:admin, cashier')->group(function 
     Route::get('/get-cart', [PosController::class, 'getCartJson'])->name('pos.get-cart');
     Route::delete('/remove-from-cart', [PosController::class, 'removeFromCart'])->name('pos.remove-from-cart');
     Route::delete('/empty-cart', [PosController::class, 'emptyCart'])->name('pos.empty-cart');
-    Route::put('/checkout/{sale}', [PosController::class, 'checkout'])->name('pos.checkout');
+    Route::put('/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
     Route::post('/qris-token', [PaymentController::class, 'createMidtransTransaction'])->name('pos.qris-token');
 });
 
