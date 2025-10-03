@@ -2,7 +2,7 @@
 
 | Sidebar Menu                     | Role Akses                  | Status  |
 | -------------------------------- | --------------------------- | ------- |
-| Dashboard                        | admin, cashier, warehouse   | WIP     |
+| Dashboard                        | admin, cashier, warehouse   | Done ✅ |
 | POS (Kasir)                      | admin, cashier              | Done ✅ |
 | User                             | admin                       | Done ✅ |
 | **Manajemen Data**               |                             |         |

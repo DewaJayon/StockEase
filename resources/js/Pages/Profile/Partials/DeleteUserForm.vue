@@ -1,4 +1,10 @@
-<script setup>
+<script setup></script>
+
+<template>
+    <div>delete</div>
+</template>
+
+<!-- <script setup>
 import DangerButton from "@/Components/DangerButton.vue";
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
@@ -101,4 +107,4 @@ const closeModal = () => {
             </div>
         </Modal>
     </section>
-</template>
+</template> -->
