@@ -331,9 +331,9 @@ class PosController extends Controller
             ->where('status', 'draft')
             ->firstOrFail();
 
-        if ($sale->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized access to cart.');
-        }
+        // if ($sale->user_id !== Auth::id()) {
+        //     abort(403, 'Unauthorized access to cart.');
+        // }
 
         if ($request->expectsJson()) {
 
