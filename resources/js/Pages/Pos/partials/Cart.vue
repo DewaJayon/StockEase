@@ -137,8 +137,6 @@ const emit = defineEmits(["checkout-success"]);
 const checkout = () => {
     isCheckoutLoading.value = true;
 
-    const saleId = cartData.value.id;
-
     if (paymentMethod.value === "cash") {
         if (cashPayment.value < totalCart.value) {
             toast.error("Uang pembayaran kurang");
@@ -146,14 +144,20 @@ const checkout = () => {
             return;
         }
 
+        axios;
         axios
-            .put(route("pos.checkout", { sale: saleId }), {
-                sale_id: saleId,
-                payment_method: paymentMethod.value,
-                customer_name: customerName.value,
-                paid: cashPayment.value,
-                change: change.value,
-            })
+            .put(
+                route("pos.checkout"),
+                {
+                    payment_method: paymentMethod.value,
+                    customer_name: customerName.value,
+                    paid: cashPayment.value,
+                    change: change.value,
+                },
+                {
+                    headers: { Accept: "application/json" },
+                }
+            )
             .then((response) => {
                 toast.success(response.data.message);
                 totalCart.value = response.data.total;
@@ -165,7 +169,7 @@ const checkout = () => {
                 emit("checkout-success");
             })
             .catch((error) => {
-                toast.error(error.data.message);
+                toast.error("Gagal checkout");
                 console.log(error);
             })
             .finally(() => {
@@ -180,19 +184,25 @@ const checkout = () => {
                 })
             )
             .then((response) => {
-                console.log(response.data);
                 const snapToken = response.data.snap_token;
 
                 window.snap.pay(snapToken, {
                     onSuccess: function (result) {
+                        axios;
                         axios
-                            .put(route("pos.checkout", { sale: saleId }), {
-                                sale_id: saleId,
-                                payment_method: paymentMethod.value,
-                                customer_name: customerName.value,
-                                paid: result.gross_amount,
-                                order_id: result.order_id,
-                            })
+                            .put(
+                                route("pos.checkout"),
+                                {
+                                    payment_method: paymentMethod.value,
+                                    customer_name: customerName.value,
+                                    paid: cashPayment.value,
+                                    change: change.value,
+                                    order_id: result.order_id,
+                                },
+                                {
+                                    headers: { Accept: "application/json" },
+                                }
+                            )
                             .then((response) => {
                                 toast.success(response.data.message);
                                 totalCart.value = response.data.total;
@@ -204,7 +214,7 @@ const checkout = () => {
                                 emit("checkout-success");
                             })
                             .catch((error) => {
-                                toast.error(error.data.message);
+                                toast.error("Gagal checkout");
                                 console.log(error);
                             })
                             .finally(() => {

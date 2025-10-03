@@ -323,8 +323,13 @@ class PosController extends Controller
      * @param \App\Models\Sale $sale
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    public function checkout(Request $request, Sale $sale)
+    public function checkout(Request $request)
     {
+
+        $sale = Sale::with('saleItems.product')
+            ->where('user_id', Auth::id())
+            ->where('status', 'draft')
+            ->firstOrFail();
 
         if ($sale->user_id !== Auth::id()) {
             abort(403, 'Unauthorized access to cart.');
