@@ -136,4 +136,8 @@ Berikut adalah fitur utama yang sudah tersedia (lihat [TODO List](.github/TODO.m
 
 ## 👨‍💻 Kontributor
 
--   **Dewa Jayon** ([Github](https://github.com/DewaJayon))
+Terimakasih kepada semua yang telah berkontribusi pada proyek ini ❤️
+
+<a href="https://github.com/DewaJayon/StockEase/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=DewaJayon/StockEase" />
+</a>
