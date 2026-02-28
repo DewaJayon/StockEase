@@ -27,7 +27,19 @@ jobs:
           npm install
           npm run build
 
-      # Deploy main project (kecuali public)
+      # Buat folder deploy bersih (tanpa .git)
+      - name: Prepare Deployment Folder
+        run: |
+          mkdir stockease-deploy
+          rsync -av --exclude='.git' \
+                    --exclude='.github' \
+                    --exclude='node_modules' \
+                    --exclude='tests' \
+                    --exclude='storage/logs' \
+                    --exclude='.env' \
+                    ./ stockease-deploy/
+
+      # Deploy Laravel Core
       - name: Deploy Laravel Core
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -37,24 +49,5 @@ jobs:
           port: ${{ secrets.FTP_PORT }}
           protocol: ftp
           security: loose
-          local-dir: ./
+          local-dir: ./stockease-deploy/
           server-dir: /StockEase/
-          exclude: |
-            **/.git/**
-            **/.github/**
-            **/node_modules/**
-            **/tests/**
-            **/storage/logs/**
-            **/.env
-            public/**
-
-      # Deploy public folder ke public_html
-      - name: Deploy Public Folder
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          local-dir: ./public/
-          server-dir: /public_html/stockease.dewajayon.my.id/
