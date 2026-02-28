@@ -35,13 +35,18 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
+          security: loose
           local-dir: ./
           server-dir: /StockEase/
           exclude: |
-            **/public/**
-            **/.git*
+            **/.git/**
+            **/.github/**
             **/node_modules/**
             **/tests/**
+            **/storage/logs/**
+            **/.env
+            public/**
 
       # Deploy public folder ke public_html
       - name: Deploy Public Folder
