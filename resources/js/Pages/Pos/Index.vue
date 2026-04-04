@@ -29,7 +29,7 @@ const props = defineProps({
         required: true,
     },
     cart: {
-        type: Object || null,
+        type: Object,
         required: true,
     },
 });
@@ -61,7 +61,7 @@ const reloadPage = () => {
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
-                        <Link :href="route('home')">
+                        <Link :href="route('dashboard')">
                             <BreadcrumbLink> Dashboard </BreadcrumbLink>
                         </Link>
                     </BreadcrumbItem>

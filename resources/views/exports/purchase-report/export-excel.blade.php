@@ -76,7 +76,7 @@
     @php $no = 1; @endphp
 
     @foreach ($purchase as $trx)
-        @foreach ($trx->purcaseItems as $item)
+        @foreach ($trx->purchaseItems as $item)
             <tr>
                 <td>{{ $no++ }}</td>
                 <td>{{ $trx->created_at->format('d-m-Y') }}</td>

@@ -3,34 +3,37 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Http\Requests\ResetUserPasswordRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
     /**
+     * Create a new controller instance.
+     */
+    public function __construct(
+        protected UserService $userService
+    ) {}
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->integer('per_page', 10);
 
-        $users = User::query()
-            ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%')
-                    ->orWhere('role', 'like', '%' . $search . '%');
-            })
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
+        $users = $this->userService->getPaginatedUsers(
+            $request->only('search'),
+            $perPage
+        );
 
         return Inertia::render('User/Index', [
-            'users' => $users
+            'users' => $users,
         ]);
     }
 
@@ -47,12 +50,7 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        $data = $request->validated();
-
-        $data['email_verified_at'] = now();
-        $data['password'] = Hash::make($data['password']);
-
-        User::create($data);
+        $this->userService->storeUser($request->validated());
 
         return redirect()->back()->with('success', 'User berhasil ditambahkan');
     }
@@ -78,11 +76,7 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        $data = $request->validated();
-
-        $data['email_verified_at'] = now();
-
-        $user->update($data);
+        $this->userService->updateUser($user, $request->validated());
 
         return redirect()->back()->with('success', 'User berhasil diubah');
     }
@@ -93,7 +87,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         try {
-            $user->delete();
+            $this->userService->deleteUser($user);
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', 'User gagal dihapus');
         }
@@ -101,14 +95,12 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'User berhasil dihapus');
     }
 
-    public function resetPassword(Request $request, User $user)
+    /**
+     * Reset user password.
+     */
+    public function resetPassword(ResetUserPasswordRequest $request, User $user)
     {
-        $request->validate([
-            'password' => "required|min:8"
-        ]);
-
-        $user->password = Hash::make($request->password);
-        $user->save();
+        $this->userService->resetPassword($user, $request->password);
 
         return redirect()->back()->with('success', 'Password berhasil diubah');
     }

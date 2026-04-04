@@ -45,7 +45,7 @@ const user = usePage().props.auth.user;
 const general = [
     {
         title: "Dashboard",
-        routeName: "home",
+        routeName: "dashboard",
         icon: LayoutDashboard,
         roles: ["admin", "cashier", "warehouse"],
     },
@@ -87,7 +87,7 @@ const manageData = [
 const transaction = [
     {
         title: "Pembelian",
-        routeName: "purcase.index",
+        routeName: "purchase.index",
         icon: PackageCheck,
         roles: ["admin", "warehouse"],
     },
@@ -206,7 +206,7 @@ const other = [
                                 <SidebarMenuItem
                                     v-for="item in filterMenuByRole(
                                         manageData,
-                                        user.role
+                                        user.role,
                                     )"
                                     :key="item.title"
                                 >
@@ -251,7 +251,7 @@ const other = [
                                 <SidebarMenuItem
                                     v-for="item in filterMenuByRole(
                                         transaction,
-                                        user.role
+                                        user.role,
                                     )"
                                     :key="item.title"
                                 >
@@ -296,7 +296,7 @@ const other = [
                                 <SidebarMenuItem
                                     v-for="item in filterMenuByRole(
                                         reports,
-                                        user.role
+                                        user.role,
                                     )"
                                     :key="item.title"
                                 >
@@ -341,7 +341,7 @@ const other = [
                                 <SidebarMenuItem
                                     v-for="item in filterMenuByRole(
                                         other,
-                                        user.role
+                                        user.role,
                                     )"
                                     :key="item.title"
                                 >

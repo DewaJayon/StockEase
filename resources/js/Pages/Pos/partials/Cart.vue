@@ -26,14 +26,14 @@ import { toast } from "vue-sonner";
 
 const props = defineProps({
     cart: {
-        type: Object || null,
+        type: Object,
         required: true,
     },
 });
 
 const qtyRefs = ref({});
-const totalCart = ref(props.cart.total);
-const cartItems = ref(props.cart.sale_items);
+const totalCart = ref(props.cart?.total ?? 0);
+const cartItems = ref(props.cart?.sale_items ?? []);
 const cartData = ref(props.cart);
 const loadingItemId = ref(null);
 
@@ -247,7 +247,7 @@ const checkout = () => {
 
         <div class="space-y-3 mb-4" style="max-height: 50vh; overflow-y: auto">
             <div
-                v-if="cartItems.length > 0"
+                v-if="cartItems && cartItems.length > 0"
                 v-for="cartItem in cartItems"
                 class="flex justify-between items-center border-b pb-2"
             >
@@ -364,7 +364,7 @@ const checkout = () => {
                 class="w-full disabled:cursor-not-allowed"
                 :disabled="
                     !cart.payment_method ||
-                    cart.sale_items.length === 0 ||
+                    (cart.sale_items?.length ?? 0) === 0 ||
                     isCheckoutLoading
                 "
                 @click="checkout"
@@ -386,7 +386,7 @@ const checkout = () => {
                                 @click="clearCart"
                                 :disabled="
                                     !cart.payment_method ||
-                                    cart.sale_items.length === 0 ||
+                                    (cart.sale_items?.length ?? 0) === 0 ||
                                     isClearCartLoading
                                 "
                             >

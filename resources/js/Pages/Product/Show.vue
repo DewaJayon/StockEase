@@ -83,7 +83,7 @@ const destroy = (slug, productName) => {
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
-                        <Link :href="route('home')">
+                        <Link :href="route('dashboard')">
                             <BreadcrumbLink> Dashboard </BreadcrumbLink>
                         </Link>
                     </BreadcrumbItem>
@@ -175,7 +175,7 @@ const destroy = (slug, productName) => {
                                     <span class="font-bold">
                                         {{
                                             formatPrice(
-                                                props.product.selling_price
+                                                props.product.selling_price,
                                             )
                                         }}
                                     </span>
@@ -190,7 +190,7 @@ const destroy = (slug, productName) => {
                                         :class="
                                             stockColor(
                                                 props.product.stock,
-                                                props.product.alert_stock
+                                                props.product.alert_stock,
                                             )
                                         "
                                     >
@@ -238,7 +238,7 @@ const destroy = (slug, productName) => {
                                                 {{
                                                     formatPrice(
                                                         props.product
-                                                            .purchase_price
+                                                            .purchase_price,
                                                     )
                                                 }}
                                             </span>
@@ -261,7 +261,7 @@ const destroy = (slug, productName) => {
                                         :href="
                                             route(
                                                 'product.edit',
-                                                props.product.slug
+                                                props.product.slug,
                                             )
                                         "
                                     >
@@ -308,7 +308,7 @@ const destroy = (slug, productName) => {
                                                     @click="
                                                         destroy(
                                                             props.product.slug,
-                                                            props.product.name
+                                                            props.product.name,
                                                         )
                                                     "
                                                     class="bg-red-500 hover:bg-red-600 text-white"

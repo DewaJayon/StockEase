@@ -3,16 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class StockAlertController extends Controller
 {
-
     /**
      * Get all product stock alerts.
-     * 
-     * @return \Illuminate\Http\Response
-     * 
+     *
+     * @return Response
      */
     public function index()
     {
@@ -23,7 +21,7 @@ class StockAlertController extends Controller
         }
 
         return response()->json([
-            'message' => 'Unauthorized'
+            'message' => 'Unauthorized',
         ], 401);
     }
 }

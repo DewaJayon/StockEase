@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Product;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -28,7 +27,7 @@ class ProductSeeder extends Seeder
                 'purchase_price' => $product['purchase_price'],
                 'selling_price' => $product['selling_price'],
                 'alert_stock' => $product['alert_stock'],
-                'image_path' => $product['image_path']
+                'image_path' => $product['image_path'],
             ]);
         }
     }

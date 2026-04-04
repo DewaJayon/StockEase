@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\FromView;
 class StockExportExcel implements FromView
 {
     protected $filters;
+
     protected $summary;
 
     public function __construct($filters, $summary)
@@ -19,8 +20,8 @@ class StockExportExcel implements FromView
     public function view(): View
     {
         return view('exports.stock-report.export-excel', [
-            'filters'           => $this->filters,
-            'filteredStocks'    => $this->summary
+            'filters' => $this->filters,
+            'filteredStocks' => $this->summary,
         ]);
     }
 }

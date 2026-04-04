@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Cviebrock\EloquentSluggable\Sluggable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    use Sluggable;
+    use HasFactory, Sluggable;
 
     protected $fillable = [
         'category_id',
@@ -27,8 +28,8 @@ class Product extends Model
     {
         return [
             'slug' => [
-                'source' => 'name'
-            ]
+                'source' => 'name',
+            ],
         ];
     }
 
@@ -44,7 +45,7 @@ class Product extends Model
 
     public function purchaseItems()
     {
-        return $this->hasMany(PurcaseItem::class);
+        return $this->hasMany(PurchaseItem::class);
     }
 
     public function saleItems()
@@ -72,12 +73,12 @@ class Product extends Model
             $product->decrement('stock', $item->qty);
 
             StockLog::create([
-                'product_id'     => $product->id,
-                'qty'            => $item->qty,
-                'type'           => 'out',
+                'product_id' => $product->id,
+                'qty' => $item->qty,
+                'type' => 'out',
                 'reference_type' => 'Sale',
-                'reference_id'   => $item->sale_id,
-                'note'           => 'Penjualan produk ' . $product->name,
+                'reference_id' => $item->sale_id,
+                'note' => 'Penjualan produk '.$product->name,
             ]);
         }
     }

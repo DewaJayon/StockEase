@@ -3,31 +3,36 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
-use Cviebrock\EloquentSluggable\Services\SlugService;
+use App\Services\CategoryService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     */
+    public function __construct(
+        protected CategoryService $categoryService
+    ) {}
 
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->integer('per_page', 10);
 
-        $categories = Category::query()
-            ->when($request->search, function ($query, $search) {
-                return $query->where('name', 'like', '%' . $search . '%');
-            })
-            ->orderBy('name', 'asc')
-            ->paginate($perPage)
-            ->withQueryString();
+        $categories = $this->categoryService->getPaginatedCategories(
+            $request->only('search'),
+            $perPage
+        );
 
         return Inertia::render('Category/Index', [
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
@@ -42,18 +47,9 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-
-        $slug = SlugService::createSlug(Category::class, 'slug', $request->name);
-
-        Category::create([
-            'slug' => $slug,
-            'name' => $request->name
-        ]);
+        $this->categoryService->storeCategory($request->validated());
 
         return redirect()->back()->with('success', 'Kategory berhasil ditambahkan');
     }
@@ -77,20 +73,9 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-
-        if ($category->name !== $validated['name']) {
-            $slug = SlugService::createSlug(Category::class, 'slug', $validated['name']);
-        }
-
-        $category->update([
-            'slug' => $slug ?? $category->slug,
-            'name' => $validated['name']
-        ]);
+        $this->categoryService->updateCategory($category, $request->validated());
 
         return redirect()->back()->with('success', 'Kategory berhasil diupdate');
     }
@@ -100,7 +85,8 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        $category->delete();
+        $this->categoryService->deleteCategory($category);
+
         return redirect()->back()->with('success', 'Kategory berhasil dihapus');
     }
 }

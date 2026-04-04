@@ -3,33 +3,36 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreSupplierRequest;
+use App\Http\Requests\UpdateSupplierRequest;
 use App\Models\Supplier;
-use Cviebrock\EloquentSluggable\Services\SlugService;
+use App\Services\SupplierService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SupplierController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     */
+    public function __construct(
+        protected SupplierService $supplierService
+    ) {}
 
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->integer('per_page', 10);
 
-        $suppliers = Supplier::query()
-            ->when($request->search, function ($query, $search) {
-                return $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('address', 'like', '%' . $search . '%')
-                    ->orWhere('phone', 'like', '%' . $search . '%');
-            })
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
+        $suppliers = $this->supplierService->getPaginatedSuppliers(
+            $request->only('search'),
+            $perPage
+        );
 
         return Inertia::render('Supplier/Index', [
-            'suppliers' => $suppliers
+            'suppliers' => $suppliers,
         ]);
     }
 
@@ -44,22 +47,9 @@ class SupplierController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreSupplierRequest $request)
     {
-        $request->validate([
-            'name'      => 'required|string|max:255',
-            'phone'     => 'required|string|regex:/^[0-9]+$/|max:20',
-            'address'   => 'required|string',
-        ]);
-
-        $slug = SlugService::createSlug(Supplier::class, 'slug', $request->name);
-
-        Supplier::create([
-            'slug'      => $slug,
-            'name'      => $request->name,
-            'phone'     => $request->phone,
-            'address'   => $request->address
-        ]);
+        $this->supplierService->storeSupplier($request->validated());
 
         return redirect()->back()->with('success', 'Supplier berhasil ditambahkan');
     }
@@ -83,24 +73,9 @@ class SupplierController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Supplier $supplier)
+    public function update(UpdateSupplierRequest $request, Supplier $supplier)
     {
-        $validated = $request->validate([
-            'name'      => 'required|string|max:255',
-            'phone'     => 'required|string|regex:/^[0-9]+$/|max:20',
-            'address'   => 'required|string',
-        ]);
-
-        if ($supplier->name !== $validated['name']) {
-            $slug = SlugService::createSlug(Supplier::class, 'slug', $validated['name']);
-        }
-
-        $supplier->update([
-            'slug'      => $slug ?? $supplier->slug,
-            'name'      => $validated['name'],
-            'phone'     => $validated['phone'],
-            'address'   => $validated['address']
-        ]);
+        $this->supplierService->updateSupplier($supplier, $request->validated());
 
         return redirect()->back()->with('success', 'Supplier berhasil diubah');
     }
@@ -111,7 +86,7 @@ class SupplierController extends Controller
     public function destroy(Supplier $supplier)
     {
         try {
-            $supplier->delete();
+            $this->supplierService->deleteSupplier($supplier);
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', 'Supplier gagal dihapus');
         }

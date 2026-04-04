@@ -158,7 +158,7 @@ watch(showScannerModal, (newVal) => {
             html5QrcodeScanner = new Html5QrcodeScanner(
                 "reader",
                 { fps: 10, qrbox: { width: 250, height: 250 } },
-                false
+                false,
             );
             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
         });
@@ -205,7 +205,7 @@ const submit = () => {
             onError: () => {
                 toast.error("Produk gagal diperbarui");
             },
-        }
+        },
     );
 };
 
@@ -227,7 +227,7 @@ const image = computed(() => {
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
-                        <Link :href="route('home')">
+                        <Link :href="route('dashboard')">
                             <BreadcrumbLink> Dashboard </BreadcrumbLink>
                         </Link>
                     </BreadcrumbItem>
