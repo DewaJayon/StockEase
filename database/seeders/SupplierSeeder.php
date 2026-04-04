@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Supplier;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SupplierSeeder extends Seeder
@@ -22,7 +21,7 @@ class SupplierSeeder extends Seeder
                 'slug' => $supplier['slug'],
                 'name' => $supplier['name'],
                 'phone' => $supplier['phone'],
-                'address' => $supplier['address']
+                'address' => $supplier['address'],
             ]);
         }
     }

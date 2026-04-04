@@ -7,8 +7,8 @@ class FormatBytes
     /**
      * Format the given bytes to human-readable format.
      *
-     * @param int $bytes The size of the file in bytes.
-     * @param int $precision The number of decimal places to round to.
+     * @param  int  $bytes  The size of the file in bytes.
+     * @param  int  $precision  The number of decimal places to round to.
      * @return string The formatted size of the file.
      */
     public static function formatBytes(int $bytes, int $precision = 2): string
@@ -23,6 +23,6 @@ class FormatBytes
 
         $bytes /= 1024 ** $pow;
 
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

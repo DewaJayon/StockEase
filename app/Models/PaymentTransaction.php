@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PaymentTransaction extends Model
 {
+    use HasFactory;
 
     protected $fillable = [
         'sale_id',
@@ -21,6 +23,7 @@ class PaymentTransaction extends Model
     {
         return in_array($this->status, ['settlement', 'success', 'capture']);
     }
+
     public function sale()
     {
         return $this->belongsTo(Sale::class);

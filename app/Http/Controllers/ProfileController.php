@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -65,10 +67,9 @@ class ProfileController extends Controller
     /**
      * Store a new photo for the user's profile.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function storePhotoProfile(Request $request)
     {
@@ -88,31 +89,30 @@ class ProfileController extends Controller
 
             $photoProfile = $request->file('photo_profile');
 
-            $imageName = time() . '.' . $photoProfile->getClientOriginalExtension();
+            $imageName = time().'.'.$photoProfile->getClientOriginalExtension();
 
-            Storage::disk('public')->put('photo_profile/' . $imageName, file_get_contents($photoProfile));
+            Storage::disk('public')->put('photo_profile/'.$imageName, file_get_contents($photoProfile));
 
             $request->user()->update([
-                'photo_profile' => "storage/photo_profile/{$imageName}"
+                'photo_profile' => "storage/photo_profile/{$imageName}",
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Photo profile updated successfully'
+                'message' => 'Photo profile updated successfully',
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'Failed to update photo profile'
+            'message' => 'Failed to update photo profile',
         ], 400);
     }
 
     /**
      * Delete the user's photo profile.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function destroyPhotoProfile(Request $request)
     {
@@ -125,18 +125,18 @@ class ProfileController extends Controller
             Storage::disk('public')->delete($oldPath);
 
             $user->update([
-                'photo_profile' => null
+                'photo_profile' => null,
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Photo profile deleted successfully'
+                'message' => 'Photo profile deleted successfully',
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'Failed to delete photo profile'
+            'message' => 'Failed to delete photo profile',
         ], 400);
     }
 }

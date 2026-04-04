@@ -3,13 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -22,7 +23,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'photo_profile'
+        'photo_profile',
+        'email_verified_at',
     ];
 
     /**
@@ -32,7 +34,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token'
+        'remember_token',
     ];
 
     /**
@@ -48,9 +50,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function purcases()
+    public function purchases()
     {
-        return $this->hasMany(Purcase::class);
+        return $this->hasMany(Purchase::class);
     }
 
     public function sales()

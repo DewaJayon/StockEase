@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Sale extends Model
 {
+    use HasFactory;
 
     protected $fillable = [
         'user_id',
@@ -15,7 +17,7 @@ class Sale extends Model
         'paid',
         'change',
         'date',
-        'status'
+        'status',
     ];
 
     public function user()
@@ -37,7 +39,7 @@ class Sale extends Model
     {
         $total = 0;
 
-        if (!$this->relationLoaded('saleItems')) {
+        if (! $this->relationLoaded('saleItems')) {
             $this->load('saleItems.product');
         }
 
@@ -46,7 +48,7 @@ class Sale extends Model
         }
 
         $this->update([
-            'total' => $total
+            'total' => $total,
         ]);
 
         return $total;

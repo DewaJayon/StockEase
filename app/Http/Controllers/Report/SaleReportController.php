@@ -7,34 +7,35 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SaleReportController extends Controller
 {
-
     /**
      * Index function handles report sales data based on given request
      * parameters. It will return Inertia response with filtered sales data.
      *
-     * @param Request $request The request object containing start_date, end_date,
-     *                        cashier, and payment parameters.
-     *
-     * @return \Inertia\Response
+     * @param  Request  $request  The request object containing start_date, end_date,
+     *                            cashier, and payment parameters.
+     * @return Response
      */
     public function index(Request $request)
     {
 
         $filters = [
-            'start_date'    => $request->start_date,
-            'end_date'      => $request->end_date,
-            'cashier'       => $request->cashier,
-            'payment'       => $request->payment
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'cashier' => $request->cashier,
+            'payment' => $request->payment,
         ];
 
         $filteredSales = [];
@@ -43,18 +44,18 @@ class SaleReportController extends Controller
 
             $query = $this->getFilterQuery($filters);
 
-            $sumTotalSale       = $query->sum('total');
-            $transactionCount   = $query->where('status', 'completed')->count();
-            $countProductSale   = $query->flatMap->saleItems->count();
+            $sumTotalSale = $query->sum('total');
+            $transactionCount = $query->where('status', 'completed')->count();
+            $countProductSale = $query->flatMap->saleItems->count();
 
             $bestSellingProduct = $query
                 ->flatMap->saleItems
                 ->groupBy('product_id')
                 ->map(function ($items) {
                     return [
-                        'product_id'   => $items->first()->product_id,
+                        'product_id' => $items->first()->product_id,
                         'product_name' => $items->first()->product->name ?? 'Unknown',
-                        'total_sold'   => $items->sum('qty'),
+                        'total_sold' => $items->sum('qty'),
                     ];
                 })
                 ->sortByDesc('total_sold')
@@ -72,7 +73,7 @@ class SaleReportController extends Controller
 
             $salesTrend = [
                 'labels' => $salesTrend->keys()->values(),
-                'data'   => $salesTrend->values(),
+                'data' => $salesTrend->values(),
             ];
 
             $productSalesShare = $query
@@ -81,31 +82,30 @@ class SaleReportController extends Controller
                 ->map(function ($items) {
                     return [
                         'product_name' => $items->first()->product->name ?? 'Unknown',
-                        'total_sold'   => $items->sum('qty'),
+                        'total_sold' => $items->sum('qty'),
                     ];
                 })
                 ->values();
 
             $filteredSales = [
-                'sales'                 => $query,
-                'sumTotalSale'          => $sumTotalSale,
-                'transactionCount'      => $transactionCount,
-                'countProductSale'      => $countProductSale,
-                'bestSellingProduct'    => $bestSellingProduct,
-                'salesTrend'            => $salesTrend,
-                'productSalesShare'     => $productSalesShare
+                'sales' => $query,
+                'sumTotalSale' => $sumTotalSale,
+                'transactionCount' => $transactionCount,
+                'countProductSale' => $countProductSale,
+                'bestSellingProduct' => $bestSellingProduct,
+                'salesTrend' => $salesTrend,
+                'productSalesShare' => $productSalesShare,
             ];
         }
 
         return Inertia::render('Reports/Sale/Index', [
-            'sales' => $filteredSales
+            'sales' => $filteredSales,
         ]);
     }
 
     /**
      * Search cashier by name.
      *
-     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function searchCashier(Request $request)
@@ -114,45 +114,44 @@ class SaleReportController extends Controller
 
             if (blank($request->search)) {
                 return response()->json([
-                    "message"   => "empty search",
-                    "data"      => []
+                    'message' => 'empty search',
+                    'data' => [],
                 ], 200);
             }
 
             $cashier = User::where(function ($q) use ($request) {
-                $q->where("name", "like", "%{$request->search}%")
-                    ->orWhere("id", "like", "%{$request->search}%")
-                    ->whereIn("role", ["cashier", "admin"]);
-            })->select("id as value", "name as label")->get();
+                $q->where('name', 'like', "%{$request->search}%")
+                    ->orWhere('id', 'like', "%{$request->search}%")
+                    ->whereIn('role', ['cashier', 'admin']);
+            })->select('id as value', 'name as label')->get();
 
             if ($cashier->isEmpty()) {
                 return response()->json([
-                    "message"   => "cashier not found",
-                    "data"      => null
+                    'message' => 'cashier not found',
+                    'data' => null,
                 ], 404);
             }
 
             return response()->json([
-                "message"   => "Success get cashier",
-                "data"      => $cashier
+                'message' => 'Success get cashier',
+                'data' => $cashier,
             ], 200);
         }
     }
 
     /**
      * Generate a PDF report for a given date range, cashier, and payment method.
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     *
+     * @return BinaryFileResponse
      */
     public function exportToPdf(Request $request)
     {
 
         $validator = Validator::make($request->all(), [
-            'start_date'    => 'required|date',
-            'end_date'      => 'required|date',
-            'cashier'       => 'required',
-            'payment'       => 'required'
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'cashier' => 'required',
+            'payment' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -177,9 +176,9 @@ class SaleReportController extends Controller
             ->groupBy('product_id')
             ->map(function ($items) {
                 return (object) [
-                    'product_id'   => $items->first()->product_id,
+                    'product_id' => $items->first()->product_id,
                     'product_name' => $items->first()->product->name ?? 'Unknown',
-                    'total_sold'   => $items->sum('qty'),
+                    'total_sold' => $items->sum('qty'),
                 ];
             })
             ->sortByDesc('total_sold')
@@ -191,10 +190,10 @@ class SaleReportController extends Controller
                 $firstItem = $items->first();
 
                 return (object) [
-                    'date'          => $firstItem->sale->created_at,
-                    'product_name'  => $firstItem->product->name ?? 'Unknown',
-                    'quantity'      => $items->sum('qty'),
-                    'total'         => $items->sum(function ($i) {
+                    'date' => $firstItem->sale->created_at,
+                    'product_name' => $firstItem->product->name ?? 'Unknown',
+                    'quantity' => $items->sum('qty'),
+                    'total' => $items->sum(function ($i) {
                         return $i->qty * $i->price;
                     }),
                 ];
@@ -202,27 +201,27 @@ class SaleReportController extends Controller
             ->values();
 
         $data = [
-            'start_date'            => Carbon::parse($filters['start_date'])->translatedFormat('d F Y'),
-            'end_date'              => Carbon::parse($filters['end_date'])->translatedFormat('d F Y'),
-            'cashier_name'          => $cashierUser?->name ?? 'Semua Cashier',
-            'payment'               => $filters['payment'],
-            'total_sales'           => $totalSale,
-            'transaction_count'     => $transactionCount,
-            'product_sold'          => $productSold,
-            'best_selling_product'  => $bestSellingProduct,
-            'sales'                 => $saleProducts,
+            'start_date' => Carbon::parse($filters['start_date'])->translatedFormat('d F Y'),
+            'end_date' => Carbon::parse($filters['end_date'])->translatedFormat('d F Y'),
+            'cashier_name' => $cashierUser?->name ?? 'Semua Cashier',
+            'payment' => $filters['payment'],
+            'total_sales' => $totalSale,
+            'transaction_count' => $transactionCount,
+            'product_sold' => $productSold,
+            'best_selling_product' => $bestSellingProduct,
+            'sales' => $saleProducts,
         ];
 
         $pdf = Pdf::loadView('exports.sales.report', $data);
 
-        $fileName = "Laporan Penjualan "
-            . Carbon::parse($filters['start_date'])->translatedFormat('d F Y') . " - "
-            . Carbon::parse($filters['end_date'])->translatedFormat('d F Y') . " StockEase.pdf";
+        $fileName = 'Laporan Penjualan '
+            .Carbon::parse($filters['start_date'])->translatedFormat('d F Y').' - '
+            .Carbon::parse($filters['end_date'])->translatedFormat('d F Y').' StockEase.pdf';
 
-        $filePath = "reports/sales/"
-            . Carbon::now('Asia/Shanghai')->format('Y') . "/"
-            . Carbon::now('Asia/Shanghai')->translatedFormat('F') . "/"
-            . $fileName;
+        $filePath = 'reports/sales/'
+            .Carbon::now('Asia/Shanghai')->format('Y').'/'
+            .Carbon::now('Asia/Shanghai')->translatedFormat('F').'/'
+            .$fileName;
 
         Storage::put($filePath, $pdf->output());
 
@@ -232,16 +231,15 @@ class SaleReportController extends Controller
     /**
      * Generate an Excel report for a given date range, cashier, and payment method.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     * @return BinaryFileResponse
      */
     public function exportToExcel(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'start_date'    => 'required|date',
-            'end_date'      => 'required|date',
-            'cashier'       => 'required',
-            'payment'       => 'required'
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'cashier' => 'required',
+            'payment' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -263,28 +261,28 @@ class SaleReportController extends Controller
         }
 
         $summary = [
-            'total_sales'       => number_format($query->sum('total')),
+            'total_sales' => number_format($query->sum('total')),
             'transaction_count' => $query->count(),
-            'product_count'     => $query->flatMap->saleItems->sum('qty'),
-            'best_product'      => $query->flatMap->saleItems
+            'product_count' => $query->flatMap->saleItems->sum('qty'),
+            'best_product' => $query->flatMap->saleItems
                 ->groupBy('product_id')
                 ->map->sum('quantity')
                 ->sortDesc()
                 ->keys()
-                ->map(fn($id) => Product::find($id)->name)
+                ->map(fn ($id) => Product::find($id)->name)
                 ->first() ?? '-',
         ];
 
         $filters['cashier'] = $cashierName;
 
-        $fileName = "Laporan Penjualan "
-            . Carbon::parse($filters['start_date'])->translatedFormat('d F Y') . " - "
-            . Carbon::parse($filters['end_date'])->translatedFormat('d F Y') . " StockEase.xlsx";
+        $fileName = 'Laporan Penjualan '
+            .Carbon::parse($filters['start_date'])->translatedFormat('d F Y').' - '
+            .Carbon::parse($filters['end_date'])->translatedFormat('d F Y').' StockEase.xlsx';
 
-        $filePath = "reports/sales/"
-            . Carbon::now('Asia/Shanghai')->format('Y') . "/"
-            . Carbon::now('Asia/Shanghai')->translatedFormat('F') . "/"
-            . $fileName;
+        $filePath = 'reports/sales/'
+            .Carbon::now('Asia/Shanghai')->format('Y').'/'
+            .Carbon::now('Asia/Shanghai')->translatedFormat('F').'/'
+            .$fileName;
 
         Excel::store(new SalesReportExport($query, $filters, $summary), $filePath, 'local');
 
@@ -294,8 +292,7 @@ class SaleReportController extends Controller
     /**
      * Generate a query based on the given filters.
      *
-     * @param array $filters
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     private function getFilterQuery(array $filters)
     {

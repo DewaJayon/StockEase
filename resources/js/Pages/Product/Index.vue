@@ -32,7 +32,7 @@ const props = defineProps({
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
-                        <Link :href="route('home')">
+                        <Link :href="route('dashboard')">
                             <BreadcrumbLink> Dashboard </BreadcrumbLink>
                         </Link>
                     </BreadcrumbItem>

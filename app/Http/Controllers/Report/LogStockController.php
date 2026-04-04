@@ -7,20 +7,19 @@ use App\Models\StockLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class LogStockController extends Controller
 {
-
     /**
      * Handle log stock filtering and rendering.
-     * 
+     *
      * The function expects search and per_page parameters to be passed in the request.
      * It will filter log stock based on the given parameters and return an Inertia response
      * with the filtered log stock data.
-     * 
-     * @param  \Illuminate\Http\Request  $request
-     * 
-     * @return \Inertia\Response
+     *
+     *
+     * @return Response
      */
     public function index(Request $request)
     {
@@ -28,16 +27,16 @@ class LogStockController extends Controller
 
         $filters = [
             'end_date' => $request->end,
-            'start_date' => $request->start
+            'start_date' => $request->start,
         ];
 
         $logStocks = StockLog::query()
             ->with('product')
             ->when($request->search, function ($query, $search) {
                 $query->whereHas('product', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('sku', 'like', '%' . $search . '%')
-                        ->orWhere('barcode', 'like', '%' . $search . '%');
+                    $q->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('sku', 'like', '%'.$search.'%')
+                        ->orWhere('barcode', 'like', '%'.$search.'%');
                 })
                     ->orWhere('type', 'like', "%{$search}%")
                     ->orWhere('reference_type', 'like', "%{$search}%")
@@ -47,7 +46,7 @@ class LogStockController extends Controller
             ->when($filters['start_date'] && $filters['end_date'], function ($query) use ($filters) {
                 $query->whereBetween('created_at', [
                     Carbon::parse($filters['start_date'])->startOfDay(),
-                    Carbon::parse($filters['end_date'])->endOfDay()
+                    Carbon::parse($filters['end_date'])->endOfDay(),
                 ]);
             })
             ->latest()
@@ -55,7 +54,7 @@ class LogStockController extends Controller
             ->withQueryString();
 
         return Inertia::render('LogStock/Index', [
-            'logStocks' => $logStocks
+            'logStocks' => $logStocks,
         ]);
     }
 }

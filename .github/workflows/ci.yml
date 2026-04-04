@@ -1,10 +1,14 @@
-name: CI - Stock Ease
+name: CI - StockEase
 
 on:
   push:
-    branches: [main, develop]
+    branches:
+      - develop
+      - main
   pull_request:
-    branches: [main, develop]
+    branches:
+      - develop
+      - main
 
 jobs:
   build:
@@ -48,6 +52,13 @@ jobs:
           APP_ENV: testing
         run: php artisan key:generate
 
+      - name: Setup Node and build assets
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run build
+
       - name: Run database migrations
         env:
           DB_CONNECTION: mysql
@@ -58,5 +69,12 @@ jobs:
           DB_PASSWORD: laravel
         run: php artisan migrate --force
 
-      # - name: Run tests
-      #   run: php artisan test
+      - name: Run tests
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: laravel
+          DB_USERNAME: laravel
+          DB_PASSWORD: laravel
+        run: php artisan test --compact

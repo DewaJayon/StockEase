@@ -4,28 +4,28 @@ use App\Http\Controllers\Dashboard\CategoryController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\MidtransTransactionController;
 use App\Http\Controllers\Dashboard\PaymentController;
+use App\Http\Controllers\Dashboard\PosController;
 use App\Http\Controllers\Dashboard\ProductController;
+use App\Http\Controllers\Dashboard\PurchaseController;
+use App\Http\Controllers\Dashboard\SaleHistoryController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
-use App\Http\Controllers\Dashboard\PosController;
-use App\Http\Controllers\Dashboard\PurcaseController;
-use App\Http\Controllers\Report\PurchaseReportController;
-use App\Http\Controllers\Dashboard\SaleHistoryController;
 use App\Http\Controllers\Media\FileManagerController;
-use App\Http\Controllers\Report\SaleReportController;
-use App\Http\Controllers\Report\StockReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Report\LogStockController;
+use App\Http\Controllers\Report\PurchaseReportController;
+use App\Http\Controllers\Report\SaleReportController;
+use App\Http\Controllers\Report\StockReportController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Route
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 
 // dashboard & general route
 Route::middleware('auth')->group(function () {
 
     // Dashboard route
-    Route::get('/', [DashboardController::class, 'index'])->name('home');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // profile route
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -73,11 +73,11 @@ Route::middleware('auth', 'role:admin, cashier')->group(function () {
     Route::get('/sale/{sale}/export-to-pdf', [SaleHistoryController::class, 'exportToPdf'])->name('sale.export-to-pdf');
 });
 
-// Purcase || Data Transaksi Pembelian Route
+// Purchase || Data Transaksi Pembelian Route
 Route::middleware(['auth', 'role:admin, warehouse'])->group(function () {
-    Route::get('/purcase/search-supplier', [PurcaseController::class, 'searchSupplier'])->name('purcase.search-supplier');
-    Route::get('/purcase/search-product', [PurcaseController::class, 'searchProduct'])->name('purcase.search-product');
-    Route::resource('purcase', PurcaseController::class);
+    Route::get('/purchase/search-supplier', [PurchaseController::class, 'searchSupplier'])->name('purchase.search-supplier');
+    Route::get('/purchase/search-product', [PurchaseController::class, 'searchProduct'])->name('purchase.search-product');
+    Route::resource('purchase', PurchaseController::class);
 });
 
 // Data Transaksi Pembayaran Midtrans Route
@@ -88,8 +88,8 @@ Route::prefix('reports')->group(function () {
 
     // Laporan Penjualan Route
     Route::middleware('auth', 'role:admin, cashier')->group(function () {
-        Route::get("/sale", [SaleReportController::class, 'index'])->name('reports.sale.index');
-        Route::get("/sale/search-cashier", [SaleReportController::class, 'searchCashier'])->name('reports.sale.search-cashier');
+        Route::get('/sale', [SaleReportController::class, 'index'])->name('reports.sale.index');
+        Route::get('/sale/search-cashier', [SaleReportController::class, 'searchCashier'])->name('reports.sale.search-cashier');
         Route::get('/sale/export-to-pdf', [SaleReportController::class, 'exportToPdf'])->name('reports.sale.export-to-pdf');
         Route::get('/sale/export-to-excel', [SaleReportController::class, 'exportToExcel'])->name('reports.sale.export-to-excel');
     });

@@ -2,19 +2,25 @@
 
 namespace App\Http\Controllers\Media;
 
-use Carbon\Carbon;
-use Inertia\Inertia;
-use Illuminate\Support\Str;
 use App\Helpers\FormatBytes;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Media\StoreFileRequest;
+use Carbon\Carbon;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FileManagerController extends Controller
 {
-
     /**
      * Display a listing of files with optional search and filter functionality.
      *
@@ -28,8 +34,7 @@ class FileManagerController extends Controller
      *   Use "all" to disable this filter.
      * - page (int, optional): Current page for pagination (default: 1).
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Inertia\Response
+     * @return Response
      */
     public function index(Request $request)
     {
@@ -58,14 +63,14 @@ class FileManagerController extends Controller
         );
 
         return Inertia::render('FileManager/Index', [
-            'files' => $paginated
+            'files' => $paginated,
         ]);
     }
 
     /**
      * Get all files in the given path.
      *
-     * @param string $path
+     * @param  string  $path
      * @return LengthAwarePaginator
      */
     protected function _getFiles($path = '')
@@ -73,7 +78,7 @@ class FileManagerController extends Controller
         $disk = Storage::disk('local');
 
         $allFiles = collect($disk->allFiles($path))
-            ->filter(fn($file) => !preg_match('/^\./', basename($file)))
+            ->filter(fn ($file) => ! preg_match('/^\./', basename($file)))
             ->values();
 
         if ($allFiles->isEmpty()) {
@@ -82,10 +87,10 @@ class FileManagerController extends Controller
 
         return $allFiles->map(function ($file) use ($disk) {
             return [
-                'path'           => $file,
-                'name'           => basename($file),
-                'size'           => FormatBytes::formatBytes($disk->size($file)),
-                'last_modified'  => Carbon::createFromTimestamp($disk->lastModified($file))->format('d M Y'),
+                'path' => $file,
+                'name' => basename($file),
+                'size' => FormatBytes::formatBytes($disk->size($file)),
+                'last_modified' => Carbon::createFromTimestamp($disk->lastModified($file))->format('d M Y'),
                 'file_extension' => pathinfo($file, PATHINFO_EXTENSION),
             ];
         })
@@ -96,8 +101,7 @@ class FileManagerController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\Media\StoreFileRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      *
      * @throws \Throwable
      */
@@ -106,23 +110,23 @@ class FileManagerController extends Controller
         try {
             $data = $request->validated();
             $files = $data['file'];
-            $filePath = "uploads";
+            $filePath = 'uploads';
             $disk = Storage::disk('local');
 
             foreach ($files as $file) {
 
                 $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $extension    = $file->getClientOriginalExtension();
+                $extension = $file->getClientOriginalExtension();
 
-                $fileName = $originalName . '.' . $extension;
-                $counter  = 1;
+                $fileName = $originalName.'.'.$extension;
+                $counter = 1;
 
-                while ($disk->exists($filePath . '/' . $fileName)) {
-                    $fileName = $originalName . " ({$counter})." . $extension;
+                while ($disk->exists($filePath.'/'.$fileName)) {
+                    $fileName = $originalName." ({$counter}).".$extension;
                     $counter++;
                 }
 
-                $disk->put($filePath . '/' . $fileName, file_get_contents($file));
+                $disk->put($filePath.'/'.$fileName, file_get_contents($file));
             }
 
             return redirect()->back()->with('success', 'File uploaded successfully');
@@ -134,17 +138,17 @@ class FileManagerController extends Controller
     /**
      * Download a file from the given path.
      *
-     * @param string $file
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @param  string  $file
+     * @return BinaryFileResponse
+     *
+     * @throws NotFoundHttpException
      */
     public function download(Request $request)
     {
 
         $file = $request->input('file');
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('local');
         $exists = $disk->exists($file);
 
@@ -158,9 +162,10 @@ class FileManagerController extends Controller
     /**
      * Delete a file from the given path.
      *
-     * @param string $filePath
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @param  string  $filePath
+     * @return JsonResponse
+     *
+     * @throws NotFoundHttpException
      */
     public function destroy(Request $request)
     {
@@ -174,7 +179,7 @@ class FileManagerController extends Controller
             if (! $exists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'File not found'
+                    'message' => 'File not found',
                 ], 404);
             }
 
@@ -182,7 +187,7 @@ class FileManagerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'File deleted successfully'
+                'message' => 'File deleted successfully',
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -195,8 +200,8 @@ class FileManagerController extends Controller
     /**
      * Search for files by name
      *
-     * @param string $search
-     * @return \Illuminate\Pagination\LengthAwarePaginator
+     * @param  string  $search
+     * @return LengthAwarePaginator
      */
     private function _search($files, $search)
     {
@@ -208,10 +213,9 @@ class FileManagerController extends Controller
     /**
      * Filter files by extension/type.
      *
-     * @param \Illuminate\Support\Collection $files
-     * @param string $file_filter The file extension/type to filter by.
-     *
-     * @return \Illuminate\Support\Collection
+     * @param  Collection  $files
+     * @param  string  $file_filter  The file extension/type to filter by.
+     * @return Collection
      */
     private function _fileTypeFilter($files, $file_filter)
     {

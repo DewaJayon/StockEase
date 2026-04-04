@@ -8,7 +8,9 @@ use Maatwebsite\Excel\Concerns\FromView;
 class SalesReportExport implements FromView
 {
     protected $sales;
+
     protected $filters;
+
     protected $summary;
 
     public function __construct($sales, $filters, $summary)
@@ -21,7 +23,7 @@ class SalesReportExport implements FromView
     public function view(): View
     {
         return view('exports.sales.excel', [
-            'sales'   => $this->sales,
+            'sales' => $this->sales,
             'filters' => $this->filters,
             'summary' => $this->summary,
         ]);

@@ -2,44 +2,39 @@
 
 namespace App\Http\Controllers\Dashboard;
 
-use Inertia\Inertia;
 use App\Enums\UnitEnum;
-use App\Models\Product;
-use App\Models\Category;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use Cviebrock\EloquentSluggable\Services\SlugService;
+use App\Models\Category;
+use App\Models\Product;
+use App\Services\ProductService;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ProductController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     */
+    public function __construct(
+        protected ProductService $productService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->integer('per_page', 10);
 
-        $products = Product::with('category')
-            ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhere('alert_stock', 'like', "%{$search}%")
-                    ->orWhere('unit', 'like', "%{$search}%")
-                    ->orWhere('barcode', 'like', "%{$search}%")
-                    ->orWhereHas('category', function ($queryCategory) use ($search) {
-                        $queryCategory->where('name', 'like', "%{$search}%");
-                    });
-            })
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
+        $products = $this->productService->getPaginatedProducts(
+            $request->only('search'),
+            $perPage
+        );
 
         return Inertia::render('Product/Index', [
-            'products' => $products
+            'products' => $products,
         ]);
     }
 
@@ -50,18 +45,15 @@ class ProductController extends Controller
     {
         $units = UnitEnum::options();
 
-        $categories = Category::select('id', 'name')->get();
-
-        $categories = $categories->map(function ($category) {
-            return [
+        $categories = Category::select('id', 'name')->get()
+            ->map(fn ($category) => [
                 'value' => $category->id,
                 'label' => $category->name,
-            ];
-        });
+            ]);
 
         return Inertia::render('Product/form/ProductCreateForm', [
-            'units'         => $units,
-            'categories'    => $categories
+            'units' => $units,
+            'categories' => $categories,
         ]);
     }
 
@@ -70,23 +62,10 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $data = $request->validated();
-
-        $data['slug'] = SlugService::createSlug(Product::class, 'slug', $data['name']);
-
-        if ($request->hasFile('image')) {
-            $imagePath = "product";
-
-            $image = $request->file('image');
-
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-
-            Storage::disk('public')->put($imagePath . '/' . $imageName, file_get_contents($image));
-
-            $data['image_path'] = "storage/{$imagePath}/{$imageName}";
-        }
-
-        Product::create($data);
+        $this->productService->storeProduct(
+            $request->validated(),
+            $request->file('image')
+        );
 
         return redirect()->route('product.index')->with('success', 'Product berhasil ditambahkan');
     }
@@ -97,7 +76,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         return Inertia::render('Product/Show', [
-            'product' => $product->load('category')
+            'product' => $product->load('category'),
         ]);
     }
 
@@ -106,22 +85,18 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-
         $units = UnitEnum::options();
 
-        $categories = Category::select('id', 'name')->get();
-
-        $categories = $categories->map(function ($category) {
-            return [
+        $categories = Category::select('id', 'name')->get()
+            ->map(fn ($category) => [
                 'value' => $category->id,
                 'label' => $category->name,
-            ];
-        });
+            ]);
 
         return Inertia::render('Product/form/ProductEditForm', [
-            'product'       => $product,
-            'units'         => $units,
-            'categories'    => $categories
+            'product' => $product,
+            'units' => $units,
+            'categories' => $categories,
         ]);
     }
 
@@ -130,33 +105,11 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $data = $request->validated();
-
-        if ($data['name'] != $product->name) {
-            $data['slug'] = SlugService::createSlug(Product::class, 'slug', $data['name']);
-        }
-
-        if ($request->hasFile('image')) {
-
-            if ($product->image_path) {
-                $filePath = Str::chopStart($product->image_path, 'storage/');
-                Storage::disk('public')->delete($filePath);
-            }
-
-            $imagePath = "product";
-
-            $image = $request->file('image');
-
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-
-            Storage::disk('public')->put($imagePath . '/' . $imageName, file_get_contents($image));
-
-            $data['image_path'] = "storage/{$imagePath}/{$imageName}";
-        } else {
-            $data['image_path'] = $product->image_path;
-        }
-
-        $product->update($data);
+        $this->productService->updateProduct(
+            $product,
+            $request->validated(),
+            $request->file('image')
+        );
 
         return redirect()->route('product.index')->with('success', 'Product berhasil diubah');
     }
@@ -166,15 +119,8 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-
         try {
-            $filePath = Str::chopStart($product->image_path, 'storage/');
-
-            if ($product->image_path) {
-                Storage::disk('public')->delete($filePath);
-            }
-
-            $product->delete();
+            $this->productService->deleteProduct($product);
 
             return redirect()->route('product.index')->with('success', 'Product berhasil dihapus');
         } catch (\Exception $e) {
