@@ -1,108 +1,294 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import axios from "axios";
-import { Bell } from "lucide-vue-next";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
 import { formatRelative } from "@/lib/utils";
+import axios from "axios";
+import { Link, usePage } from "@inertiajs/vue3";
+
+import {
+    Bell,
+    Trash2,
+    Check,
+    AlertTriangle,
+    PackageSearch,
+} from "lucide-vue-next";
 
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
     DropdownMenuGroup,
 } from "@/Components/ui/dropdown-menu";
 
-const notification = ref([]);
+const page = usePage();
+const notifications = ref([]);
+const loading = ref(false);
 
-const fetchLowStock = async () => {
+const unreadCount = computed(
+    () => notifications.value.filter((n) => !n.read_at).length,
+);
+
+const fetchNotifications = async () => {
+    loading.value = true;
     try {
-        const response = await axios.get(route("low-stock.index"));
-
-        notification.value = response.data.map((item) => ({
-            id: item.id,
-            name: item.name,
-            updated_at: item.updated_at,
-            time_ago: formatRelative(item.updated_at),
+        const response = await axios.get(route("notifications.index"));
+        const data = response.data;
+        notifications.value = data.data.map((notif) => ({
+            id: notif.id,
+            slug: notif.data.product_slug,
+            product_id: notif.data.product_id,
+            message: notif.data.message,
+            product_name: notif.data.product_name,
+            current_stock: notif.data.current_stock,
+            alert_level: notif.data.alert_level,
+            read_at: notif.read_at,
+            created_at: notif.created_at,
+            time_ago: formatRelative(notif.created_at),
         }));
     } catch (error) {
-        console.error("Gagal ambil notifikasi stok:", error);
+        console.error("Failed to fetch notifications:", error);
+    } finally {
+        loading.value = false;
     }
 };
 
-let intervalId;
+const markAsRead = async (notificationId) => {
+    try {
+        await axios.post(route("notifications.read", { id: notificationId }));
+        // Optimistically update
+        notifications.value = notifications.value.map((n) =>
+            n.id === notificationId
+                ? { ...n, read_at: new Date().toISOString() }
+                : n,
+        );
+    } catch (error) {
+        console.error("Failed to mark notification as read:", error);
+    }
+};
+
+const markAllAsRead = async () => {
+    try {
+        await axios.post(route("notifications.read-all"));
+        notifications.value = notifications.value.map((n) => ({
+            ...n,
+            read_at: new Date().toISOString(),
+        }));
+    } catch (error) {
+        console.error("Failed to mark all notifications as read:", error);
+    }
+};
+
+const deleteNotification = async (notificationId) => {
+    try {
+        await axios.delete(
+            route("notifications.destroy", { id: notificationId }),
+        );
+        notifications.value = notifications.value.filter(
+            (n) => n.id !== notificationId,
+        );
+    } catch (error) {
+        console.error("Failed to delete notification:", error);
+    }
+};
 
 onMounted(() => {
-    fetchLowStock();
-    intervalId = setInterval(fetchLowStock, 30000);
+    fetchNotifications();
+
+    if (window.Echo && page.props.auth?.user?.id) {
+        window.Echo.private(
+            `App.Models.User.${page.props.auth.user.id}`,
+        ).notification((notification) => {
+            if (notification.type === "stock.alert") {
+                notifications.value.unshift({
+                    id: notification.id,
+                    slug: notification.product_slug,
+                    product_id: notification.product_id,
+                    message: notification.message,
+                    product_name: notification.product_name,
+                    current_stock: notification.current_stock,
+                    alert_level: notification.alert_level,
+                    read_at: null,
+                    created_at: notification.created_at,
+                    time_ago: formatRelative(notification.created_at),
+                });
+
+                // Optional: play a sound or show a toast
+                if (window.Sonner) {
+                    window.Sonner.toast.warning("Stock Alert!", {
+                        description: notification.message,
+                    });
+                }
+            }
+        });
+    }
 });
 
 onUnmounted(() => {
-    clearInterval(intervalId);
+    if (window.Echo && page.props.auth?.user?.id) {
+        window.Echo.leave(`App.Models.User.${page.props.auth.user.id}`);
+    }
 });
 </script>
 
 <template>
     <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-            <Button variant="outline" size="icon" class="relative rounded-full">
-                <Bell />
-
+        <DropdownMenuTrigger as-child class="cursor-pointer border">
+            <Button
+                variant="ghost"
+                size="icon"
+                class="relative hover:bg-accent rounded-full transition-all"
+            >
+                <Bell class="h-5 w-5" />
                 <span
-                    v-if="notification.length"
-                    class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold"
+                    v-if="unreadCount"
+                    class="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold shadow-sm"
                 >
-                    {{ notification.length }}
+                    {{ unreadCount > 9 ? "9+" : unreadCount }}
                 </span>
             </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent class="w-80">
-            <DropdownMenuLabel class="item-center flex justify-center">
-                Notifikasi
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator v-if="notification.length" />
-            <DropdownMenuGroup>
-                <template v-if="notification.length">
-                    <DropdownMenuItem
-                        class="relative cursor-pointer"
-                        v-for="(notif, index) in notification"
-                        :key="index"
+        <DropdownMenuContent class="w-[400px] p-0 overflow-hidden" align="end">
+            <div
+                class="flex items-center justify-between px-4 py-3 border-b bg-muted/30"
+            >
+                <div class="flex items-center gap-2">
+                    <DropdownMenuLabel class="p-0 font-bold text-base">
+                        Notifikasi
+                    </DropdownMenuLabel>
+                    <Badge
+                        v-if="unreadCount"
+                        variant="secondary"
+                        class="rounded-full px-2 py-0 h-5 text-[10px]"
                     >
-                        <span
-                            class="absolute left-2 top-1/2 -translate-y-1/2 flex h-2 w-2"
-                        >
-                            <span
-                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"
-                            />
-                            <span
-                                class="relative inline-flex rounded-full h-2 w-2 bg-orange-400"
-                            />
-                        </span>
+                        {{ unreadCount }} Baru
+                    </Badge>
+                </div>
+                <button
+                    v-if="unreadCount"
+                    @click="markAllAsRead"
+                    class="text-xs text-primary hover:underline font-semibold transition-all"
+                >
+                    Tandai semua dibaca
+                </button>
+            </div>
 
-                        <div class="flex flex-col space-y-1 pl-5">
-                            <div class="text-sm font-medium leading-none">
-                                Stock product {{ notif.name }} hampir habis
-                            </div>
+            <DropdownMenuGroup class="max-h-[450px] overflow-y-auto">
+                <template v-if="notifications.length">
+                    <div
+                        v-for="notif in notifications"
+                        :key="notif.id"
+                        :class="[
+                            'relative px-4 py-4 border-b last:border-0 hover:bg-accent/50 cursor-pointer transition-all flex items-start gap-4 group',
+                            !notif.read_at && 'bg-primary/5',
+                        ]"
+                    >
+                        <!-- Status Icon / Indicator -->
+                        <div class="mt-1 flex-shrink-0 relative">
                             <div
-                                class="text-xs text-muted-foreground capitalize"
+                                class="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"
                             >
-                                {{ notif.time_ago }}
+                                <AlertTriangle class="h-5 w-5" />
                             </div>
+                            <span
+                                v-if="!notif.read_at"
+                                class="absolute top-0 right-0 h-3 w-3 rounded-full bg-blue-500 border-2 border-background"
+                            />
                         </div>
-                    </DropdownMenuItem>
+
+                        <!-- Content -->
+                        <Link :href="route('product.edit', notif.slug)">
+                            <div class="flex-1 min-w-0">
+                                <div
+                                    class="flex items-center justify-between gap-2 mb-1"
+                                >
+                                    <span class="text-sm font-bold truncate">
+                                        {{ notif.product_name }}
+                                    </span>
+                                    <span
+                                        class="text-[10px] text-muted-foreground whitespace-nowrap"
+                                    >
+                                        {{ notif.time_ago }}
+                                    </span>
+                                </div>
+
+                                <p
+                                    class="text-xs text-muted-foreground leading-relaxed mb-2"
+                                >
+                                    Stok produk sedang menipis! Segera lakukan
+                                    penambahan stok.
+                                </p>
+
+                                <div class="flex items-center gap-2">
+                                    <Badge
+                                        variant="outline"
+                                        class="text-[10px] py-0 px-2 font-medium border-orange-200 bg-orange-50 text-orange-700"
+                                    >
+                                        {{ notif.current_stock }} tersisa
+                                    </Badge>
+                                    <span
+                                        class="text-[10px] text-muted-foreground italic"
+                                    >
+                                        Batas: {{ notif.alert_level }}
+                                    </span>
+                                </div>
+                            </div>
+                        </Link>
+
+                        <!-- Actions (Visible on hover) -->
+                        <div
+                            class="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0 self-center"
+                        >
+                            <button
+                                v-if="!notif.read_at"
+                                @click.stop="markAsRead(notif.id)"
+                                class="p-2 hover:bg-blue-100 hover:text-blue-600 text-muted-foreground rounded-full transition-colors"
+                                title="Tandai dibaca"
+                            >
+                                <Check class="h-4 w-4" />
+                            </button>
+                            <button
+                                @click.stop="deleteNotification(notif.id)"
+                                class="p-2 hover:bg-destructive/10 hover:text-destructive text-muted-foreground rounded-full transition-colors"
+                                title="Hapus"
+                            >
+                                <Trash2 class="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
                 </template>
 
                 <template v-else>
                     <div
-                        class="text-sm text-muted-foreground flex items-center justify-center w-full py-4"
+                        class="flex flex-col items-center justify-center py-12 px-4 text-center opacity-60"
                     >
-                        Tidak ada notifikasi
+                        <div
+                            class="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4"
+                        >
+                            <PackageSearch
+                                class="h-8 w-8 text-muted-foreground"
+                            />
+                        </div>
+                        <h3 class="font-semibold text-sm">
+                            Tidak ada notifikasi
+                        </h3>
+                        <p class="text-xs text-muted-foreground">
+                            Log stok Anda saat ini sudah aman.
+                        </p>
                     </div>
                 </template>
             </DropdownMenuGroup>
+
+            <div
+                v-if="notifications.length"
+                class="p-2 border-t bg-muted/10 text-center"
+            >
+                <span class="text-[10px] text-muted-foreground"
+                    >Menampilkan 10 notifikasi terbaru</span
+                >
+            </div>
         </DropdownMenuContent>
     </DropdownMenu>
 </template>

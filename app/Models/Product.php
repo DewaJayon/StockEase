@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\NotifyStockAlert;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -71,6 +72,11 @@ class Product extends Model
             }
 
             $product->decrement('stock', $item->qty);
+            $product->refresh(); // Refresh to get the actual stock value after decrement
+
+            if ($product->stock <= $product->alert_stock) {
+                (new NotifyStockAlert)->execute($product);
+            }
 
             StockLog::create([
                 'product_id' => $product->id,
