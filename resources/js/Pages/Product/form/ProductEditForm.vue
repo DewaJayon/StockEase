@@ -7,8 +7,8 @@ import { nextTick, ref, watch } from "vue";
 import { cn } from "@/lib/utils";
 import { Head, Link, router, useForm, usePage } from "@inertiajs/vue3";
 import { Separator } from "@/Components/ui/separator";
-import VueCropper from "vue-cropperjs";
-import "/node_modules/cropperjs/dist/cropper.css";
+import VueCropper from "vue-cropperjs/VueCropper.js";
+import "cropperjs/dist/cropper.css";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
 import {

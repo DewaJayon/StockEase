@@ -1,8 +1,8 @@
 <script setup>
 import { Button } from "@/Components/ui/button";
 import { Loader2, Pencil } from "lucide-vue-next";
-import VueCropper from "vue-cropperjs";
-import "/node_modules/cropperjs/dist/cropper.css";
+import VueCropper from "vue-cropperjs/VueCropper.js";
+import "cropperjs/dist/cropper.css";
 import { ref, nextTick } from "vue";
 import { toast } from "vue-sonner";
 
