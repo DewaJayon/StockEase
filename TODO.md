@@ -15,6 +15,7 @@
 
 <!-- TODO: -->
 
+- fix query duplikat
 - scan barcode di pos sistem dan langsung masukkan ke keranjang
 - ux di harga isikan titik
 - security di post karena disana perhitungannya masih di frontend validasi di backend lagi
