@@ -4,19 +4,19 @@ import { ComboboxEmpty } from "reka-ui";
 import { cn } from "@/lib/utils";
 
 const props = defineProps({
-  asChild: { type: Boolean, required: false },
-  as: { type: [String, Object, Function], required: false },
-  class: { type: null, required: false },
+    asChild: { type: Boolean, required: false },
+    as: { type: [String, Object, Function], required: false },
+    class: { type: null, required: false },
 });
 
 const delegatedProps = reactiveOmit(props, "class");
 </script>
 
 <template>
-  <ComboboxEmpty
-    v-bind="delegatedProps"
-    :class="cn('py-6 text-center text-sm', props.class)"
-  >
-    <slot />
-  </ComboboxEmpty>
+    <ComboboxEmpty
+        v-bind="delegatedProps"
+        :class="cn('py-6 text-center text-sm', props.class)"
+    >
+        <slot />
+    </ComboboxEmpty>
 </template>
