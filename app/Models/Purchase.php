@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Purchase extends Model
 {
@@ -16,16 +18,43 @@ class Purchase extends Model
         'date',
     ];
 
+    /**
+     * Get the casts for the model.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'total' => 'decimal:4',
+        ];
+    }
+
+    /**
+     * Get the supplier that the purchase belongs to.
+     *
+     * @return BelongsTo
+     */
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
     }
 
+    /**
+     * Get the user that created the purchase.
+     *
+     * @return BelongsTo
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the purchase items that belong to the purchase.
+     *
+     * @return HasMany
+     */
     public function purchaseItems()
     {
         return $this->hasMany(PurchaseItem::class);
