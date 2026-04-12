@@ -52,8 +52,8 @@ const submit = () => {
 
                 <form
                     id="update-profile-information-form"
-                    @submit.prevent="submit"
                     class="w-full"
+                    @submit.prevent="submit"
                 >
                     <div
                         class="grid grid-cols-1 gap-4 lg:grid-cols-2 w-full mt-4"
@@ -61,10 +61,10 @@ const submit = () => {
                         <div class="w-full">
                             <Label for="name">Nama</Label>
                             <Input
-                                type="text"
                                 id="name"
-                                placeholder="Nama"
                                 v-model="form.name"
+                                type="text"
+                                placeholder="Nama"
                                 required
                                 autocomplete="off"
                                 class="w-full h-11 py-3 rounded-lg border"
@@ -75,10 +75,10 @@ const submit = () => {
                         <div class="w-full">
                             <Label for="email">Email</Label>
                             <Input
-                                type="text"
                                 id="email"
-                                placeholder="Email"
                                 v-model="form.email"
+                                type="text"
+                                placeholder="Email"
                                 required
                                 autocomplete="off"
                                 class="w-full h-11 py-3 rounded-lg border"
@@ -96,7 +96,7 @@ const submit = () => {
                 class="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 disabled:pointer-events-none disabled:opacity-50"
             >
                 <Loader2 v-if="form.processing" class="w-4 h-4 animate-spin" />
-                <Pencil class="w-4 h-4" v-else />
+                <Pencil v-else class="w-4 h-4" />
                 Edit
             </Button>
         </div>

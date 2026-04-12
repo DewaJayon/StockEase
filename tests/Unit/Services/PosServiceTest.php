@@ -5,7 +5,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\User;
-use App\Services\PosService;
+use App\Services\Sale\PosService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
@@ -87,6 +87,19 @@ it('can update item qty in cart', function () {
     expect($cart->fresh()->saleItems->first()->qty)->toBe(5);
 });
 
+it('throws exception if updating qty exceeds product stock', function () {
+    $product = Product::factory()->create(['stock' => 5, 'selling_price' => 1000]);
+    $cart = $this->posService->getOrCreateCart();
+    SaleItem::create([
+        'sale_id' => $cart->id,
+        'product_id' => $product->id,
+        'qty' => 1,
+        'price' => 1000,
+    ]);
+
+    $this->posService->updateCartItemQty($product->id, 10);
+})->throws(Exception::class, 'Stok produk tidak mencukupi');
+
 it('removes item from cart if qty is 0', function () {
     $product = Product::factory()->create(['stock' => 10]);
     $cart = $this->posService->getOrCreateCart();
@@ -110,7 +123,7 @@ it('can empty the cart', function () {
 
     $cart = $this->posService->getOrCreateCart();
     expect($cart->saleItems)->toHaveCount(0);
-    expect($cart->total)->toBe(0);
+    expect($cart->total)->toBe('0.0000');
 });
 
 it('throws exception if adding product with no stock', function () {

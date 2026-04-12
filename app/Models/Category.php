@@ -5,6 +5,7 @@ namespace App\Models;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
@@ -15,11 +16,21 @@ class Category extends Model
         'name',
     ];
 
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
     public function getRouteKeyName()
     {
         return 'slug';
     }
 
+    /**
+     * Get the sluggable configuration for the model.
+     *
+     * @return array<string, mixed>
+     */
     public function sluggable(): array
     {
         return [
@@ -29,6 +40,11 @@ class Category extends Model
         ];
     }
 
+    /**
+     * Get the products that belong to this category.
+     *
+     * @return HasMany
+     */
     public function products()
     {
         return $this->hasMany(Product::class);

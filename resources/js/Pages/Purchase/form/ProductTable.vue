@@ -49,7 +49,7 @@ watchDebounced(
                 });
         }
     },
-    { debounce: 300, deep: true }
+    { debounce: 300, deep: true },
 );
 
 watch(selectedProductId, (newValue) => {
@@ -72,7 +72,7 @@ props.modelValue.forEach((item, index) => {
                 label: item.product?.name ?? "-",
                 purchase_price: item.price,
                 selling_price: item.selling_price,
-                unit: item.unit,
+                unit: item.product?.unit?.name ?? item.unit,
             },
         ];
     }
@@ -119,13 +119,13 @@ function remove(index) {
                 <TableCell>
                     <Combobox
                         :model-value="item.product_id"
-                        @update:modelValue="
+                        @update:model-value="
                             (val) => {
                                 item.product_id = val.id;
                                 item.product_name = val.label;
                                 item.purchase_price = val.purchase_price;
                                 item.selling_price = val.selling_price;
-                                item.unit = val.unit;
+                                item.unit = val.unit?.name ?? val.unit;
                             }
                         "
                     >
@@ -139,7 +139,7 @@ function remove(index) {
                                             const found = (
                                                 productOptions[index] || []
                                             ).find(
-                                                (p) => p.id === item.product_id
+                                                (p) => p.id === item.product_id,
                                             );
                                             return (
                                                 found?.label ??
@@ -151,7 +151,7 @@ function remove(index) {
                                     placeholder="Cari Produk..."
                                 />
                                 <span
-                                    class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
+                                    class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
                                 >
                                     <Search
                                         class="size-4 text-muted-foreground"
@@ -166,10 +166,10 @@ function remove(index) {
                             </ComboboxEmpty>
                             <ComboboxGroup>
                                 <ComboboxItem
-                                    class="cursor-pointer"
                                     v-for="product in productOptions[index] ||
                                     []"
                                     :key="product.id"
+                                    class="cursor-pointer"
                                     :value="product"
                                 >
                                     {{ product.label }}
@@ -192,9 +192,9 @@ function remove(index) {
                 </TableCell>
                 <TableCell>
                     <Input
+                        v-model.number="item.qty"
                         type="number"
                         placeholder="Qty"
-                        v-model.number="item.qty"
                         min="1"
                         class="[&::-webkit-inner-spin-button]:appearance-none"
                     />
@@ -210,9 +210,9 @@ function remove(index) {
 
                 <TableCell>
                     <Input
+                        v-model.number="item.price"
                         type="number"
                         placeholder="Harga Beli"
-                        v-model.number="item.price"
                         class="[&::-webkit-inner-spin-button]:appearance-none"
                     />
                     <p
@@ -224,9 +224,9 @@ function remove(index) {
                 </TableCell>
                 <TableCell>
                     <Input
+                        v-model.number="item.selling_price"
                         type="number"
                         placeholder="Harga Jual"
-                        v-model.number="item.selling_price"
                         class="[&::-webkit-inner-spin-button]:appearance-none"
                     />
                 </TableCell>
@@ -236,9 +236,9 @@ function remove(index) {
                 <TableCell>
                     <Button
                         size="icon"
-                        @click.prevent="remove(index)"
                         variant="ghost"
                         class="dark:hover:bg-red-900"
+                        @click.prevent="remove(index)"
                     >
                         <Trash class="w-4 h-4" />
                     </Button>

@@ -54,13 +54,13 @@ const months = [
 
 const years = Array.from(
     { length: 100 },
-    (_, i) => new Date().getFullYear() - 50 + i
+    (_, i) => new Date().getFullYear() - 50 + i,
 );
 
 const days = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
 const monthStart = computed(() =>
-    startOfMonth(new Date(currentYear.value, currentMonth.value))
+    startOfMonth(new Date(currentYear.value, currentMonth.value)),
 );
 
 const monthEnd = computed(() => endOfMonth(monthStart.value));
@@ -92,7 +92,7 @@ const selectDate = (date) => {
 };
 
 const formattedDate = computed(() =>
-    selectedDate.value ? format(selectedDate.value, "dd MMMM yyyy") : ""
+    selectedDate.value ? format(selectedDate.value, "dd MMMM yyyy") : "",
 );
 
 watch(
@@ -103,7 +103,7 @@ watch(
             currentMonth.value = getMonth(val);
             currentYear.value = getYear(val);
         }
-    }
+    },
 );
 </script>
 
@@ -147,7 +147,9 @@ watch(
             <div
                 class="grid grid-cols-7 text-center text-xs text-muted-foreground font-medium"
             >
-                <div v-for="day in days" :key="day">{{ day }}</div>
+                <div v-for="day in days" :key="day">
+                    {{ day }}
+                </div>
             </div>
 
             <!-- Tanggal -->
@@ -155,15 +157,15 @@ watch(
                 <div
                     v-for="(day, i) in calendarDates"
                     :key="i"
-                    @click="selectDate(day)"
                     class="py-1.5 cursor-pointer rounded hover:bg-primary hover:text-primary-foreground"
                     :class="{
                         'bg-primary text-primary-foreground': isSameDay(
                             day,
-                            selectedDate
+                            selectedDate,
                         ),
                         'text-gray-400': day.getMonth() !== currentMonth,
                     }"
+                    @click="selectDate(day)"
                 >
                     {{ getDate(day) }}
                 </div>

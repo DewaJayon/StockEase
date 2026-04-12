@@ -63,7 +63,7 @@ const addToCart = (producId) => {
                     {{ product.name }}
                 </h3>
                 <p class="font-bold text-lg">
-                    {{ formatPrice(product.selling_price) }}
+                    {{ formatPrice(Number(product.selling_price)) }}
                 </p>
                 <div class="flex justify-between items-center mt-2">
                     <span class="text-xs text-gray-500">

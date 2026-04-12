@@ -65,7 +65,7 @@ const summary = [
 const categories = props.warehouseChart.stockMovement.map((item) => item.date);
 const masukData = props.warehouseChart.stockMovement.map((item) => item.masuk);
 const keluarData = props.warehouseChart.stockMovement.map(
-    (item) => item.keluar
+    (item) => item.keluar,
 );
 
 const stockSeries = ref([
@@ -134,9 +134,9 @@ const categoryOptions = computed(() => ({
                 class="shadow-sm p-4 flex flex-col justify-between"
             >
                 <div class="flex items-center justify-between">
-                    <CardTitle class="text-sm font-medium">{{
-                        item.title
-                    }}</CardTitle>
+                    <CardTitle class="text-sm font-medium">
+                        {{ item.title }}
+                    </CardTitle>
                     <div
                         class="w-8 h-8 rounded-full flex items-center justify-center"
                         :class="item.color"
@@ -145,7 +145,9 @@ const categoryOptions = computed(() => ({
                     </div>
                 </div>
                 <CardContent class="pt-4">
-                    <p class="text-2xl font-bold">{{ item.value }}</p>
+                    <p class="text-2xl font-bold">
+                        {{ item.value }}
+                    </p>
                 </CardContent>
             </Card>
         </div>

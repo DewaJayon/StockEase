@@ -61,7 +61,7 @@ const submit = () => {
                     Silahkan isi form dibawah ini untuk menambahkan supplier
                 </DialogDescription>
             </DialogHeader>
-            <form id="form" @submit.prevent="submit" class="space-y-4">
+            <form id="form" class="space-y-4" @submit.prevent="submit">
                 <div class="flex items-center space-x-2">
                     <div class="grid flex-1 gap-2">
                         <Label for="name"> Nama supplier </Label>
@@ -96,9 +96,9 @@ const submit = () => {
                     <div class="grid flex-1 gap-2">
                         <Label for="address"> Alamat supplier </Label>
                         <Textarea
-                            placeholder="Masukkan alamat supplier"
                             id="address"
                             v-model="form.address"
+                            placeholder="Masukkan alamat supplier"
                             required
                         />
                         <InputError

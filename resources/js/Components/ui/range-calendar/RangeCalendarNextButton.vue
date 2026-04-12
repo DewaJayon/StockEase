@@ -3,13 +3,13 @@ import { reactiveOmit } from "@vueuse/core";
 import { ChevronRight } from "lucide-vue-next";
 import { RangeCalendarNext, useForwardProps } from "reka-ui";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from '@/Components/ui/button';
+import { buttonVariants } from "@/Components/ui/button";
 
 const props = defineProps({
-  nextPage: { type: Function, required: false },
-  asChild: { type: Boolean, required: false },
-  as: { type: [String, Object, Function], required: false },
-  class: { type: null, required: false },
+    nextPage: { type: Function, required: false },
+    asChild: { type: Boolean, required: false },
+    as: { type: [String, Object, Function], required: false },
+    class: { type: null, required: false },
 });
 
 const delegatedProps = reactiveOmit(props, "class");
@@ -18,18 +18,18 @@ const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
-  <RangeCalendarNext
-    :class="
-      cn(
-        buttonVariants({ variant: 'outline' }),
-        'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100',
-        props.class,
-      )
-    "
-    v-bind="forwardedProps"
-  >
-    <slot>
-      <ChevronRight class="h-4 w-4" />
-    </slot>
-  </RangeCalendarNext>
+    <RangeCalendarNext
+        :class="
+            cn(
+                buttonVariants({ variant: 'outline' }),
+                'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100',
+                props.class,
+            )
+        "
+        v-bind="forwardedProps"
+    >
+        <slot>
+            <ChevronRight class="h-4 w-4" />
+        </slot>
+    </RangeCalendarNext>
 </template>

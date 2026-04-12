@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PurchaseItem extends Model
 {
@@ -16,11 +17,33 @@ class PurchaseItem extends Model
         'price',
     ];
 
+    /**
+     * Get the casts for the model.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:4',
+        ];
+    }
+
+    /**
+     * Get the purchase that the purchase item belongs to.
+     *
+     * @return BelongsTo
+     */
     public function purchase()
     {
         return $this->belongsTo(Purchase::class);
     }
 
+    /**
+     * Get the product that the purchase item belongs to.
+     *
+     * @return BelongsTo
+     */
     public function product()
     {
         return $this->belongsTo(Product::class);

@@ -4,7 +4,10 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "format": "prettier --write resources/",
+        "format:check": "prettier --check resources/",
+        "lint": "eslint . --fix"
     },
     "devDependencies": {
         "@iconify-json/radix-icons": "^1.2.6",
@@ -18,10 +21,13 @@
         "autoprefixer": "^10.4.27",
         "axios": "^1.14.0",
         "concurrently": "^9.2.1",
+        "eslint": "^10.2.0",
+        "eslint-plugin-vue": "^10.8.0",
         "html5-qrcode": "^2.3.8",
         "laravel-echo": "^2.3.3",
         "laravel-vite-plugin": "^3.0.1",
         "postcss": "^8.5.8",
+        "prettier": "^3.8.1",
         "pusher-js": "^8.5.0",
         "tailwindcss": "^4.2.2",
         "vite": "^8.0.3",

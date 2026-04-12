@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Supplier;
-use App\Services\SupplierService;
+use App\Services\Purchase\SupplierService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

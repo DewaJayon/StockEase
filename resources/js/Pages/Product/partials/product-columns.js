@@ -28,7 +28,7 @@ export const productColumns = [
             },
             {
                 default: () => "Kategori",
-            }
+            },
         ),
     },
     {
@@ -40,7 +40,7 @@ export const productColumns = [
             },
             {
                 default: () => "SKU",
-            }
+            },
         ),
     },
     {
@@ -52,13 +52,13 @@ export const productColumns = [
             },
             {
                 default: () => "Satuan",
-            }
+            },
         ),
         cell: ({ row }) =>
             h(
                 "span",
                 { class: "uppercase" },
-                { default: () => row.original.unit }
+                { default: () => row.original.unit?.name ?? "-" },
             ),
     },
     {
@@ -70,7 +70,7 @@ export const productColumns = [
             },
             {
                 default: () => "Stock",
-            }
+            },
         ),
     },
     {
@@ -82,7 +82,7 @@ export const productColumns = [
             },
             {
                 default: () => "Stok Minimal",
-            }
+            },
         ),
     },
     {
@@ -94,7 +94,7 @@ export const productColumns = [
             },
             {
                 default: () => "Harga Jual",
-            }
+            },
         ),
         cell: ({ row }) => formatPrice(row.original.selling_price),
     },

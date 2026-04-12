@@ -61,7 +61,7 @@ const submit = (id, name) => {
 <template>
     <Dialog v-model:open="isDialogOpen">
         <DialogTrigger as-child>
-            <Button variant="destructive">Reset Password</Button>
+            <Button variant="destructive"> Reset Password </Button>
         </DialogTrigger>
         <DialogContent class="sm:max-w-md">
             <DialogHeader>
@@ -72,8 +72,8 @@ const submit = (id, name) => {
             </DialogHeader>
             <form
                 id="reset-password-form"
-                @submit.prevent="submit(row.id, row.name)"
                 class="space-y-4"
+                @submit.prevent="submit(row.id, row.name)"
             >
                 <div class="flex items-center space-x-2">
                     <div class="grid flex-1 gap-2">
@@ -82,9 +82,9 @@ const submit = (id, name) => {
                         <div class="relative">
                             <Input
                                 id="password"
+                                v-model="form.password"
                                 type="password"
                                 placeholder="••••••••"
-                                v-model="form.password"
                                 required
                                 class="pr-10"
                             />
@@ -108,7 +108,7 @@ const submit = (id, name) => {
             </form>
             <DialogFooter class="flex">
                 <DialogClose as-child>
-                    <Button type="button" variant="secondary">Batal</Button>
+                    <Button type="button" variant="secondary"> Batal </Button>
                 </DialogClose>
 
                 <Button

@@ -2,19 +2,19 @@
 import { cn } from "@/lib/utils";
 
 const props = defineProps({
-  class: { type: null, required: false },
+    class: { type: null, required: false },
 });
 </script>
 
 <template>
-  <div
-    :class="
-      cn(
-        'flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-x-2',
-        props.class,
-      )
-    "
-  >
-    <slot />
-  </div>
+    <div
+        :class="
+            cn(
+                'flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-x-2',
+                props.class,
+            )
+        "
+    >
+        <slot />
+    </div>
 </template>

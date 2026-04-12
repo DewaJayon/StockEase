@@ -1,0 +1,290 @@
+<?php
+
+namespace App\Http\Controllers\Sale;
+
+use App\Exports\SalesReportExport;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Report\SaleReportExportRequest;
+use App\Models\Product;
+use App\Models\Sale;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+use Inertia\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+class SaleReportController extends Controller
+{
+    /**
+     * Index function handles report sales data based on given request
+     * parameters. It will return Inertia response with filtered sales data.
+     *
+     * @param  Request  $request  The request object containing start_date, end_date,
+     *                            cashier, and payment parameters.
+     * @return Response
+     */
+    public function index(Request $request)
+    {
+
+        $filters = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'cashier' => $request->cashier,
+            'payment' => $request->payment,
+        ];
+
+        $filteredSales = [];
+
+        if ($filters['start_date'] || $filters['end_date'] || $filters['cashier'] || $filters['payment']) {
+
+            $query = $this->getFilterQuery($filters);
+
+            $sumTotalSale = $query->sum('total');
+            $transactionCount = $query->where('status', 'completed')->count();
+            $countProductSale = $query->flatMap->saleItems->count();
+
+            $bestSellingProduct = $query
+                ->flatMap->saleItems
+                ->groupBy('product_id')
+                ->map(function ($items) {
+                    return [
+                        'product_id' => $items->first()->product_id,
+                        'product_name' => $items->first()->product->name ?? 'Unknown',
+                        'total_sold' => $items->sum('qty'),
+                    ];
+                })
+                ->sortByDesc('total_sold')
+                ->first();
+
+            Carbon::setLocale('id');
+
+            $salesTrend = $query
+                ->groupBy(function ($sale) {
+                    return Carbon::parse($sale->created_at)->translatedFormat('M');
+                })
+                ->map(function ($sales) {
+                    return $sales->sum('total');
+                });
+
+            $salesTrend = [
+                'labels' => $salesTrend->keys()->values(),
+                'data' => $salesTrend->values(),
+            ];
+
+            $productSalesShare = $query
+                ->flatMap->saleItems
+                ->groupBy('product_id')
+                ->map(function ($items) {
+                    return [
+                        'product_name' => $items->first()->product->name ?? 'Unknown',
+                        'total_sold' => $items->sum('qty'),
+                    ];
+                })
+                ->values();
+
+            $filteredSales = [
+                'sales' => $query,
+                'sumTotalSale' => $sumTotalSale,
+                'transactionCount' => $transactionCount,
+                'countProductSale' => $countProductSale,
+                'bestSellingProduct' => $bestSellingProduct,
+                'salesTrend' => $salesTrend,
+                'productSalesShare' => $productSalesShare,
+            ];
+        }
+
+        return Inertia::render('Reports/Sale/Index', [
+            'sales' => $filteredSales,
+        ]);
+    }
+
+    /**
+     * Search cashier by name.
+     *
+     * @return JsonResponse
+     */
+    public function searchCashier(Request $request)
+    {
+        if ($request->expectsJson()) {
+
+            if (blank($request->search)) {
+                return response()->json([
+                    'message' => 'empty search',
+                    'data' => [],
+                ], 200);
+            }
+
+            $cashier = User::where(function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                    ->orWhere('id', 'like', "%{$request->search}%")
+                    ->whereIn('role', ['cashier', 'admin']);
+            })->select('id as value', 'name as label')->get();
+
+            if ($cashier->isEmpty()) {
+                return response()->json([
+                    'message' => 'cashier not found',
+                    'data' => null,
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Success get cashier',
+                'data' => $cashier,
+            ], 200);
+        }
+    }
+
+    /**
+     * Generate a PDF report for a given date range, cashier, and payment method.
+     *
+     * @return BinaryFileResponse
+     */
+    public function exportToPdf(SaleReportExportRequest $request)
+    {
+        $filters = $request->validated();
+
+        $cashierUser = User::find($filters['cashier']);
+
+        $query = $this->getFilterQuery($filters);
+
+        $totalSale = $query->sum('total');
+        $transactionCount = $query->where('status', 'completed')->count();
+        $productSold = $query->flatMap->saleItems->count();
+
+        $bestSellingProduct = $query
+            ->flatMap->saleItems
+            ->groupBy('product_id')
+            ->map(function ($items) {
+                return (object) [
+                    'product_id' => $items->first()->product_id,
+                    'product_name' => $items->first()->product->name ?? 'Unknown',
+                    'total_sold' => $items->sum('qty'),
+                ];
+            })
+            ->sortByDesc('total_sold')
+            ->first();
+
+        $saleProducts = $query->flatMap->saleItems
+            ->groupBy('product_id')
+            ->map(function ($items) {
+                $firstItem = $items->first();
+
+                return (object) [
+                    'date' => $firstItem->sale->created_at,
+                    'product_name' => $firstItem->product->name ?? 'Unknown',
+                    'quantity' => $items->sum('qty'),
+                    'total' => $items->sum(function ($i) {
+                        return $i->qty * $i->price;
+                    }),
+                ];
+            })
+            ->values();
+
+        $data = [
+            'start_date' => Carbon::parse($filters['start_date'])->translatedFormat('d F Y'),
+            'end_date' => Carbon::parse($filters['end_date'])->translatedFormat('d F Y'),
+            'cashier_name' => $cashierUser?->name ?? 'Semua Cashier',
+            'payment' => $filters['payment'],
+            'total_sales' => $totalSale,
+            'transaction_count' => $transactionCount,
+            'product_sold' => $productSold,
+            'best_selling_product' => $bestSellingProduct,
+            'sales' => $saleProducts,
+        ];
+
+        $pdf = Pdf::loadView('exports.sales.report', $data);
+
+        $fileName = 'Laporan Penjualan '
+            .Carbon::parse($filters['start_date'])->translatedFormat('d F Y').' - '
+            .Carbon::parse($filters['end_date'])->translatedFormat('d F Y').' StockEase.pdf';
+
+        $filePath = 'reports/sales/'
+            .Carbon::now('Asia/Shanghai')->format('Y').'/'
+            .Carbon::now('Asia/Shanghai')->translatedFormat('F').'/'
+            .$fileName;
+
+        Storage::put($filePath, $pdf->output());
+
+        return $pdf->download($fileName);
+    }
+
+    /**
+     * Generate an Excel report for a given date range, cashier, and payment method.
+     *
+     * @return BinaryFileResponse
+     */
+    public function exportToExcel(SaleReportExportRequest $request)
+    {
+        $filters = $request->validated();
+
+        $query = $this->getFilterQuery($filters);
+
+        if ($filters['cashier'] !== 'semua-cashier') {
+            $cashier = User::find($filters['cashier']);
+            $cashierName = $cashier ? $cashier->name : 'Kasir Tidak Ditemukan';
+        } else {
+            $cashierName = 'Semua Cashier';
+        }
+
+        $summary = [
+            'total_sales' => number_format($query->sum('total')),
+            'transaction_count' => $query->count(),
+            'product_count' => $query->flatMap->saleItems->sum('qty'),
+            'best_product' => $query->flatMap->saleItems
+                ->groupBy('product_id')
+                ->map->sum('quantity')
+                ->sortDesc()
+                ->keys()
+                ->map(fn ($id) => Product::find($id)->name)
+                ->first() ?? '-',
+        ];
+
+        $filters['cashier'] = $cashierName;
+
+        $fileName = 'Laporan Penjualan '
+            .Carbon::parse($filters['start_date'])->translatedFormat('d F Y').' - '
+            .Carbon::parse($filters['end_date'])->translatedFormat('d F Y').' StockEase.xlsx';
+
+        $filePath = 'reports/sales/'
+            .Carbon::now('Asia/Shanghai')->format('Y').'/'
+            .Carbon::now('Asia/Shanghai')->translatedFormat('F').'/'
+            .$fileName;
+
+        Excel::store(new SalesReportExport($query, $filters, $summary), $filePath, 'local');
+
+        return Excel::download(new SalesReportExport($query, $filters, $summary), $fileName);
+    }
+
+    /**
+     * Generate a query based on the given filters.
+     *
+     * @return Collection
+     */
+    private function getFilterQuery(array $filters)
+    {
+        $query = Sale::with('user', 'saleItems', 'saleItems.product', 'paymentTransaction')
+            ->where('status', '!=', 'draft')
+            ->when($filters['start_date'], function ($query) use ($filters) {
+                return $query->whereDate('date', '>=', $filters['start_date']);
+            })
+            ->when($filters['end_date'], function ($query) use ($filters) {
+                return $query->whereDate('date', '<=', $filters['end_date']);
+            })
+            ->when($filters['cashier'] && $filters['cashier'] !== 'semua-cashier', function ($query) use ($filters) {
+                return $query->where('user_id', $filters['cashier']);
+            })
+            ->when($filters['payment'] && $filters['payment'] !== 'semua-metode', function ($query) use ($filters) {
+                return $query->where('payment_method', $filters['payment']);
+            })
+
+            ->get();
+
+        return $query;
+    }
+}

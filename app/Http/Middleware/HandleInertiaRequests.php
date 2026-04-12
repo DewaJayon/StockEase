@@ -55,12 +55,15 @@ class HandleInertiaRequests extends Middleware
             ->limit(50)
             ->get();
 
-        return $notifications->map(function ($notification) {
+        $productIds = $notifications->map(fn ($n) => $n->data['product_id'] ?? null)->filter()->unique();
+        $products = $productIds->isEmpty() ? collect() : Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+        return $notifications->map(function ($notification) use ($products) {
             $data = $notification->data;
 
             // Ensure slug is present
             if (! isset($data['product_slug']) && isset($data['product_id'])) {
-                $product = Product::find($data['product_id']);
+                $product = $products->get($data['product_id']);
                 if ($product) {
                     $data['product_slug'] = $product->slug;
                 }

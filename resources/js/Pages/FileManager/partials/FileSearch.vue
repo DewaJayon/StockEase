@@ -21,18 +21,18 @@ watchDebounced(
             {
                 preserveState: true,
                 preserveScroll: true,
-            }
+            },
         );
     },
-    { debounce: 300 }
+    { debounce: 300 },
 );
 </script>
 
 <template>
     <Input
         id="search"
-        type="text"
         v-model="search"
+        type="text"
         placeholder="Search..."
         autocomplete="off"
         class="pl-10 shadow-md focus:ring-0 focus:ring-offset-0 w-full"

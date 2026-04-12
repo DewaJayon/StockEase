@@ -1,21 +1,22 @@
 <?php
 
-use App\Http\Controllers\Dashboard\CategoryController;
-use App\Http\Controllers\Dashboard\DashboardController;
-use App\Http\Controllers\Dashboard\MidtransTransactionController;
-use App\Http\Controllers\Dashboard\PaymentController;
-use App\Http\Controllers\Dashboard\PosController;
-use App\Http\Controllers\Dashboard\ProductController;
-use App\Http\Controllers\Dashboard\PurchaseController;
-use App\Http\Controllers\Dashboard\SaleHistoryController;
-use App\Http\Controllers\Dashboard\SupplierController;
-use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Media\FileManagerController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Report\LogStockController;
-use App\Http\Controllers\Report\PurchaseReportController;
-use App\Http\Controllers\Report\SaleReportController;
-use App\Http\Controllers\Report\StockReportController;
+use App\Http\Controllers\Payment\MidtransTransactionController;
+use App\Http\Controllers\Payment\PaymentController;
+use App\Http\Controllers\Product\CategoryController;
+use App\Http\Controllers\Product\ProductController;
+use App\Http\Controllers\Purchase\PurchaseController;
+use App\Http\Controllers\Purchase\PurchaseReportController;
+use App\Http\Controllers\Purchase\SupplierController;
+use App\Http\Controllers\Sale\PosController;
+use App\Http\Controllers\Sale\SaleHistoryController;
+use App\Http\Controllers\Sale\SaleReportController;
+use App\Http\Controllers\Stock\LogStockController;
+use App\Http\Controllers\Stock\StockReportController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Route
@@ -52,6 +53,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:admin, warehouse'])->group(function () {
     Route::resource('supplier', SupplierController::class);
     Route::resource('product', ProductController::class);
+    Route::resource('unit', UnitController::class);
 });
 
 // POS Route

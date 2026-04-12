@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Product;
+use App\Models\Unit;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
@@ -16,13 +18,23 @@ class ProductSeeder extends Seeder
         $products = json_decode(file_get_contents($products), true);
 
         foreach ($products as $product) {
+            $unitName = $product['unit'];
+
+            $unit = Unit::firstOrCreate(
+                ['short_name' => $unitName],
+                [
+                    'name' => ucfirst($unitName),
+                    'slug' => Str::slug($unitName),
+                ]
+            );
+
             Product::create([
                 'category_id' => $product['category_id'],
                 'slug' => $product['slug'],
                 'name' => $product['name'],
                 'sku' => $product['sku'],
                 'barcode' => $product['barcode'],
-                'unit' => $product['unit'],
+                'unit_id' => $unit->id,
                 'stock' => $product['stock'],
                 'purchase_price' => $product['purchase_price'],
                 'selling_price' => $product['selling_price'],

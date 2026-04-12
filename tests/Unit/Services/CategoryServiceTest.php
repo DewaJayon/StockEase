@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Category;
-use App\Services\CategoryService;
+use App\Services\Product\CategoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

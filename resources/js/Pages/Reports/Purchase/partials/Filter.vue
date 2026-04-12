@@ -40,7 +40,7 @@ watchDebounced(
             .get(
                 route("reports.purchase.search-supplier", {
                     search: newSearchSupplier,
-                })
+                }),
             )
             .then((response) => {
                 searchSupplierData.value = response.data.data;
@@ -49,7 +49,7 @@ watchDebounced(
                 searchSupplierData.value = [];
             });
     },
-    300
+    300,
 );
 
 const searchUser = ref("");
@@ -62,7 +62,7 @@ watchDebounced(
             .get(
                 route("reports.purchase.search-user", {
                     search: newSearchUser,
-                })
+                }),
             )
             .then((response) => {
                 searchUserData.value = response.data.data;
@@ -71,7 +71,7 @@ watchDebounced(
                 searchUserData.value = [];
             });
     },
-    300
+    300,
 );
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -120,16 +120,16 @@ watch(allUser, (newVal) => {
     }
 });
 
-if (supplier) {
+if (supplier.value) {
     axios
         .get(
             route("reports.purchase.search-supplier", {
                 search: supplier.value,
-            })
+            }),
         )
         .then((response) => {
             const foundSupplier = response.data.data.find(
-                (item) => String(item.value) === String(supplier.value)
+                (item) => String(item.value) === String(supplier.value),
             );
 
             if (foundSupplier) {
@@ -141,16 +141,16 @@ if (supplier) {
         });
 }
 
-if (user) {
+if (user.value) {
     axios
         .get(
             route("reports.purchase.search-user", {
                 search: user.value,
-            })
+            }),
         )
         .then((response) => {
             const foundUser = response.data.data.find(
-                (item) => String(item.value) === String(user.value)
+                (item) => String(item.value) === String(user.value),
             );
             if (foundUser) {
                 user.value = foundUser;
@@ -248,7 +248,7 @@ const handleExportPdf = () => {
             supplier: supplierParam,
             user: userParam,
         }),
-        "_blank"
+        "_blank",
     );
 };
 
@@ -277,7 +277,7 @@ const handleExportExcel = () => {
             supplier: supplierParam,
             user: userParam,
         }),
-        "_blank"
+        "_blank",
     );
 };
 </script>
@@ -293,31 +293,31 @@ const handleExportExcel = () => {
             <div class="space-y-1">
                 <Label html-for="startDate">Tanggal Mulai</Label>
                 <DatePicker
-                    label="Tanggal"
-                    class="w-full"
                     id="startDate"
                     v-model="startDate"
+                    label="Tanggal"
+                    class="w-full"
                 />
             </div>
             <div class="space-y-1">
                 <Label html-for="endDate">Tanggal Selesai</Label>
                 <DatePicker
-                    label="Tanggal"
-                    class="w-full"
                     id="endDate"
                     v-model="endDate"
+                    label="Tanggal"
+                    class="w-full"
                 />
             </div>
             <div class="space-y-1">
                 <Label html-for="supplier">Supplier</Label>
-                <Combobox by="label" v-model="supplier">
+                <Combobox v-model="supplier" by="label">
                     <ComboboxAnchor class="w-full">
                         <div class="relative w-full max-w-sm items-center">
                             <ComboboxInput
+                                v-model="searchSupplier"
                                 class="pl-9"
                                 :display-value="(val) => val?.label ?? ''"
                                 placeholder="Cari Supplier..."
-                                v-model="searchSupplier"
                             />
                             <span
                                 class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
@@ -363,14 +363,14 @@ const handleExportExcel = () => {
             <div class="space-y-1">
                 <Label html-for="user">User</Label>
 
-                <Combobox by="label" v-model="user" html-id="user">
+                <Combobox v-model="user" by="label" html-id="user">
                     <ComboboxAnchor class="w-full">
                         <div class="relative w-full max-w-sm items-center">
                             <ComboboxInput
+                                v-model="searchUser"
                                 class="pl-9"
                                 :display-value="(val) => val?.label ?? ''"
                                 placeholder="Cari User..."
-                                v-model="searchUser"
                             />
                             <span
                                 class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
@@ -417,31 +417,31 @@ const handleExportExcel = () => {
 
             <div class="flex space-x-2">
                 <Button
-                    @click="handleFilter"
                     :disabled="isFilterLoading || !checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="handleFilter"
                 >
                     <Loader2
                         v-if="isFilterLoading"
                         class="w-4 h-4 animate-spin"
                     />
 
-                    <Search class="h-4 w-4" v-else />
+                    <Search v-else class="h-4 w-4" />
                     <span>Lihat Laporan</span>
                 </Button>
 
                 <Button
-                    @click="handleExportPdf"
                     :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="handleExportPdf"
                 >
                     <Printer class="h-4 w-4" />
                     <span>Export PDF</span>
                 </Button>
                 <Button
-                    @click="handleExportExcel()"
                     :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="handleExportExcel()"
                 >
                     <FileSpreadsheet class="h-4 w-4" />
                     <span>Export Excel</span>

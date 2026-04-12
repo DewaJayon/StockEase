@@ -66,9 +66,9 @@ const updatePassword = () => {
                 </div>
 
                 <form
-                    @submit.prevent="updatePassword"
-                    class="w-full"
                     id="passwordForm"
+                    class="w-full"
+                    @submit.prevent="updatePassword"
                 >
                     <div
                         class="grid grid-cols-1 gap-4 lg:grid-cols-2 w-full mt-4"
@@ -92,7 +92,7 @@ const updatePassword = () => {
                                     class="absolute inset-y-0 right-0 flex items-center pr-3"
                                     @click="
                                         togglePasswordVisibility(
-                                            'current_password'
+                                            'current_password',
                                         )
                                     "
                                 >
@@ -147,7 +147,7 @@ const updatePassword = () => {
                                     class="absolute inset-y-0 right-0 flex items-center pr-3"
                                     @click="
                                         togglePasswordVisibility(
-                                            'password_confirmation'
+                                            'password_confirmation',
                                         )
                                     "
                                 >
@@ -170,7 +170,7 @@ const updatePassword = () => {
                 :disabled="form.processing"
             >
                 <Loader2 v-if="form.processing" class="w-4 h-4 animate-spin" />
-                <Pencil class="w-4 h-4" v-else />
+                <Pencil v-else class="w-4 h-4" />
                 Simpan
             </Button>
         </div>

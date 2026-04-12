@@ -85,13 +85,13 @@ const handleDelete = async (filePath) => {
                         className="shrink-0 rounded-lg p-2 ring-1 ring-gray-100 dark:ring-gray-800"
                     >
                         <FileExcelIcon
-                            class="w-6 h-6"
                             v-if="file.file_extension == 'xlsx'"
+                            class="w-6 h-6"
                         />
 
                         <FilePdfIcon
-                            class="w-6 h-6"
                             v-if="file.file_extension == 'pdf'"
+                            class="w-6 h-6"
                         />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -154,12 +154,12 @@ const handleDelete = async (filePath) => {
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel
-                                                >Batal</AlertDialogCancel
-                                            >
+                                            <AlertDialogCancel>
+                                                Batal
+                                            </AlertDialogCancel>
                                             <AlertDialogAction
-                                                @click="handleDelete(file.path)"
                                                 class="bg-red-500 hover:bg-red-600 text-white"
+                                                @click="handleDelete(file.path)"
                                             >
                                                 <Loader2
                                                     v-if="isLoading"

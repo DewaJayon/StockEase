@@ -1,0 +1,90 @@
+<?php
+
+namespace Tests\Feature\General;
+
+use App\Models\Product;
+use App\Models\Sale;
+use App\Models\Supplier;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+use function Pest\Laravel\actingAs;
+
+uses(RefreshDatabase::class);
+
+it('renders admin dashboard with correct data', function () {
+    /** @var User $admin */
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    // Create sales for today and this month
+    Sale::factory()->create(['total' => 1000, 'created_at' => Carbon::today()]);
+    Sale::factory()->create(['total' => 2000, 'created_at' => Carbon::now()->subMonth()->startOfMonth()]); // Should not be in this month's total
+
+    // Create low stock products
+    Product::factory()->create(['name' => 'Low Stock Item', 'stock' => 5, 'alert_stock' => 10]);
+
+    $response = actingAs($admin)->get(route('dashboard'));
+
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('Dashboard/Index')
+            ->has(
+                'data.salesSummary',
+                fn ($json) => $json
+                    ->where('today', '1000.0000')
+                    ->where('month', '1000.0000')
+            )
+            ->has('data.lowStock', 1)
+            ->where('data.lowStock.0.name', 'Low Stock Item')
+            ->has('data.activities')
+    );
+});
+
+it('renders cashier dashboard with correct data', function () {
+    /** @var User $cashier */
+    $cashier = User::factory()->create(['role' => 'cashier']);
+
+    // Create a sale for today
+    $product = Product::factory()->create(['name' => 'Best Seller']);
+    $sale = Sale::factory()->create(['total' => 5000, 'created_at' => Carbon::today(), 'payment_method' => 'cash']);
+    $sale->saleItems()->create(['product_id' => $product->id, 'qty' => 2, 'price' => 2500]);
+
+    $response = actingAs($cashier)->get(route('dashboard'));
+
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('Dashboard/Index')
+            ->has(
+                'data.cashierSalesSummary',
+                fn ($json) => $json
+                    ->where('todaysIncome', '5000.0000')
+                    ->where('bestSellingProduct', 'Best Seller')
+                    ->etc()
+            )
+            ->has('data.recentTransaction', 1)
+    );
+});
+
+it('renders warehouse dashboard with correct data', function () {
+    /** @var User $warehouse */
+    $warehouse = User::factory()->create(['role' => 'warehouse']);
+
+    Product::factory()->count(3)->create();
+    Supplier::factory()->count(2)->create();
+
+    $response = actingAs($warehouse)->get(route('dashboard'));
+
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('Dashboard/Index')
+            ->has(
+                'data.warehouseSummary',
+                fn ($json) => $json
+                    ->where('totalProduct', 3)
+                    ->where('activeSupplier', 2)
+                    ->etc()
+            )
+            ->has('data.activityLogWarehouse')
+    );
+});

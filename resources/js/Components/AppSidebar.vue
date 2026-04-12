@@ -31,6 +31,7 @@ import {
     Warehouse,
     Logs,
     File,
+    Scale,
 } from "lucide-vue-next";
 
 import {
@@ -75,6 +76,12 @@ const manageData = [
         routeName: "category.index",
         icon: Tag,
         roles: ["admin"],
+    },
+    {
+        title: "Satuan",
+        routeName: "unit.index",
+        icon: Scale,
+        roles: ["admin", "warehouse"],
     },
     {
         title: "Supplier",
@@ -166,7 +173,7 @@ const other = [
                             :key="item.title"
                         >
                             <SidebarMenuButton
-                                asChild
+                                as-child
                                 :is-active="route().current(item.routeName)"
                             >
                                 <Link
@@ -187,12 +194,12 @@ const other = [
 
             <!-- Manajemen Data -->
             <CollapsibleRoot
-                defaultOpen
-                class="group/collapsible"
                 v-if="filterMenuByRole(manageData, user.role).length"
+                default-open
+                class="group/collapsible"
             >
                 <SidebarGroup>
-                    <SidebarGroupLabel asChild>
+                    <SidebarGroupLabel as-child>
                         <CollapsibleTrigger>
                             Manajemen Data
                             <ChevronDown
@@ -211,7 +218,7 @@ const other = [
                                     :key="item.title"
                                 >
                                     <SidebarMenuButton
-                                        asChild
+                                        as-child
                                         :is-active="
                                             route().current(item.routeName)
                                         "
@@ -235,9 +242,9 @@ const other = [
             </CollapsibleRoot>
 
             <!-- Transaction -->
-            <CollapsibleRoot defaultOpen class="group/collapsible">
+            <CollapsibleRoot default-open class="group/collapsible">
                 <SidebarGroup>
-                    <SidebarGroupLabel asChild>
+                    <SidebarGroupLabel as-child>
                         <CollapsibleTrigger>
                             Data Transaksi dan Penjualan
                             <ChevronDown
@@ -256,7 +263,7 @@ const other = [
                                     :key="item.title"
                                 >
                                     <SidebarMenuButton
-                                        asChild
+                                        as-child
                                         :is-active="
                                             route().current(item.routeName)
                                         "
@@ -280,9 +287,9 @@ const other = [
             </CollapsibleRoot>
 
             <!-- Reports -->
-            <CollapsibleRoot defaultOpen class="group/collapsible">
+            <CollapsibleRoot default-open class="group/collapsible">
                 <SidebarGroup>
-                    <SidebarGroupLabel asChild>
+                    <SidebarGroupLabel as-child>
                         <CollapsibleTrigger>
                             Laporan
                             <ChevronDown
@@ -301,7 +308,7 @@ const other = [
                                     :key="item.title"
                                 >
                                     <SidebarMenuButton
-                                        asChild
+                                        as-child
                                         :is-active="
                                             route().current(item.routeName)
                                         "
@@ -325,9 +332,9 @@ const other = [
             </CollapsibleRoot>
 
             <!-- Other -->
-            <CollapsibleRoot defaultOpen class="group/collapsible">
+            <CollapsibleRoot default-open class="group/collapsible">
                 <SidebarGroup>
-                    <SidebarGroupLabel asChild>
+                    <SidebarGroupLabel as-child>
                         <CollapsibleTrigger>
                             Lainnya
                             <ChevronDown
@@ -346,7 +353,7 @@ const other = [
                                     :key="item.title"
                                 >
                                     <SidebarMenuButton
-                                        asChild
+                                        as-child
                                         :is-active="
                                             route().current(item.routeName)
                                         "

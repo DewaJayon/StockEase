@@ -7,7 +7,7 @@ import HeaderTheme from "./HeaderTheme.vue";
 </script>
 
 <template>
-    <header class="shadow-sm border-b">
+    <header class="shadow-sm border-b bg-background">
         <div class="flex items-center justify-between px-6 py-4">
             <div class="flex items-center">
                 <SidebarTrigger />

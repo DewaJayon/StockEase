@@ -22,6 +22,9 @@ export const formatPrice = (price) =>
         minimumFractionDigits: 0,
     }).format(price);
 
+export const formatNumber = (number) =>
+    new Intl.NumberFormat("id-ID").format(number);
+
 dayjs.locale("id");
 dayjs.extend(relativeTime);
 
@@ -45,7 +48,7 @@ export function formatRelative(datetime) {
 
 export function getCurrentUrlQuery(exclude = []) {
     const params = Object.fromEntries(
-        new URLSearchParams(window.location.search)
+        new URLSearchParams(window.location.search),
     );
     exclude.forEach((key) => {
         delete params[key];

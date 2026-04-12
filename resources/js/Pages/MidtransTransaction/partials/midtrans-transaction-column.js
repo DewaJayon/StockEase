@@ -34,7 +34,7 @@ export const midtransTransactionColumns = [
             h(
                 "span",
                 { class: centerClass },
-                formatPrice(row.row.original.amount)
+                formatPrice(row.row.original.amount),
             ),
     },
     {
@@ -50,7 +50,7 @@ export const midtransTransactionColumns = [
             h(
                 "span",
                 { class: centerClass },
-                formatDate(row.original.created_at)
+                formatDate(row.original.created_at),
             ),
     },
     {

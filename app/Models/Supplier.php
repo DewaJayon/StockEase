@@ -18,11 +18,21 @@ class Supplier extends Model
         'address',
     ];
 
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
     public function getRouteKeyName()
     {
         return 'slug';
     }
 
+    /**
+     * Get the sluggable configuration for the model.
+     *
+     * @return array<string, mixed>
+     */
     public function sluggable(): array
     {
         return [

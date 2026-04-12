@@ -48,7 +48,7 @@ export const stockLogColumns = [
                     class: "max-w-[200px]",
                     title: row.original.note,
                 },
-                row.original.note
+                row.original.note,
             ),
     },
 ];

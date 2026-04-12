@@ -2,7 +2,8 @@
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Services\ProductService;
+use App\Models\Unit;
+use App\Services\Product\ProductService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -54,7 +55,7 @@ it('can store a product without image', function () {
         'selling_price' => 2000,
         'stock' => 10,
         'alert_stock' => 2,
-        'unit' => 'pcs',
+        'unit_id' => Unit::factory()->create()->id,
     ];
 
     $product = $this->service->storeProduct($data);
@@ -76,7 +77,7 @@ it('can store a product with image', function () {
         'selling_price' => 2000,
         'stock' => 10,
         'alert_stock' => 2,
-        'unit' => 'pcs',
+        'unit_id' => Unit::factory()->create()->id,
     ];
 
     $product = $this->service->storeProduct($data, $image);

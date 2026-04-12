@@ -66,7 +66,7 @@ if (selectedCategoryParam) {
         .get(
             route("reports.stock.searchCategory", {
                 search: selectedCategoryParam,
-            })
+            }),
         )
         .then((response) => {
             const categoriesData = response.data.data.map((item) => ({
@@ -75,7 +75,7 @@ if (selectedCategoryParam) {
             }));
 
             const foundCategory = categoriesData.find(
-                (item) => String(item.value) === String(selectedCategoryParam)
+                (item) => String(item.value) === String(selectedCategoryParam),
             );
 
             if (foundCategory) {
@@ -92,7 +92,7 @@ if (selectedSupplierParam) {
         .get(
             route("reports.stock.searchSupplier", {
                 search: selectedSupplierParam,
-            })
+            }),
         )
         .then((response) => {
             const suppliersData = response.data.data.map((item) => ({
@@ -101,7 +101,7 @@ if (selectedSupplierParam) {
             }));
 
             const foundSupplier = suppliersData.find(
-                (item) => String(item.value) === String(selectedSupplierParam)
+                (item) => String(item.value) === String(selectedSupplierParam),
             );
 
             if (foundSupplier) {
@@ -144,7 +144,7 @@ watchDebounced(
             .get(
                 route("reports.stock.searchCategory", {
                     search: newSearchCategory,
-                })
+                }),
             )
             .then((response) => {
                 categories.value = response.data.data.map((item) => {
@@ -158,7 +158,7 @@ watchDebounced(
                 categories.value = [];
             });
     },
-    { debounce: 500 }
+    { debounce: 500 },
 );
 
 const searchSupplier = ref("");
@@ -171,7 +171,7 @@ watchDebounced(
             .get(
                 route("reports.stock.searchSupplier", {
                     search: newSearchSupplier,
-                })
+                }),
             )
             .then((response) => {
                 suppliers.value = response.data.data.map((item) => {
@@ -185,7 +185,7 @@ watchDebounced(
                 suppliers.value = [];
             });
     },
-    { debounce: 500 }
+    { debounce: 500 },
 );
 
 const checkFilter = () => {
@@ -256,7 +256,7 @@ const handleExportPdf = () => {
             supplier: supplierParam,
             category: categoryParam,
         }),
-        "_blank"
+        "_blank",
     );
 };
 
@@ -280,7 +280,7 @@ const handleExportExcel = () => {
             supplier: supplierParam,
             category: categoryParam,
         }),
-        "_blank"
+        "_blank",
     );
 };
 </script>
@@ -296,35 +296,35 @@ const handleExportExcel = () => {
             <div class="space-y-1">
                 <Label html-for="startDate">Tanggal Mulai</Label>
                 <DatePicker
-                    label="Tanggal"
-                    class="w-full"
                     id="startDate"
                     v-model="startDate"
+                    label="Tanggal"
+                    class="w-full"
                 />
             </div>
             <div class="space-y-1">
                 <Label html-for="endDate">Tanggal Selesai</Label>
                 <DatePicker
-                    label="Tanggal"
-                    class="w-full"
                     id="endDate"
                     v-model="endDate"
+                    label="Tanggal"
+                    class="w-full"
                 />
             </div>
             <div class="space-y-1">
                 <Label html-for="category">Kategori</Label>
                 <Combobox
-                    by="label"
                     v-model="selectedCategory"
+                    by="label"
                     html-id="category"
                 >
                     <ComboboxAnchor class="w-full">
                         <div class="relative w-full max-w-sm items-center">
                             <ComboboxInput
+                                v-model="searchCategory"
                                 class="pl-9"
                                 :display-value="(val) => val?.label ?? ''"
                                 placeholder="Cari Kategori..."
-                                v-model="searchCategory"
                             />
                             <span
                                 class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
@@ -370,17 +370,17 @@ const handleExportExcel = () => {
             <div class="space-y-1">
                 <Label html-for="supplier">Supplier</Label>
                 <Combobox
-                    by="label"
                     v-model="selectedSupplier"
+                    by="label"
                     html-id="supplier"
                 >
                     <ComboboxAnchor class="w-full">
                         <div class="relative w-full max-w-sm items-center">
                             <ComboboxInput
+                                v-model="searchSupplier"
                                 class="pl-9"
                                 :display-value="(val) => val?.label ?? ''"
                                 placeholder="Cari Supplier..."
-                                v-model="searchSupplier"
                             />
                             <span
                                 class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
@@ -426,30 +426,30 @@ const handleExportExcel = () => {
 
             <div class="flex space-x-2">
                 <Button
-                    @click="handleFilter"
                     :disabled="isFilterLoading || !checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="handleFilter"
                 >
                     <Loader2
                         v-if="isFilterLoading"
                         class="w-4 h-4 animate-spin"
                     />
 
-                    <Search class="h-4 w-4" v-else />
+                    <Search v-else class="h-4 w-4" />
                     <span>Lihat Laporan</span>
                 </Button>
                 <Button
-                    @click="handleExportPdf()"
                     :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="handleExportPdf()"
                 >
                     <Printer class="h-4 w-4" />
                     <span>Export PDF</span>
                 </Button>
                 <Button
-                    @click="handleExportExcel()"
                     :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="handleExportExcel()"
                 >
                     <FileSpreadsheet class="h-4 w-4" />
                     <span>Export Excel</span>

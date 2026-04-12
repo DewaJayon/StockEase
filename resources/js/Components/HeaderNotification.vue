@@ -21,8 +21,14 @@ import {
     DropdownMenuGroup,
 } from "@/Components/ui/dropdown-menu";
 
-const { notifications, unreadCount, initialize, markAsRead, markAllAsRead, deleteNotification } =
-    useNotifications();
+const {
+    notifications,
+    unreadCount,
+    initialize,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+} = useNotifications();
 
 onMounted(() => {
     initialize();
@@ -65,8 +71,8 @@ onMounted(() => {
                 </div>
                 <button
                     v-if="unreadCount"
-                    @click="markAllAsRead"
                     class="text-xs text-primary hover:underline font-semibold transition-all"
+                    @click="markAllAsRead"
                 >
                     Tandai semua dibaca
                 </button>
@@ -140,16 +146,16 @@ onMounted(() => {
                         >
                             <button
                                 v-if="!notif.read_at"
-                                @click.stop="markAsRead(notif.id)"
                                 class="p-2 hover:bg-blue-100 hover:text-blue-600 text-muted-foreground rounded-full transition-colors"
                                 title="Tandai dibaca"
+                                @click.stop="markAsRead(notif.id)"
                             >
                                 <Check class="h-4 w-4" />
                             </button>
                             <button
-                                @click.stop="deleteNotification(notif.id)"
                                 class="p-2 hover:bg-destructive/10 hover:text-destructive text-muted-foreground rounded-full transition-colors"
                                 title="Hapus"
+                                @click.stop="deleteNotification(notif.id)"
                             >
                                 <Trash2 class="h-4 w-4" />
                             </button>

@@ -73,7 +73,7 @@ watch(
         pagination.value.pageIndex = newPagination.current_page - 1;
         pagination.value.pageSize = newPagination.per_page;
     },
-    { immediate: true, deep: true }
+    { immediate: true, deep: true },
 );
 
 const table = useVueTable({
@@ -102,7 +102,7 @@ const table = useVueTable({
                 per_page: pagination.value.pageSize,
                 seaarch: search.value,
             },
-            { preseaaarveState: false, preserveScroll: true, replace: true }
+            { preseaaarveState: false, preserveScroll: true, replace: true },
         );
     },
 
@@ -148,7 +148,7 @@ watch(
 
         if (props.dateFilterStart) {
             query.start = new URLSearchParams(window.location.search).get(
-                "start"
+                "start",
             );
         }
         if (props.dateFilterEnd) {
@@ -160,7 +160,7 @@ watch(
             preserveState: true,
             replace: true,
         });
-    }
+    },
 );
 
 const search = ref("");
@@ -178,7 +178,7 @@ watchDebounced(
 
         if (props.dateFilterStart) {
             query.start = new URLSearchParams(window.location.search).get(
-                "start"
+                "start",
             );
         }
         if (props.dateFilterEnd) {
@@ -191,7 +191,7 @@ watchDebounced(
             replace: true,
         });
     },
-    { debounce: 300 }
+    { debounce: 300 },
 );
 </script>
 
@@ -200,8 +200,8 @@ watchDebounced(
         <div class="relative w-full max-w-sm items-center mb-4">
             <Input
                 id="search"
-                type="text"
                 v-model="search"
+                type="text"
                 placeholder="Search..."
                 autocomplete="off"
                 class="pl-10 shadow-md focus:ring-0 focus:ring-offset-0"
@@ -217,14 +217,14 @@ watchDebounced(
             <Table>
                 <TableHeader>
                     <TableRow
-                        class="hover:bg-transparent"
                         v-for="headerGroup in table.getHeaderGroups()"
                         :key="headerGroup.id"
+                        class="hover:bg-transparent"
                     >
                         <TableHead
-                            class="border-b text-center"
                             v-for="header in headerGroup.headers"
                             :key="header.id"
+                            class="border-b text-center"
                         >
                             <FlexRender
                                 v-if="!header.isPlaceholder"
@@ -245,9 +245,9 @@ watchDebounced(
                                 class="hover:bg-transparent"
                             >
                                 <TableCell
-                                    class="border-b"
                                     v-for="cell in row.getVisibleCells()"
                                     :key="cell.id"
+                                    class="border-b"
                                 >
                                     <FlexRender
                                         :render="cell.column.columnDef.cell"
@@ -290,9 +290,9 @@ watchDebounced(
                     </SelectTrigger>
                     <SelectContent side="top">
                         <SelectItem
-                            class="cursor-pointer"
                             v-for="pageSize in [10, 20, 30, 40, 50]"
                             :key="pageSize"
+                            class="cursor-pointer"
                             :value="`${pageSize}`"
                         >
                             {{ pageSize }}
@@ -304,9 +304,9 @@ watchDebounced(
                 <div class="flex items-center space-x-2">
                     <Pagination
                         v-slot="{ page }"
+                        v-model:page="currentPage"
                         :items-per-page="props.pagination.per_page"
                         :total="props.pagination.total"
-                        v-model:page="currentPage"
                     >
                         <PaginationContent v-slot="{ items }" class="flex">
                             <Button
@@ -330,8 +330,8 @@ watchDebounced(
                                 :key="index"
                             >
                                 <PaginationItem
-                                    class="border disabled:opacity-50 disabled:cursor-not-allowed"
                                     v-if="item.type === 'page'"
+                                    class="border disabled:opacity-50 disabled:cursor-not-allowed"
                                     :value="item.value"
                                     :is-active="item.value === page"
                                     :disabled="item.value === page"

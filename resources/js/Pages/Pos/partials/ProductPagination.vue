@@ -29,8 +29,8 @@ const props = defineProps({
 
             <template v-for="(item, index) in items" :key="index">
                 <PaginationItem
-                    class="border disabled:opacity-50 disabled:cursor-not-allowed"
                     v-if="item.type === 'page'"
+                    class="border disabled:opacity-50 disabled:cursor-not-allowed"
                     :value="item.value"
                     :is-active="item.value === page"
                     :disabled="item.value === page"

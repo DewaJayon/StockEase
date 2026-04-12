@@ -14,7 +14,7 @@ import {
 } from "@/Components/ui/select";
 
 const fileTypeFilter = ref(
-    new URLSearchParams(window.location.search).get("file_filter") ?? null
+    new URLSearchParams(window.location.search).get("file_filter") ?? null,
 );
 
 watch(fileTypeFilter, (newValue) => {
@@ -33,7 +33,7 @@ watch(fileTypeFilter, (newValue) => {
             {
                 preserveState: true,
                 preserveScroll: true,
-            }
+            },
         );
     }
 });

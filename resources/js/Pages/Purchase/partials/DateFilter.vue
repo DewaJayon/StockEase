@@ -28,13 +28,13 @@ const value = ref({
     start: new CalendarDate(
         today.getFullYear(),
         today.getMonth() + 1,
-        today.getDate()
+        today.getDate(),
     ).add({ days: -20 }),
 
     end: new CalendarDate(
         today.getFullYear(),
         today.getMonth() + 1,
-        today.getDate()
+        today.getDate(),
     ),
 });
 
@@ -53,7 +53,7 @@ const handleDateFilter = () => {
             preserveState: true,
             preserveScroll: true,
             replace: true,
-        }
+        },
     );
 };
 </script>
@@ -67,7 +67,7 @@ const handleDateFilter = () => {
                     :class="
                         cn(
                             'w-[280px] justify-start text-left font-normal',
-                            !value && 'text-muted-foreground'
+                            !value && 'text-muted-foreground',
                         )
                     "
                 >
@@ -76,7 +76,7 @@ const handleDateFilter = () => {
                         <template v-if="value.end">
                             {{
                                 df.format(
-                                    value.start.toDate(getLocalTimeZone())
+                                    value.start.toDate(getLocalTimeZone()),
                                 )
                             }}
                             -
@@ -88,7 +88,7 @@ const handleDateFilter = () => {
                         <template v-else>
                             {{
                                 df.format(
-                                    value.start.toDate(getLocalTimeZone())
+                                    value.start.toDate(getLocalTimeZone()),
                                 )
                             }}
                         </template>
@@ -107,7 +107,7 @@ const handleDateFilter = () => {
                 />
             </PopoverContent>
         </Popover>
-        <Button size="sm" @click="handleDateFilter" class="ml-2 text-xs">
+        <Button size="sm" class="ml-2 text-xs" @click="handleDateFilter">
             Filter Tanggal
         </Button>
     </div>

@@ -27,7 +27,7 @@ const props = defineProps({
 });
 
 const category = ref(
-    new URLSearchParams(window.location.search).get("category") ?? null
+    new URLSearchParams(window.location.search).get("category") ?? null,
 );
 
 watch(category, (newCategory) => {
@@ -42,12 +42,12 @@ watch(category, (newCategory) => {
             preserveScroll: true,
             preserveState: true,
             replace: true,
-        }
+        },
     );
 });
 
 const search = ref(
-    new URLSearchParams(window.location.search).get("search") ?? ""
+    new URLSearchParams(window.location.search).get("search") ?? "",
 );
 
 watchDebounced(
@@ -64,10 +64,10 @@ watchDebounced(
                 preserveScroll: true,
                 preserveState: true,
                 replace: true,
-            }
+            },
         );
     },
-    { debounce: 300 }
+    { debounce: 300 },
 );
 </script>
 
@@ -75,8 +75,8 @@ watchDebounced(
     <div class="flex justify-between mb-4">
         <div class="relative w-full max-w-sm items-center mb-4">
             <Input
-                v-model="search"
                 id="search"
+                v-model="search"
                 type="text"
                 placeholder="Cari Produk..."
                 autocomplete="off"

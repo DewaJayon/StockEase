@@ -55,9 +55,11 @@ const showPassword = () => {
         </Head>
         <div class="flex flex-col gap-6">
             <Alert>
-                <AlertTitle class="flex items-center w-full justify-center pb-3"
-                    >Demo Aplikasi</AlertTitle
+                <AlertTitle
+                    class="flex items-center w-full justify-center pb-3"
                 >
+                    Demo Aplikasi
+                </AlertTitle>
                 <AlertDescription>
                     Aplikasi ini hanya untuk keperluan demo.
                     <br class="mt-2" />
@@ -81,8 +83,8 @@ const showPassword = () => {
                                 <div class="grid gap-2">
                                     <Label html-for="email">Email</Label>
                                     <Input
-                                        v-model="form.email"
                                         id="email"
+                                        v-model="form.email"
                                         type="email"
                                         placeholder="m@gmail.com"
                                         required
@@ -99,9 +101,9 @@ const showPassword = () => {
                                     <div class="relative">
                                         <Input
                                             id="password"
+                                            v-model="form.password"
                                             type="password"
                                             placeholder="password"
-                                            v-model="form.password"
                                             required
                                             class="pr-10"
                                             autocomplete="off"

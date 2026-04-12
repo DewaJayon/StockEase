@@ -15,7 +15,21 @@
 
 <!-- TODO: -->
 
-- fix query duplikat
+- fix CI github (Done)
+- fix CD ke cpanel (Done)
+- fix query duplikat (Done)
+- security di pos karena disana perhitungannya masih di frontend validasi di backend lagi (Done)
+- cek di database untuk field currency itu jadikan aja desimal biar karena ini untuk harga (Done)
+- refactor struktur folder controller dan service (Done)
+- refactor struktur folder request (Done)
+- fix dark mode (Done)
+- ux di harga di pos page isikan titik (Done)
+- bug ketika barang dimasukkan ke keranjang itu malah kehitung terjual di grafic penjualan mingguan dashboard (Done)
+- fix error message di cart ketika memasukkan angka 9 banyak itu errornya database alangkah baiknya errornya bukan database message (Done)
+- fix bug di pos bagian cart itu ketika menggunakan metode pembayaran qris kembaliannya masih ke list (Done)
+- fitur satuan itu biarin bisa CRUD aja (Done)
+
+<!-- TODO: -->
+
 - scan barcode di pos sistem dan langsung masukkan ke keranjang
-- ux di harga isikan titik
-- security di post karena disana perhitungannya masih di frontend validasi di backend lagi
+- bikin API untuk mobile app

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +24,7 @@ class ProductFactory extends Factory
             'name' => fake()->word(),
             'sku' => fake()->unique()->ean8(),
             'barcode' => fake()->ean13(),
-            'unit' => fake()->randomElement(['pcs', 'box', 'pack']),
+            'unit_id' => Unit::factory(),
             'stock' => fake()->numberBetween(0, 100),
             'purchase_price' => fake()->numberBetween(1000, 10000),
             'selling_price' => fake()->numberBetween(11000, 20000),
