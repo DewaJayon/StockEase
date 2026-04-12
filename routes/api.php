@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\Dashboard\PaymentController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\StockAlertController;
+use App\Http\Controllers\Payment\PaymentController;
+use App\Http\Controllers\Stock\StockAlertController;
+use App\Http\Controllers\User\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 // Webhook notification midtrans
