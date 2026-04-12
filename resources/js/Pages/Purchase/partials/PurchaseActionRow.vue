@@ -79,8 +79,8 @@ const destroy = (id) => {
                 <AlertDialogFooter>
                     <AlertDialogCancel>Batal</AlertDialogCancel>
                     <AlertDialogAction
-                        @click="destroy(row.id)"
                         class="bg-red-500 hover:bg-red-600 text-white"
+                        @click="destroy(row.id)"
                     >
                         <Loader2
                             v-if="isLoading"

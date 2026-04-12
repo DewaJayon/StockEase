@@ -49,7 +49,7 @@ watchDebounced(
             .get(
                 route("reports.sale.search-cashier", {
                     search: newsearchCashier,
-                })
+                }),
             )
             .then((response) => {
                 cashierData.value = response.data.data;
@@ -59,7 +59,7 @@ watchDebounced(
                 cashierData.value = [];
             });
     },
-    300
+    300,
 );
 
 const getDateParam = (key) => {
@@ -99,7 +99,7 @@ if (cashierParam) {
         .get(route("reports.sale.search-cashier", { search: cashierParam }))
         .then((response) => {
             const foundCashier = response.data.data.find(
-                (item) => String(item.value) === String(cashierParam)
+                (item) => String(item.value) === String(cashierParam),
             );
             if (foundCashier) {
                 cashier.value = foundCashier;
@@ -186,7 +186,7 @@ const handlePrintPdf = () => {
             cashier: allCashierParam,
             payment: payment.value,
         }),
-        "_blank"
+        "_blank",
     );
 };
 
@@ -212,7 +212,7 @@ const handleExportExcel = () => {
             cashier: allCashierParam,
             payment: payment.value,
         }),
-        "_blank"
+        "_blank",
     );
 };
 </script>
@@ -228,31 +228,31 @@ const handleExportExcel = () => {
             <div class="space-y-1">
                 <Label html-for="startDate">Tanggal Mulai</Label>
                 <DatePicker
-                    label="Tanggal"
-                    class="w-full"
                     id="startDate"
                     v-model="startDate"
+                    label="Tanggal"
+                    class="w-full"
                 />
             </div>
             <div class="space-y-1">
                 <Label html-for="endDate">Tanggal Selesai</Label>
                 <DatePicker
-                    label="Tanggal"
-                    class="w-full"
                     id="endDate"
                     v-model="endDate"
+                    label="Tanggal"
+                    class="w-full"
                 />
             </div>
             <div class="space-y-1">
                 <Label html-for="cashier">Kasir</Label>
-                <Combobox by="label" v-model="cashier">
+                <Combobox v-model="cashier" by="label">
                     <ComboboxAnchor class="w-full">
                         <div class="relative w-full max-w-sm items-center">
                             <ComboboxInput
+                                v-model="searchCashier"
                                 class="pl-9"
                                 :display-value="(val) => val?.label ?? ''"
                                 placeholder="Cari Kasir..."
-                                v-model="searchCashier"
                             />
                             <span
                                 class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
@@ -323,30 +323,30 @@ const handleExportExcel = () => {
 
             <div class="flex space-x-2">
                 <Button
-                    @click="handleFilter"
                     :disabled="isFilterLoading || !checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="handleFilter"
                 >
                     <Loader2
                         v-if="isFilterLoading"
                         class="w-4 h-4 animate-spin"
                     />
 
-                    <Search class="h-4 w-4" v-else />
+                    <Search v-else class="h-4 w-4" />
                     <span>Lihat Laporan</span>
                 </Button>
                 <Button
-                    @click="handlePrintPdf()"
                     :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="handlePrintPdf()"
                 >
                     <Printer class="h-4 w-4" />
                     <span>Export PDF</span>
                 </Button>
                 <Button
-                    @click="handleExportExcel()"
                     :disabled="!checkFilter()"
                     class="disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="handleExportExcel()"
                 >
                     <FileSpreadsheet class="h-4 w-4" />
                     <span>Export Excel</span>

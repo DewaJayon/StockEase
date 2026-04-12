@@ -95,8 +95,8 @@ const destroy = (slug, productName) => {
                 <AlertDialogFooter>
                     <AlertDialogCancel>Batal</AlertDialogCancel>
                     <AlertDialogAction
-                        @click="destroy(row.slug, row.name)"
                         class="bg-red-500 hover:bg-red-600 text-white"
+                        @click="destroy(row.slug, row.name)"
                     >
                         <Loader2
                             v-if="isLoading"

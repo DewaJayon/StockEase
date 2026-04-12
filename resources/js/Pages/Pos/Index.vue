@@ -8,6 +8,7 @@ import { ref } from "vue";
 import Cart from "./partials/Cart.vue";
 import ProductCard from "./partials/ProductCard.vue";
 import ProductPagination from "./partials/ProductPagination.vue";
+import { computed } from "vue";
 
 import {
     Breadcrumb,
@@ -17,7 +18,6 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/Components/ui/breadcrumb";
-import { computed } from "vue";
 
 const props = defineProps({
     categories: {
@@ -95,8 +95,8 @@ const reloadPage = () => {
                                 style="max-height: 70vh"
                             >
                                 <ProductCard
-                                    v-if="products && products.data"
                                     v-for="product in products.data"
+                                    v-if="products && products.data"
                                     :key="product.id"
                                     :product="product"
                                     @cart-updated="fetchCart()"

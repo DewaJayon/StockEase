@@ -40,7 +40,7 @@ watch(
         form.name = props.row.name;
         form.email = props.row.email;
         form.role = props.row.role;
-    }
+    },
 );
 
 const form = useForm({
@@ -91,7 +91,7 @@ const submit = (id) => {
                     Silahkan isi form dibawah ini untuk menambahkan user
                 </DialogDescription>
             </DialogHeader>
-            <form id="form" @submit.prevent="submit(row.id)" class="space-y-4">
+            <form id="form" class="space-y-4" @submit.prevent="submit(row.id)">
                 <div class="flex items-center space-x-2">
                     <div class="grid flex-1 gap-2">
                         <Label for="name"> Nama user </Label>
@@ -131,8 +131,8 @@ const submit = (id) => {
                                 <SelectGroup>
                                     <SelectLabel>Role</SelectLabel>
                                     <SelectItem
-                                        class="capitalize cursor-pointer"
                                         v-for="role in roles"
+                                        class="capitalize cursor-pointer"
                                         :value="role.value"
                                     >
                                         {{ role.label }}
@@ -150,7 +150,7 @@ const submit = (id) => {
                 </div>
 
                 <DialogClose as-child>
-                    <Button type="button" variant="secondary">Batal</Button>
+                    <Button type="button" variant="secondary"> Batal </Button>
                 </DialogClose>
 
                 <Button

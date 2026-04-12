@@ -7,7 +7,7 @@ import "vue-sonner/style.css";
 </script>
 
 <template>
-    <div class="flex h-screen">
+    <div class="flex h-screen bg-background">
         <SidebarProvider>
             <AppSidebar />
             <div class="flex-1 flex flex-col overflow-hidden">

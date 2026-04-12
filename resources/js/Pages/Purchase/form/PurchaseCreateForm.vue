@@ -67,7 +67,7 @@ watchDebounced(
                 suppliers.value = [];
             });
     },
-    { debounce: 200 }
+    { debounce: 200 },
 );
 
 watch(selectedSupplier, (newSelectedSupplier) => {
@@ -135,8 +135,8 @@ const submit = () => {
                     <div class="grid flex-1 gap-2">
                         <Label for="supplier"> Supplier </Label>
                         <Combobox
-                            by="label"
                             v-model="selectedSupplier"
+                            by="label"
                             html-id="supplier"
                         >
                             <ComboboxAnchor class="w-full">
@@ -195,7 +195,7 @@ const submit = () => {
                                     :class="
                                         cn(
                                             'w-[280px] justify-start text-left font-normal',
-                                            !date && 'text-muted-foreground'
+                                            !date && 'text-muted-foreground',
                                         )
                                     "
                                 >
@@ -204,8 +204,8 @@ const submit = () => {
                                         date
                                             ? df.format(
                                                   date.toDate(
-                                                      getLocalTimeZone()
-                                                  )
+                                                      getLocalTimeZone(),
+                                                  ),
                                               )
                                             : "Pilih tanggal"
                                     }}

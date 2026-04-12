@@ -89,7 +89,7 @@ const submit = () => {
                     Silahkan isi form dibawah ini untuk menambahkan user
                 </DialogDescription>
             </DialogHeader>
-            <form id="form" @submit.prevent="submit" class="space-y-4">
+            <form id="form" class="space-y-4" @submit.prevent="submit">
                 <div class="flex items-center space-x-2">
                     <div class="grid flex-1 gap-2">
                         <Label for="name"> Nama user </Label>
@@ -125,9 +125,9 @@ const submit = () => {
                         <div class="relative">
                             <Input
                                 id="password"
+                                v-model="form.password"
                                 type="password"
                                 placeholder="••••••••"
-                                v-model="form.password"
                                 required
                                 class="pr-10"
                             />
@@ -157,9 +157,9 @@ const submit = () => {
                         <div class="relative">
                             <Input
                                 id="password_confirmation"
+                                v-model="form.password_confirmation"
                                 type="password"
                                 placeholder="••••••••"
-                                v-model="form.password_confirmation"
                                 required
                                 class="pr-10"
                             />
@@ -194,8 +194,8 @@ const submit = () => {
                                 <SelectGroup>
                                     <SelectLabel>Role</SelectLabel>
                                     <SelectItem
-                                        class="capitalize cursor-pointer"
                                         v-for="role in roles"
+                                        class="capitalize cursor-pointer"
                                         :value="role.value"
                                     >
                                         {{ role.label }}

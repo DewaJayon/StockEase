@@ -195,7 +195,7 @@ const destroy = (slug, productName) => {
                                         "
                                     >
                                         {{ props.product.stock }}
-                                        {{ props.product.unit }}
+                                        {{ props.product.unit?.name ?? "-" }}
                                     </span>
                                 </div>
 
@@ -301,17 +301,17 @@ const destroy = (slug, productName) => {
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
-                                                <AlertDialogCancel
-                                                    >Batal</AlertDialogCancel
-                                                >
+                                                <AlertDialogCancel>
+                                                    Batal
+                                                </AlertDialogCancel>
                                                 <AlertDialogAction
+                                                    class="bg-red-500 hover:bg-red-600 text-white"
                                                     @click="
                                                         destroy(
                                                             props.product.slug,
                                                             props.product.name,
                                                         )
                                                     "
-                                                    class="bg-red-500 hover:bg-red-600 text-white"
                                                 >
                                                     <Loader2
                                                         v-if="isLoading"

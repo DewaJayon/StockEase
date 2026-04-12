@@ -23,7 +23,7 @@ export const saleColumns = [
             h(
                 "span",
                 { class: centerClass },
-                formatDateTime(row.original.updated_at)
+                formatDateTime(row.original.updated_at),
             ),
     },
     {

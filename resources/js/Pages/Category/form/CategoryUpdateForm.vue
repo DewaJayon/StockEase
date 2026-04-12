@@ -25,7 +25,7 @@ watch(
     () => props.row,
     () => {
         form.name = props.row.name;
-    }
+    },
 );
 
 const form = useForm({

@@ -79,7 +79,7 @@ watchDebounced(
                 suppliers.value = [];
             });
     },
-    { debounce: 200 }
+    { debounce: 200 },
 );
 
 watch(selectedSupplier, (newSelectedSupplier) => {
@@ -103,7 +103,7 @@ watch(date, (newDate) => {
 watch(
     () => props.row,
     () => {
-        (form.supplier_id = selectedSupplier.value?.value ?? ""),
+        ((form.supplier_id = selectedSupplier.value?.value ?? ""),
             (form.date = formatDate(date.value)),
             (form.product_items = props.purchase.purchase_items.map((item) => ({
                 product_id: item.product_id,
@@ -112,8 +112,8 @@ watch(
                 selling_price: parseFloat(item.product.selling_price),
                 unit: item.product.unit,
                 product: item.product,
-            })));
-    }
+            }))));
+    },
 );
 
 const form = useForm({
@@ -174,8 +174,8 @@ const submit = () => {
                     <div class="grid flex-1 gap-2">
                         <Label for="supplier"> Supplier </Label>
                         <Combobox
-                            by="label"
                             v-model="selectedSupplier"
+                            by="label"
                             html-id="supplier"
                         >
                             <ComboboxAnchor class="w-full">
@@ -234,7 +234,7 @@ const submit = () => {
                                     :class="
                                         cn(
                                             'w-[280px] justify-start text-left font-normal',
-                                            !date && 'text-muted-foreground'
+                                            !date && 'text-muted-foreground',
                                         )
                                     "
                                 >
@@ -243,8 +243,8 @@ const submit = () => {
                                         date
                                             ? df.format(
                                                   date.toDate(
-                                                      getLocalTimeZone()
-                                                  )
+                                                      getLocalTimeZone(),
+                                                  ),
                                               )
                                             : "Pilih tanggal"
                                     }}

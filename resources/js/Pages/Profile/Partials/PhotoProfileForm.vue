@@ -159,7 +159,7 @@ const deletePhotoProfile = () => {
                     :min-container-height="180"
                     :background="true"
                     :rotatable="true"
-                    :aspectRatio="1 / 1"
+                    :aspect-ratio="1 / 1"
                     :img-style="{
                         width: '100%',
                         maxHeight: '400px',

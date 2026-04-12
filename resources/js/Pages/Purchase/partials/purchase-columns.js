@@ -21,7 +21,7 @@ export const purchaseColumns = [
             return h(
                 "span",
                 { class: centerClass },
-                row.original.supplier.name
+                row.original.supplier.name,
             );
         },
     },
@@ -39,7 +39,7 @@ export const purchaseColumns = [
             return h(
                 "span",
                 { class: centerClass },
-                formatPrice(row.original.total)
+                formatPrice(row.original.total),
             );
         },
     },
@@ -49,7 +49,7 @@ export const purchaseColumns = [
             const items = row.original.purchase_items || [];
             const totalQty = items.reduce(
                 (sum, item) => sum + Number(item.qty),
-                0
+                0,
             );
 
             return h("span", { class: centerClass }, totalQty);

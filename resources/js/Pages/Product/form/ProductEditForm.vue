@@ -262,8 +262,8 @@ const image = computed(() => {
 
                 <div class="mt-4">
                     <form
-                        @submit.prevent="submit"
                         class="grid grid-cols-1 md:grid-cols-2 gap-4"
+                        @submit.prevent="submit"
                     >
                         <div>
                             <Label for="name">Nama Produk</Label>
@@ -306,7 +306,7 @@ const image = computed(() => {
                                             placeholder="Cari kategori..."
                                         />
                                         <span
-                                            class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
+                                            class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
                                         >
                                             <Search
                                                 class="size-4 text-muted-foreground"
@@ -405,7 +405,7 @@ const image = computed(() => {
                                             placeholder="Cari satuan..."
                                         />
                                         <span
-                                            class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
+                                            class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
                                         >
                                             <Search
                                                 class="size-4 text-muted-foreground"
@@ -438,7 +438,7 @@ const image = computed(() => {
                                 </ComboboxList>
                             </Combobox>
 
-                            <InputError :message="form.errors.unit" />
+                            <InputError :message="form.errors.unit_id" />
                         </div>
 
                         <div>
@@ -494,8 +494,8 @@ const image = computed(() => {
                         <div>
                             <Label for="image">Gambar Produk</Label>
                             <Input
-                                type="file"
                                 id="image"
+                                type="file"
                                 accept="image/*"
                                 @change="setImage"
                             />
@@ -541,7 +541,7 @@ const image = computed(() => {
                                     :min-container-height="180"
                                     :background="true"
                                     :rotatable="true"
-                                    :aspectRatio="1 / 1"
+                                    :aspect-ratio="1 / 1"
                                     :img-style="{
                                         width: '100%',
                                         maxHeight: '400px',

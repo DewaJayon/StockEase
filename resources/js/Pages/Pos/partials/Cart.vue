@@ -3,9 +3,9 @@ import { Button } from "@/Components/ui/button";
 import { Loader2, Trash2 } from "lucide-vue-next";
 import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { Label } from "@/Components/ui/label";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatNumber } from "@/lib/utils";
 import { Input } from "@/Components/ui/input";
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import axios from "axios";
 
 import {
@@ -51,7 +51,7 @@ watch(
             });
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 if (props.cart?.sale_items?.length) {
@@ -117,15 +117,36 @@ const clearCart = () => {
 };
 
 const cashPayment = ref(0);
-const change = ref(0);
+const displayCashPayment = ref("");
 const paymentMethod = ref("cash");
 
-watch(cashPayment, (newValue) => {
-    change.value = newValue - totalCart.value;
+const change = computed(() => {
+    if (paymentMethod.value === "qris") return 0;
+    return cashPayment.value - totalCart.value;
+});
+
+// Format input logic
+watch(displayCashPayment, (newValue) => {
+    if (newValue === null || newValue === undefined) return;
+
+    const numericString = String(newValue).replace(/\D/g, "");
+    const numericValue = numericString ? parseInt(numericString, 10) : 0;
+
+    cashPayment.value = numericValue;
+
+    const formatted = numericValue > 0 ? formatNumber(numericValue) : "";
+
+    // Only update if visually different to prevent input lag/cursor jumping
+    if (String(newValue) !== formatted) {
+        displayCashPayment.value = formatted;
+    }
 });
 
 watch(paymentMethod, (newValue) => {
-    paymentMethod.value = newValue;
+    if (newValue === "qris") {
+        cashPayment.value = 0;
+        displayCashPayment.value = "";
+    }
 });
 
 const customerName = ref(null);
@@ -152,17 +173,17 @@ const checkout = () => {
                     payment_method: paymentMethod.value,
                     customer_name: customerName.value,
                     paid: cashPayment.value,
-                    change: change.value,
                 },
                 {
                     headers: { Accept: "application/json" },
-                }
+                },
             )
             .then((response) => {
                 toast.success(response.data.message);
                 totalCart.value = response.data.total;
                 cartItems.value = response.data.cart.sale_items;
                 cashPayment.value = 0;
+                displayCashPayment.value = "";
                 change.value = 0;
                 customerName.value = null;
 
@@ -181,7 +202,7 @@ const checkout = () => {
                 route("pos.qris-token", {
                     amount: totalCart.value,
                     customer_name: customerName.value,
-                })
+                }),
             )
             .then((response) => {
                 const snapToken = response.data.snap_token;
@@ -196,18 +217,18 @@ const checkout = () => {
                                     payment_method: paymentMethod.value,
                                     customer_name: customerName.value,
                                     paid: cashPayment.value,
-                                    change: change.value,
                                     order_id: result.order_id,
                                 },
                                 {
                                     headers: { Accept: "application/json" },
-                                }
+                                },
                             )
                             .then((response) => {
                                 toast.success(response.data.message);
                                 totalCart.value = response.data.total;
                                 cartItems.value = response.data.cart.sale_items;
                                 cashPayment.value = 0;
+                                displayCashPayment.value = "";
                                 change.value = 0;
                                 customerName.value = null;
 
@@ -246,61 +267,65 @@ const checkout = () => {
         <h2 class="text-xl font-bold mb-4">Keranjang Belanja</h2>
 
         <div class="space-y-3 mb-4" style="max-height: 50vh; overflow-y: auto">
-            <div
-                v-if="cartItems && cartItems.length > 0"
-                v-for="cartItem in cartItems"
-                class="flex justify-between items-center border-b pb-2"
-            >
-                <div>
-                    <h4 class="font-medium">{{ cartItem.product.name }}</h4>
-                    <p class="text-gray-500 text-sm">
-                        {{ formatPrice(cartItem.price) }} x
-                        {{ qtyRefs[cartItem.product_id] }}
-                    </p>
-                </div>
-                <div class="flex items-center">
-                    <NumberField
-                        :model-value="qtyRefs[cartItem.product_id]"
-                        :min="0"
-                    >
-                        <NumberFieldContent>
-                            <NumberFieldDecrement
-                                @click="
-                                    qtyRefs[cartItem.product_id]--;
-                                    changeQty(
-                                        cartItem.product_id,
-                                        qtyRefs[cartItem.product_id]
-                                    );
-                                "
+            <div v-if="cartItems && cartItems.length > 0">
+                <div
+                    v-for="cartItem in cartItems"
+                    :key="cartItem.id"
+                    class="flex justify-between items-center border-b pb-2"
+                >
+                    <div>
+                        <h4 class="font-medium">
+                            {{ cartItem.product.name }}
+                        </h4>
+                        <p class="text-gray-500 text-sm">
+                            {{ formatPrice(cartItem.price) }} x
+                            {{ qtyRefs[cartItem.product_id] }}
+                        </p>
+                    </div>
+                    <div class="flex items-center">
+                        <NumberField
+                            :model-value="qtyRefs[cartItem.product_id]"
+                            :min="0"
+                        >
+                            <NumberFieldContent>
+                                <NumberFieldDecrement
+                                    @click="
+                                        qtyRefs[cartItem.product_id]--;
+                                        changeQty(
+                                            cartItem.product_id,
+                                            qtyRefs[cartItem.product_id],
+                                        );
+                                    "
+                                />
+                                <NumberFieldInput
+                                    class="w-24 border rounded"
+                                    readonly
+                                />
+                                <NumberFieldIncrement
+                                    @click="
+                                        qtyRefs[cartItem.product_id]++;
+                                        changeQty(
+                                            cartItem.product_id,
+                                            qtyRefs[cartItem.product_id],
+                                        );
+                                    "
+                                />
+                            </NumberFieldContent>
+                        </NumberField>
+                        <Button
+                            variant="destructive"
+                            size="icon"
+                            class="ml-2 disabled:cursor-not-allowed"
+                            :disabled="loadingItemId === cartItem.product_id"
+                            @click="removeItemFromCart(cartItem.product_id)"
+                        >
+                            <Loader2
+                                v-if="loadingItemId === cartItem.product_id"
+                                class="w-4 h-4 animate-spin"
                             />
-                            <NumberFieldInput
-                                class="w-24 border rounded"
-                                readonly
-                            />
-                            <NumberFieldIncrement
-                                @click="
-                                    qtyRefs[cartItem.product_id]++;
-                                    changeQty(
-                                        cartItem.product_id,
-                                        qtyRefs[cartItem.product_id]
-                                    );
-                                "
-                            />
-                        </NumberFieldContent>
-                    </NumberField>
-                    <Button
-                        variant="destructive"
-                        size="icon"
-                        class="ml-2 disabled:cursor-not-allowed"
-                        :disabled="loadingItemId === cartItem.product_id"
-                        @click="removeItemFromCart(cartItem.product_id)"
-                    >
-                        <Loader2
-                            v-if="loadingItemId === cartItem.product_id"
-                            class="w-4 h-4 animate-spin"
-                        />
-                        <Trash2 v-else class="w-4 h-4" />
-                    </Button>
+                            <Trash2 v-else class="w-4 h-4" />
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -331,23 +356,23 @@ const checkout = () => {
                 </div>
             </div>
 
-            <div v-if="paymentMethod === 'cash'" class="flex mt-2">
+            <div v-if="paymentMethod === 'cash'" class="flex flex-col mt-2">
                 <Input
-                    v-model="cashPayment"
-                    name="cashPayment"
                     id="cashPayment"
-                    type="number"
-                    class="w-full mt-2 [&::-webkit-inner-spin-button]:appearance-none"
-                    placeholder="Uang Pembayaran "
+                    v-model="displayCashPayment"
+                    name="cashPayment"
+                    type="text"
+                    class="w-full mt-2"
+                    placeholder="Uang Pembayaran"
                     autocomplete="off"
                 />
             </div>
 
             <div class="flex mt-2">
                 <Input
+                    id="customer_name"
                     v-model="customerName"
                     name="customer_name"
-                    id="customer_name"
                     type="text"
                     class="w-full mt-2 [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="Nama Pelanggan (Opsional)"
@@ -363,8 +388,8 @@ const checkout = () => {
             <Button
                 class="w-full disabled:cursor-not-allowed"
                 :disabled="
-                    !cart.payment_method ||
-                    (cart.sale_items?.length ?? 0) === 0 ||
+                    !paymentMethod ||
+                    (cartItems?.length ?? 0) === 0 ||
                     isCheckoutLoading
                 "
                 @click="checkout"
@@ -383,12 +408,11 @@ const checkout = () => {
                             <Button
                                 size="icon"
                                 class="w-full"
-                                @click="clearCart"
                                 :disabled="
-                                    !cart.payment_method ||
-                                    (cart.sale_items?.length ?? 0) === 0 ||
+                                    (cartItems?.length ?? 0) === 0 ||
                                     isClearCartLoading
                                 "
+                                @click="clearCart"
                             >
                                 <Loader2
                                     v-if="isClearCartLoading"

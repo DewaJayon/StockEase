@@ -108,9 +108,9 @@ const submit = () => {
 
             <template v-if="form.hasErrors">
                 <Alert
-                    variant="destructive"
                     v-for="(key, index) in form.errors"
                     :key="index"
+                    variant="destructive"
                 >
                     <AlertCircle class="w-4 h-4" />
                     <AlertTitle>Error</AlertTitle>
@@ -128,13 +128,13 @@ const submit = () => {
                 <!-- Drop zone -->
                 <div
                     ref="dropZoneRef"
-                    @click="triggerFileDialog"
                     class="mt-2 flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition"
                     :class="
                         isOverDropZone
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-zinc-400'
                     "
+                    @click="triggerFileDialog"
                 >
                     <Upload class="h-8 w-8 text-zinc-500 mb-2" />
                     <p class="text-sm text-zinc-600">
@@ -170,8 +170,8 @@ const submit = () => {
                             variant="destructive"
                             size="sm"
                             type="button"
-                            @click="removeFile(i)"
                             :disabled="form.processing || removingIndex === i"
+                            @click="removeFile(i)"
                         >
                             <Loader2
                                 v-if="removingIndex === i"
