@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Sale;
 
 use App\Models\Sale;
 use Carbon\Carbon;

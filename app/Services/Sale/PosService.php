@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Sale;
 
 use App\Models\Category;
 use App\Models\PaymentTransaction;
@@ -70,9 +70,8 @@ class PosService
                 'date' => now(),
                 'status' => 'draft',
             ]);
+            $cart->setRelation('saleItems', collect());
         }
-
-        $this->refreshCart($cart);
 
         return $cart;
     }
@@ -93,25 +92,24 @@ class PosService
             throw new \Exception('Stok produk tidak mencukupi');
         }
 
-        $existItem = SaleItem::where([
-            'sale_id' => $cart->id,
-            'product_id' => $product->id,
-        ])->first();
+        $existItem = $cart->saleItems->firstWhere('product_id', $product->id);
 
         if (! $existItem) {
-            SaleItem::create([
+            $newItem = SaleItem::create([
                 'sale_id' => $cart->id,
                 'product_id' => $product->id,
                 'qty' => $qty,
                 'price' => $product->selling_price,
             ]);
+            $newItem->setRelation('product', $product);
+            $cart->saleItems->push($newItem);
         } else {
             $existItem->update([
                 'qty' => $existItem->qty + $qty,
             ]);
         }
 
-        $this->refreshCart($cart);
+        $cart->calculateTotal();
 
         return ['cart' => $cart, 'total' => $cart->total];
     }
@@ -122,15 +120,23 @@ class PosService
     public function updateCartItemQty(int $productId, int $qty): array
     {
         $cart = $this->getOrCreateCart();
+        $product = Product::findOrFail($productId);
+
+        if ($qty > 0 && $qty > $product->stock) {
+            throw new \Exception('Stok produk tidak mencukupi');
+        }
 
         if ($qty <= 0) {
             $cart->saleItems()->where('product_id', $productId)->delete();
+            $cart->setRelation('saleItems', $cart->saleItems->reject(fn ($item) => $item->product_id === $productId)->values());
         } else {
-            $saleItem = $cart->saleItems()->where('product_id', $productId)->firstOrFail();
-            $saleItem->update(['qty' => $qty]);
+            $saleItem = $cart->saleItems->firstWhere('product_id', $productId);
+            if ($saleItem) {
+                $saleItem->update(['qty' => $qty]);
+            }
         }
 
-        $this->refreshCart($cart);
+        $cart->calculateTotal();
 
         return ['cart' => $cart, 'total' => $cart->total];
     }
@@ -142,7 +148,9 @@ class PosService
     {
         $cart = $this->getOrCreateCart();
         $cart->saleItems()->where('product_id', $productId)->delete();
-        $this->refreshCart($cart);
+        $cart->setRelation('saleItems', $cart->saleItems->reject(fn ($item) => $item->product_id === $productId)->values());
+
+        $cart->calculateTotal();
 
         return ['cart' => $cart, 'total' => $cart->total];
     }
@@ -154,7 +162,9 @@ class PosService
     {
         $cart = $this->getOrCreateCart();
         $cart->saleItems()->delete();
-        $this->refreshCart($cart);
+        $cart->setRelation('saleItems', collect());
+
+        $cart->calculateTotal();
 
         return ['cart' => $cart, 'total' => $cart->total];
     }
@@ -184,8 +194,8 @@ class PosService
                 $sale->update([
                     'payment_method' => 'qris',
                     'customer_name' => $data['customer_name'] ?? null,
-                    'paid' => $data['paid'],
-                    'status' => 'completed',
+                    'paid' => $sale->total, // QRIS total matches sale total
+                    'status' => 'pending',   // QRIS stays pending until webhook
                 ]);
 
                 PaymentTransaction::create([
@@ -193,34 +203,31 @@ class PosService
                     'gateway' => 'midtrans',
                     'external_id' => $data['order_id'] ?? null,
                     'status' => 'pending',
-                    'amount' => $data['paid'],
+                    'amount' => $sale->total,
                     'payment_type' => 'qris',
                 ]);
             } elseif ($data['payment_method'] === 'cash') {
+                if ($data['paid'] < $sale->total) {
+                    throw new \Exception('Jumlah uang pembayaran kurang dari total belanja.');
+                }
+
+                $change = $data['paid'] - $sale->total;
+
                 $sale->update([
                     'payment_method' => 'cash',
                     'customer_name' => $data['customer_name'] ?? null,
                     'paid' => $data['paid'],
-                    'change' => $data['change'],
+                    'change' => $change,
                     'status' => 'completed',
                 ]);
-            }
 
-            Product::reduceStockFromSaleItems($sale->saleItems);
+                Product::reduceStockFromSaleItems($sale->saleItems);
+            }
 
             // After checkout, we get/create a new empty cart for the next transaction
             $newCart = $this->getOrCreateCart();
 
             return ['cart' => $newCart, 'total' => $newCart->total, 'sale' => $sale];
         });
-    }
-
-    /**
-     * Refresh the cart data by reloading relationships and recalculating total.
-     */
-    private function refreshCart(Sale $cart): void
-    {
-        $cart->load('saleItems.product');
-        $cart->calculateTotal();
     }
 }

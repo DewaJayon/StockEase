@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Product;
 
 use App\Models\Product;
 use Cviebrock\EloquentSluggable\Services\SlugService;
@@ -18,12 +18,14 @@ class ProductService
      */
     public function getPaginatedProducts(array $filters, int $perPage = 10): LengthAwarePaginator
     {
-        return Product::with('category')
+        return Product::with(['category', 'unit'])
             ->when($filters['search'] ?? null, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('sku', 'like', "%{$search}%")
                     ->orWhere('alert_stock', 'like', "%{$search}%")
-                    ->orWhere('unit', 'like', "%{$search}%")
+                    ->orWhereHas('unit', function ($queryUnit) use ($search) {
+                        $queryUnit->where('name', 'like', "%{$search}%");
+                    })
                     ->orWhere('barcode', 'like', "%{$search}%")
                     ->orWhereHas('category', function ($queryCategory) use ($search) {
                         $queryCategory->where('name', 'like', "%{$search}%");

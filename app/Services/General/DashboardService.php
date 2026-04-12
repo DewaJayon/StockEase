@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\General;
 
 use App\Models\Product;
 use App\Models\Purchase;
@@ -32,9 +32,12 @@ class DashboardService
      */
     private function adminData(): array
     {
-        $todaySales = Sale::whereDate('created_at', Carbon::today())->sum('total');
+        $todaySales = Sale::where('status', 'completed')
+            ->whereDate('created_at', Carbon::today())
+            ->sum('total');
 
-        $monthSales = Sale::whereYear('created_at', Carbon::now()->year)
+        $monthSales = Sale::where('status', 'completed')
+            ->whereYear('created_at', Carbon::now()->year)
             ->whereMonth('created_at', Carbon::now()->month)
             ->sum('total');
 
@@ -58,14 +61,20 @@ class DashboardService
      */
     private function cashierData(): array
     {
-        $totalTransactionPerWeek = Sale::whereBetween('created_at', [
-            Carbon::now()->startOfWeek(),
-            Carbon::now()->endOfWeek(),
-        ])->count();
+        $totalTransactionPerWeek = Sale::where('status', 'completed')
+            ->whereBetween('created_at', [
+                Carbon::now()->startOfWeek(),
+                Carbon::now()->endOfWeek(),
+            ])->count();
 
-        $todaysIncome = Sale::whereDate('created_at', Carbon::today())->sum('total');
+        $todaysIncome = Sale::where('status', 'completed')
+            ->whereDate('created_at', Carbon::today())
+            ->sum('total');
 
-        $bestSellingProductItem = SaleItem::whereHas('sale', fn ($q) => $q->whereDate('created_at', Carbon::today()))
+        $bestSellingProductItem = SaleItem::whereHas('sale', function ($q) {
+            $q->whereDate('created_at', Carbon::today())
+                ->where('status', 'completed');
+        })
             ->select('product_id', DB::raw('SUM(qty) as total_qty'))
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
@@ -74,9 +83,11 @@ class DashboardService
 
         $bestSellingProduct = $bestSellingProductItem ? $bestSellingProductItem->product->name : 'Tidak ada transaksi hari ini';
 
-        $averagePerCustomer = Sale::whereDate('created_at', Carbon::today())->avg('total');
+        $averagePerCustomer = Sale::where('status', 'completed')
+            ->whereDate('created_at', Carbon::today())
+            ->avg('total');
 
-        $recentTransaction = Sale::where('payment_method', '!=', 'pending')
+        $recentTransaction = Sale::where('status', 'completed')
             ->latest()
             ->take(5)
             ->get()
@@ -142,7 +153,7 @@ class DashboardService
     {
         Carbon::setLocale('id');
 
-        $latestSales = Sale::where('payment_method', '!=', 'pending')
+        $latestSales = Sale::where('status', 'completed')
             ->with('saleItems.product')
             ->latest()
             ->take(5)
@@ -212,6 +223,7 @@ class DashboardService
             DB::raw('DATE(created_at) as date'),
             DB::raw('SUM(total) as total')
         )
+            ->where('status', 'completed')
             ->whereBetween('created_at', [$start, $end])
             ->groupBy(DB::raw('DATE(created_at)'))
             ->orderBy('date', 'asc')

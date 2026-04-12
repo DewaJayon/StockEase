@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Purchase;
 
 use App\Models\Product;
 use App\Models\Purchase;
@@ -69,8 +69,9 @@ class PurchaseService
      */
     public function searchProducts(string $search)
     {
-        return Product::where('name', 'like', "%{$search}%")
-            ->select('id', 'name as label', 'purchase_price', 'selling_price', 'unit')
+        return Product::with('unit:id,name,short_name')
+            ->where('name', 'like', "%{$search}%")
+            ->select('id', 'name as label', 'purchase_price', 'selling_price', 'unit_id', 'stock')
             ->get();
     }
 
@@ -226,7 +227,7 @@ class PurchaseService
                         'type' => 'out',
                         'reference_type' => 'Purchase',
                         'reference_id' => $purchase->id,
-                        'note' => "Penghapusan pembelian dan pengurangan stok produk {$product->name}",
+                        'note' => "Penghapusan pembelian and pengurangan stok produk {$product->name}",
                     ]);
                 }
                 $purchaseItem->delete();

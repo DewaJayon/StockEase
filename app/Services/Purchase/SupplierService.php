@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Purchase;
 
 use App\Models\Supplier;
 use Cviebrock\EloquentSluggable\Services\SlugService;

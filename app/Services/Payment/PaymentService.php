@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Payment;
 
 use App\Models\PaymentTransaction;
+use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Midtrans\Config;
 use Midtrans\Notification;
@@ -77,31 +79,46 @@ class PaymentService
             throw new \Exception('Transaksi tidak ditemukan', 404);
         }
 
+        // Validate that the amount matches our database record
+        if ((float) $grossAmount !== (float) $paymentTransaction->amount) {
+            throw new \Exception('Nominal pembayaran tidak sesuai', 400);
+        }
+
         if ($paymentTransaction->isPaid()) {
             return ['message' => 'Orderan sudah dibayar', 'status' => 200];
         }
 
-        $transactionStatus = $notificationData['transaction_status'];
-        $type = $notificationData['payment_type'] ?? 'unknown';
-        $fraud = $notificationData['fraud_status'] ?? null;
+        return DB::transaction(function () use ($notificationData, $rawBody, $paymentTransaction) {
+            $transactionStatus = $notificationData['transaction_status'];
+            $type = $notificationData['payment_type'] ?? 'unknown';
+            $fraud = $notificationData['fraud_status'] ?? null;
 
-        $paymentStatus = match ($transactionStatus) {
-            'capture' => ($type === 'credit_card' && $fraud === 'challenge') ? 'challenge' : 'success',
-            'settlement' => 'settlement',
-            'pending' => 'pending',
-            'deny' => 'deny',
-            'expire' => 'expired',
-            'cancel' => 'cancel',
-            default => 'unknown',
-        };
+            $paymentStatus = match ($transactionStatus) {
+                'capture' => ($type === 'credit_card' && $fraud === 'challenge') ? 'challenge' : 'success',
+                'settlement' => 'settlement',
+                'pending' => 'pending',
+                'deny' => 'deny',
+                'expire' => 'expired',
+                'cancel' => 'cancel',
+                default => 'unknown',
+            };
 
-        $paymentTransaction->update([
-            'payment_type' => $type,
-            'status' => $paymentStatus,
-            'raw_response' => $rawBody,
-        ]);
+            $paymentTransaction->update([
+                'payment_type' => $type,
+                'status' => $paymentStatus,
+                'raw_response' => $rawBody,
+            ]);
 
-        return ['message' => 'Success', 'status' => 200];
+            if (in_array($paymentStatus, ['settlement', 'success', 'capture'])) {
+                $sale = $paymentTransaction->sale;
+                if ($sale && $sale->status !== 'completed') {
+                    $sale->update(['status' => 'completed']);
+                    Product::reduceStockFromSaleItems($sale->saleItems);
+                }
+            }
+
+            return ['message' => 'Success', 'status' => 200];
+        });
     }
 
     /**
