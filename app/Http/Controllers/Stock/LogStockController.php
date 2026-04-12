@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Report;
+namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
 use App\Models\StockLog;

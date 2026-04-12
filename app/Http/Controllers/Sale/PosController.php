@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Sale;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PosCartItemRequest;
-use App\Http\Requests\PosCheckoutRequest;
-use App\Services\PosService;
+use App\Http\Requests\Sale\PosCartItemRequest;
+use App\Http\Requests\Sale\PosCheckoutRequest;
+use App\Services\Sale\PosService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 

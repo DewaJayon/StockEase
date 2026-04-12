@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Report;
+namespace App\Http\Controllers\Sale;
 
 use App\Exports\SalesReportExport;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Report\SaleReportExportRequest;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
@@ -106,7 +107,7 @@ class SaleReportController extends Controller
     /**
      * Search cashier by name.
      *
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
     public function searchCashier(Request $request)
     {
@@ -144,24 +145,9 @@ class SaleReportController extends Controller
      *
      * @return BinaryFileResponse
      */
-    public function exportToPdf(Request $request)
+    public function exportToPdf(SaleReportExportRequest $request)
     {
-
-        $validator = Validator::make($request->all(), [
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'cashier' => 'required',
-            'payment' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->route('reports.sale.index')
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $filters = $validator->validated();
+        $filters = $request->validated();
 
         $cashierUser = User::find($filters['cashier']);
 
@@ -233,23 +219,9 @@ class SaleReportController extends Controller
      *
      * @return BinaryFileResponse
      */
-    public function exportToExcel(Request $request)
+    public function exportToExcel(SaleReportExportRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'cashier' => 'required',
-            'payment' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->route('reports.sale.index')
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $filters = $validator->validated();
+        $filters = $request->validated();
 
         $query = $this->getFilterQuery($filters);
 
@@ -292,7 +264,7 @@ class SaleReportController extends Controller
     /**
      * Generate a query based on the given filters.
      *
-     * @return Builder
+     * @return Collection
      */
     private function getFilterQuery(array $filters)
     {

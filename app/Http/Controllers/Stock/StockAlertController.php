@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Stock;
 
+use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\User;
-use App\Notifications\StockAlertNotification;
 use Illuminate\Http\JsonResponse;
 
 class StockAlertController extends Controller
@@ -19,12 +18,6 @@ class StockAlertController extends Controller
         }
 
         $alertProducts = Product::whereColumn('stock', '<=', 'alert_stock')->get();
-
-        // Send notifications to admin users
-        $admins = User::where('role', 'admin')->get();
-        $alertProducts->each(function (Product $product) use ($admins) {
-            $admins->each(fn (User $admin) => $admin->notify(new StockAlertNotification($product)));
-        });
 
         return response()->json($alertProducts);
     }

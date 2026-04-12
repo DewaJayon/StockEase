@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Purchase;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StorePurchaseRequest;
-use App\Http\Requests\UpdatePurchaseRequest;
+use App\Http\Requests\Purchase\StorePurchaseRequest;
+use App\Http\Requests\Purchase\UpdatePurchaseRequest;
 use App\Models\Purchase;
-use App\Services\PurchaseService;
+use App\Services\Purchase\PurchaseService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 

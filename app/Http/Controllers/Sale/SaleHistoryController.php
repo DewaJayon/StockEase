@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Sale;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sale;
-use App\Services\SaleService;
+use App\Services\Sale\SaleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

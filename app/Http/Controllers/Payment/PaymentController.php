@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
-use App\Services\PaymentService;
+use App\Services\Payment\PaymentService;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller

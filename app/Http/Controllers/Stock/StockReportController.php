@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Report;
+namespace App\Http\Controllers\Stock;
 
 use App\Exports\StockExportExcel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Report\StockReportExportRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Supplier;
@@ -12,7 +13,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
@@ -22,11 +22,6 @@ class StockReportController extends Controller
 {
     /**
      * Handle stock report filtering and rendering.
-     *
-     * The function expects category, supplier, start_date, and end_date parameters
-     * to be passed in the request. It will filter products based on the given
-     * parameters and return an Inertia response with the filtered products data.
-     *
      *
      * @return Response
      */
@@ -41,10 +36,7 @@ class StockReportController extends Controller
 
         $filteredStocks = [];
 
-        $query = collect();
-
         if ($filters['category'] || $filters['supplier'] || $filters['start_date'] || $filters['end_date']) {
-
             $query = Product::with(['category', 'purchaseItems.purchase.supplier'])
                 ->whereHas('purchaseItems')
                 ->when($filters['category'] && $filters['category'] !== 'semua-kategori', function ($query) use ($filters) {
@@ -91,13 +83,11 @@ class StockReportController extends Controller
     /**
      * Search category by name
      *
-     *
      * @return JsonResponse
      */
     public function searchCategory(Request $request)
     {
         if ($request->expectsJson()) {
-
             $query = Category::query()
                 ->when(is_numeric($request->search), function ($q) use ($request) {
                     $q->where('id', $request->search);
@@ -124,13 +114,11 @@ class StockReportController extends Controller
     /**
      * Search supplier by name.
      *
-     *
      * @return JsonResponse
      */
     public function searchSupplier(Request $request)
     {
         if ($request->expectsJson()) {
-
             $query = Supplier::query()
                 ->when(is_numeric($request->search), function ($q) use ($request) {
                     $q->where('id', $request->search);
@@ -157,36 +145,11 @@ class StockReportController extends Controller
     /**
      * Export the stock report to a PDF file.
      *
-     * This function validates the request for the required parameters:
-     * start_date, end_date, category, and supplier.
-     *
-     * It then filters the products based on the given parameters and
-     * generates a PDF report using the Blade template
-     * exports.stock-report.export-pdf.
-     *
-     * The PDF is then downloaded with a filename that includes the
-     * start and end dates of the report.
-     *
-     *
      * @return BinaryFileResponse
      */
-    public function exportToPdf(Request $request)
+    public function exportToPdf(StockReportExportRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'category' => 'required',
-            'supplier' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->route('reports.stock.index')
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $filters = $validator->validated();
+        $filters = $request->validated();
 
         $query = Product::with(['category', 'purchaseItems.purchase.supplier'])
             ->whereHas('purchaseItems')
@@ -251,26 +214,11 @@ class StockReportController extends Controller
     /**
      * Export the stock report to an Excel file.
      *
-     *
      * @return BinaryFileResponse
      */
-    public function exportToExcel(Request $request)
+    public function exportToExcel(StockReportExportRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'category' => 'required',
-            'supplier' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->route('reports.stock.index')
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $filters = $validator->validated();
+        $filters = $request->validated();
 
         $query = Product::with(['category', 'purchaseItems.purchase.supplier'])
             ->whereHas('purchaseItems')

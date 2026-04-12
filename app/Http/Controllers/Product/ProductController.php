@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Product;
 
-use App\Enums\UnitEnum;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreProductRequest;
-use App\Http\Requests\UpdateProductRequest;
+use App\Http\Requests\Product\StoreProductRequest;
+use App\Http\Requests\Product\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
-use App\Services\ProductService;
+use App\Models\Unit;
+use App\Services\Product\ProductService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -43,7 +43,11 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $units = UnitEnum::options();
+        $units = Unit::select('id', 'name')->get()
+            ->map(fn ($unit) => [
+                'value' => $unit->id,
+                'label' => $unit->name,
+            ]);
 
         $categories = Category::select('id', 'name')->get()
             ->map(fn ($category) => [
@@ -76,7 +80,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         return Inertia::render('Product/Show', [
-            'product' => $product->load('category'),
+            'product' => $product->load(['category', 'unit']),
         ]);
     }
 
@@ -85,7 +89,11 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $units = UnitEnum::options();
+        $units = Unit::select('id', 'name')->get()
+            ->map(fn ($unit) => [
+                'value' => $unit->id,
+                'label' => $unit->name,
+            ]);
 
         $categories = Category::select('id', 'name')->get()
             ->map(fn ($category) => [

@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Report;
+namespace App\Http\Controllers\Purchase;
 
 use App\Exports\PurchaseExportExcel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Report\PurchaseReportExportRequest;
 use App\Models\Purchase;
 use App\Models\Supplier;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
@@ -168,23 +168,9 @@ class PurchaseReportController extends Controller
      *
      * @return BinaryFileResponse
      */
-    public function exportToPdf(Request $request)
+    public function exportToPdf(PurchaseReportExportRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'supplier' => 'required',
-            'user' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->route('reports.purchase.index')
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $filters = $validator->validated();
+        $filters = $request->validated();
 
         $query = $this->getFilterQuery($filters);
 
@@ -239,23 +225,9 @@ class PurchaseReportController extends Controller
      *
      * @return BinaryFileResponse
      */
-    public function exportToExcel(Request $request)
+    public function exportToExcel(PurchaseReportExportRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'supplier' => 'required',
-            'user' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->route('reports.purchase.index')
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $filters = $validator->validated();
+        $filters = $request->validated();
 
         $query = $this->getFilterQuery($filters);
 
@@ -316,7 +288,7 @@ class PurchaseReportController extends Controller
     /**
      * Generate a query based on the given filters.
      *
-     * @return Builder
+     * @return Collection
      */
     private function getFilterQuery(array $filters)
     {

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreCategoryRequest;
-use App\Http\Requests\UpdateCategoryRequest;
+use App\Http\Requests\Product\StoreCategoryRequest;
+use App\Http\Requests\Product\UpdateCategoryRequest;
 use App\Models\Category;
-use App\Services\CategoryService;
+use App\Services\Product\CategoryService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 

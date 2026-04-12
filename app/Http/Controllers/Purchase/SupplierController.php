@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Dashboard;
+namespace App\Http\Controllers\Purchase;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreSupplierRequest;
-use App\Http\Requests\UpdateSupplierRequest;
+use App\Http\Requests\Purchase\StoreSupplierRequest;
+use App\Http\Requests\Purchase\UpdateSupplierRequest;
 use App\Models\Supplier;
-use App\Services\SupplierService;
+use App\Services\Purchase\SupplierService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
