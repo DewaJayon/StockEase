@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Purchase;
 
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -29,9 +29,9 @@ class UpdatePurchaseRequest extends FormRequest
             'date' => ['required', 'date'],
             'product_items' => ['required', 'array', 'min:1'],
             'product_items.*.product_id' => ['required', 'exists:products,id'],
-            'product_items.*.qty' => ['required', 'integer', 'min:1'],
-            'product_items.*.price' => ['required', 'numeric', 'min:1'],
-            'product_items.*.selling_price' => ['required', 'numeric', 'min:1'],
+            'product_items.*.qty' => ['required', 'integer', 'min:1', 'max:999999999999999'],
+            'product_items.*.price' => ['required', 'numeric', 'min:1', 'max:999999999999999'],
+            'product_items.*.selling_price' => ['required', 'numeric', 'min:1', 'max:999999999999999'],
         ];
     }
 

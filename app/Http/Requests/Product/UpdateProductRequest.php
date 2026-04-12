@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Product;
 
-use App\Enums\UnitEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -30,11 +28,11 @@ class UpdateProductRequest extends FormRequest
             'name' => 'required|string|max:255',
             'sku' => 'required|string|max:255',
             'barcode' => 'required|string|max:255',
-            'unit' => ['required', 'string', Rule::in(UnitEnum::keys())],
-            'stock' => 'required|numeric|min:0',
-            'purchase_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
-            'alert_stock' => 'required|numeric|min:0',
+            'unit_id' => 'required|exists:units,id',
+            'stock' => 'required|numeric|min:0|max:999999999999999',
+            'purchase_price' => 'required|numeric|min:0|max:999999999999999',
+            'selling_price' => 'required|numeric|min:0|max:999999999999999',
+            'alert_stock' => 'required|numeric|min:0|max:999999999999999',
             'image_path' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
         ];
     }
