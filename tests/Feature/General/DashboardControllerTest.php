@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature\General;
+
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Supplier;
@@ -30,8 +32,8 @@ it('renders admin dashboard with correct data', function () {
             ->has(
                 'data.salesSummary',
                 fn ($json) => $json
-                    ->where('today', '1000.00')
-                    ->where('month', '1000.00')
+                    ->where('today', '1000.0000')
+                    ->where('month', '1000.0000')
             )
             ->has('data.lowStock', 1)
             ->where('data.lowStock.0.name', 'Low Stock Item')
@@ -56,7 +58,7 @@ it('renders cashier dashboard with correct data', function () {
             ->has(
                 'data.cashierSalesSummary',
                 fn ($json) => $json
-                    ->where('todaysIncome', '5000.00')
+                    ->where('todaysIncome', '5000.0000')
                     ->where('bestSellingProduct', 'Best Seller')
                     ->etc()
             )

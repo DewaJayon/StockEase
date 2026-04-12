@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature\Stock;
+
 use App\Models\Product;
 use App\Models\SaleItem;
 use App\Models\User;

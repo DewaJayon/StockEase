@@ -2,6 +2,7 @@
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -47,7 +48,7 @@ it('allows admin to create a product with image', function () {
             'selling_price' => 2000,
             'stock' => 10,
             'alert_stock' => 5,
-            'unit' => 'pcs',
+            'unit_id' => Unit::factory()->create()->id,
             'image' => $file,
         ]);
 
@@ -77,7 +78,7 @@ it('allows admin to update a product', function () {
             'selling_price' => 2500,
             'stock' => 20,
             'alert_stock' => 10,
-            'unit' => 'box',
+            'unit_id' => Unit::factory()->create()->id,
         ]);
 
     $response->assertRedirect(route('product.index'));

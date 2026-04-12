@@ -4,7 +4,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\StockLog;
 use App\Models\User;
-use App\Services\DashboardService;
+use App\Services\General\DashboardService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

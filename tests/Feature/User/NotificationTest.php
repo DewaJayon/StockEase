@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature\User;
+
 use App\Models\Product;
 use App\Models\User;
 use App\Notifications\StockAlertNotification;

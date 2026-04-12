@@ -2,7 +2,7 @@
 
 use App\Models\Sale;
 use App\Models\User;
-use App\Services\SaleService;
+use App\Services\Sale\SaleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
