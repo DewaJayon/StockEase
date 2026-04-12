@@ -1,8 +1,10 @@
 name: Deploy StockEase Production
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -32,16 +34,24 @@ jobs:
           npm install
           npm run build
 
-      - name: Create SSH key
+      - name: Setup SSH Environment
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{ secrets.REMOTE_PORT }} -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
 
+          # Mencegah error verifikasi host key
+          cat << 'EOF' > ~/.ssh/config
+          Host *
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          EOF
+          chmod 400 ~/.ssh/config
+
       - name: Deploy Project Core
         run: |
-          rsync -avz -e "ssh -p ${{ secrets.REMOTE_PORT }}" \
+          rsync -avz -e "ssh -p ${{ secrets.REMOTE_PORT }} -i ~/.ssh/id_rsa" \
             --exclude='public' \
             --exclude='node_modules' \
             --exclude='.git' \
@@ -53,19 +63,19 @@ jobs:
 
       - name: Deploy Public Folder
         run: |
-          rsync -avz -e "ssh -p ${{ secrets.REMOTE_PORT }}" \
+          rsync -avz -e "ssh -p ${{ secrets.REMOTE_PORT }} -i ~/.ssh/id_rsa" \
             ./public/ ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:${{ secrets.REMOTE_PUBLIC_PATH }}
 
       - name: Patch index.php Paths
         run: |
-          ssh -p ${{ secrets.REMOTE_PORT }} ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
+          ssh -p ${{ secrets.REMOTE_PORT }} -i ~/.ssh/id_rsa ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
             sed -i \"s|require __DIR__.'/../vendor/autoload.php';|require '${{ secrets.REMOTE_CORE_PATH }}/vendor/autoload.php';|g\" ${{ secrets.REMOTE_PUBLIC_PATH }}/index.php
             sed -i \"s|require_once __DIR__.'/../bootstrap/app.php';|require_once '${{ secrets.REMOTE_CORE_PATH }}/bootstrap/app.php';|g\" ${{ secrets.REMOTE_PUBLIC_PATH }}/index.php
           "
 
       - name: Post-Deployment Commands
         run: |
-          ssh -p ${{ secrets.REMOTE_PORT }} ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
+          ssh -p ${{ secrets.REMOTE_PORT }} -i ~/.ssh/id_rsa ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
             cd ${{ secrets.REMOTE_CORE_PATH }}
             php artisan migrate --force
             php artisan optimize
