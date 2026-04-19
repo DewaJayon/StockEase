@@ -2,8 +2,8 @@
 
 namespace App\Services\Payment;
 
+use App\Actions\Product\ReduceProductStock;
 use App\Models\PaymentTransaction;
-use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -113,7 +113,7 @@ class PaymentService
                 $sale = $paymentTransaction->sale;
                 if ($sale && $sale->status !== 'completed') {
                     $sale->update(['status' => 'completed']);
-                    Product::reduceStockFromSaleItems($sale->saleItems);
+                    resolve(ReduceProductStock::class)->execute($sale->saleItems);
                 }
             }
 

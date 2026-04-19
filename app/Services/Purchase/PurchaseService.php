@@ -2,6 +2,7 @@
 
 namespace App\Services\Purchase;
 
+use App\Actions\Product\UpdateProductExpiryDate;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
@@ -101,14 +102,18 @@ class PurchaseService
                     'purchase_id' => $purchase->id,
                     'product_id' => $item['product_id'],
                     'qty' => $item['qty'],
+                    'remaining_qty' => $item['qty'],
                     'price' => $item['price'],
+                    'expiry_date' => $item['expiry_date'] ?? null,
                 ]);
 
+                /** @var Product $product */
                 $product = $products[$item['product_id']];
                 $product->increment('stock', $item['qty'], [
                     'purchase_price' => $item['price'],
                     'selling_price' => $item['selling_price'],
                 ]);
+                resolve(UpdateProductExpiryDate::class)->execute($product);
 
                 StockLog::create([
                     'product_id' => $product->id,
@@ -146,11 +151,15 @@ class PurchaseService
             $existingItems = PurchaseItem::where('purchase_id', $purchase->id)->get();
             foreach ($existingItems as $existingItem) {
                 if (! $productIds->contains($existingItem->product_id)) {
+                    /** @var Product|null $product */
                     $product = Product::find($existingItem->product_id);
                     if ($product) {
                         $product->decrement('stock', $existingItem->qty);
                     }
                     $existingItem->delete();
+                    if ($product) {
+                        resolve(UpdateProductExpiryDate::class)->execute($product);
+                    }
                 }
             }
 
@@ -163,6 +172,7 @@ class PurchaseService
                 $subtotal = $item['qty'] * $item['price'];
                 $totalPurchase += $subtotal;
 
+                /** @var Product $product */
                 $product = $products[$item['product_id']];
                 $oldItem = PurchaseItem::where('purchase_id', $purchase->id)
                     ->where('product_id', $item['product_id'])
@@ -172,7 +182,9 @@ class PurchaseService
                     $diffQty = $item['qty'] - $oldItem->qty;
                     $oldItem->update([
                         'qty' => $item['qty'],
+                        'remaining_qty' => max(0, $oldItem->remaining_qty + $diffQty),
                         'price' => $item['price'],
+                        'expiry_date' => $item['expiry_date'] ?? null,
                     ]);
                     $product->increment('stock', $diffQty);
                 } else {
@@ -180,11 +192,15 @@ class PurchaseService
                         'purchase_id' => $purchase->id,
                         'product_id' => $item['product_id'],
                         'qty' => $item['qty'],
+                        'remaining_qty' => $item['qty'],
                         'price' => $item['price'],
+                        'expiry_date' => $item['expiry_date'] ?? null,
                     ]);
                     $product->increment('stock', $item['qty']);
                     $diffQty = $item['qty'];
                 }
+
+                resolve(UpdateProductExpiryDate::class)->execute($product);
 
                 // Update prices if changed
                 if ($product->purchase_price != $item['price'] || $product->selling_price != $item['selling_price']) {
@@ -218,6 +234,7 @@ class PurchaseService
             $products = Product::whereIn('id', $purchaseItems->pluck('product_id'))->get();
 
             foreach ($purchaseItems as $purchaseItem) {
+                /** @var Product|null $product */
                 $product = $products->firstWhere('id', $purchaseItem->product_id);
                 if ($product) {
                     $product->decrement('stock', $purchaseItem->qty);
@@ -231,6 +248,9 @@ class PurchaseService
                     ]);
                 }
                 $purchaseItem->delete();
+                if ($product) {
+                    resolve(UpdateProductExpiryDate::class)->execute($product);
+                }
             }
 
             return $purchase->delete();

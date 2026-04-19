@@ -53,6 +53,30 @@ class ProductService
     }
 
     /**
+     * Update product price and log history.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function updatePrice(Product $product, array $data): bool
+    {
+        return \DB::transaction(function () use ($product, $data) {
+            $product->priceHistories()->create([
+                'user_id' => \Auth::id(),
+                'old_purchase_price' => $product->purchase_price,
+                'new_purchase_price' => $data['purchase_price'],
+                'old_selling_price' => $product->selling_price,
+                'new_selling_price' => $data['selling_price'],
+                'reason' => $data['reason'],
+            ]);
+
+            return $product->update([
+                'purchase_price' => $data['purchase_price'],
+                'selling_price' => $data['selling_price'],
+            ]);
+        });
+    }
+
+    /**
      * Update an existing product.
      *
      * @param  array<string, mixed>  $data
