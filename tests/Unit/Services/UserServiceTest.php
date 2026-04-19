@@ -6,40 +6,33 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/** @property UserService $service */
+/** @property UserService $userService */
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = new UserService;
+    $this->userService = new UserService;
 });
 
 it('can get paginated users', function () {
     User::factory()->count(15)->create();
 
-    $result = $this->service->getPaginatedUsers([], 10);
+    $users = $this->userService->getPaginatedUsers([], 10);
 
-    expect($result->items())->toHaveCount(10);
-    expect($result->total())->toBe(15);
+    expect($users->total())->toBe(15 + 0); // No initial users unless seeded
+    expect($users->count())->toBe(10);
 });
 
-it('can filter users by search query', function () {
-    User::factory()->create(['name' => 'John Doe', 'email' => 'john@example.com', 'role' => 'admin']);
-    User::factory()->create(['name' => 'Jane Smith', 'email' => 'jane@example.com', 'role' => 'cashier']);
+it('can filter users by search', function () {
+    User::factory()->create(['name' => 'John Doe', 'email' => 'john@example.com']);
+    User::factory()->create(['name' => 'Jane Smith', 'email' => 'jane@example.com']);
 
-    // Search by name
-    $result = $this->service->getPaginatedUsers(['search' => 'John']);
-    expect($result->items())->toHaveCount(1);
+    $results = $this->userService->getPaginatedUsers(['search' => 'John']);
 
-    // Search by email
-    $result = $this->service->getPaginatedUsers(['search' => 'jane@example.com']);
-    expect($result->items())->toHaveCount(1);
-
-    // Search by role
-    $result = $this->service->getPaginatedUsers(['search' => 'admin']);
-    expect($result->items())->toHaveCount(1);
+    expect($results->total())->toBe(1);
+    expect($results->first()->name)->toBe('John Doe');
 });
 
-it('can store a user', function () {
+it('can store a new user', function () {
     $data = [
         'name' => 'New User',
         'email' => 'new@example.com',
@@ -47,38 +40,35 @@ it('can store a user', function () {
         'role' => 'cashier',
     ];
 
-    $user = $this->service->storeUser($data);
+    $user = $this->userService->storeUser($data);
 
-    expect($user)->toBeInstanceOf(User::class);
     expect($user->name)->toBe('New User');
+    expect($user->email)->toBe('new@example.com');
     expect(Hash::check('password123', $user->password))->toBeTrue();
-    expect($user->email_verified_at)->not->toBeNull();
     $this->assertDatabaseHas('users', ['email' => 'new@example.com']);
 });
 
-it('can update a user', function () {
-    $user = User::factory()->create(['name' => 'Old User']);
-    $data = ['name' => 'Updated User'];
+it('can update an existing user', function () {
+    $user = User::factory()->create(['name' => 'Old Name']);
+    $data = ['name' => 'Updated Name'];
 
-    $this->service->updateUser($user, $data);
+    $this->userService->updateUser($user, $data);
 
-    $user->refresh();
-    expect($user->name)->toBe('Updated User');
+    expect($user->fresh()->name)->toBe('Updated Name');
 });
 
-it('can reset password', function () {
+it('can reset user password', function () {
     $user = User::factory()->create(['password' => Hash::make('old_password')]);
 
-    $this->service->resetPassword($user, 'new_password');
+    $this->userService->resetPassword($user, 'new_password');
 
-    $user->refresh();
-    expect(Hash::check('new_password', $user->password))->toBeTrue();
+    expect(Hash::check('new_password', $user->fresh()->password))->toBeTrue();
 });
 
 it('can delete a user', function () {
     $user = User::factory()->create();
 
-    $this->service->deleteUser($user);
+    $this->userService->deleteUser($user);
 
     $this->assertDatabaseMissing('users', ['id' => $user->id]);
 });

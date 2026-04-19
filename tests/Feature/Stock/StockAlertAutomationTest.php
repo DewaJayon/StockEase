@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Stock;
 
+use App\Actions\Product\ReduceProductStock;
 use App\Models\Product;
 use App\Models\SaleItem;
 use App\Models\User;
@@ -32,7 +33,7 @@ it('automatically triggers stock alert notification when stock falls below thres
         ]),
     ]);
 
-    Product::reduceStockFromSaleItems($saleItems);
+    resolve(ReduceProductStock::class)->execute($saleItems);
 
     $this->product->refresh();
     expect($this->product->stock)->toBe(4);
@@ -58,7 +59,7 @@ it('does not trigger notification if stock remains above threshold', function ()
         ]),
     ]);
 
-    Product::reduceStockFromSaleItems($saleItems);
+    resolve(ReduceProductStock::class)->execute($saleItems);
 
     $this->product->refresh();
     expect($this->product->stock)->toBe(8);
@@ -80,7 +81,7 @@ it('prevents duplicate unread notifications for the same product', function () {
             'sale_id' => 1,
         ]),
     ]);
-    Product::reduceStockFromSaleItems($saleItems1);
+    resolve(ReduceProductStock::class)->execute($saleItems1);
 
     expect($this->user1->unreadNotifications)->toHaveCount(1);
 
@@ -92,7 +93,7 @@ it('prevents duplicate unread notifications for the same product', function () {
             'sale_id' => 2,
         ]),
     ]);
-    Product::reduceStockFromSaleItems($saleItems2);
+    resolve(ReduceProductStock::class)->execute($saleItems2);
 
     expect($this->user1->unreadNotifications()->count())->toBe(1);
 });

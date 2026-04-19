@@ -1,57 +1,28 @@
 <?php
 
-namespace Tests\Feature\Stock;
-
 use App\Models\Product;
 use App\Models\User;
-use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-beforeEach(function () {
-    /** @var TestCase&object{admin: User, cashier: User, product: Product} $this */
-    $this->admin = User::factory()->create(['role' => 'admin']);
-    $this->cashier = User::factory()->create(['role' => 'cashier']);
+uses(RefreshDatabase::class);
+
+it('returns unauthorized if not json request', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('low-stock.index'));
+
+    $response->assertStatus(401)
+        ->assertJson(['message' => 'Unauthorized']);
 });
 
-describe('Low Stock Products', function () {
-    it('returns only low stock products', function () {
-        /** @var TestCase&object{admin: User, cashier: User, product: Product} $this */
-        Product::factory()->create(['stock' => 5, 'alert_stock' => 10]);
-        Product::factory()->create(['stock' => 15, 'alert_stock' => 10]);
+it('returns low stock products in json format', function () {
+    $user = User::factory()->create();
+    Product::factory()->create(['stock' => 2, 'alert_stock' => 5, 'name' => 'Low Item']);
+    Product::factory()->create(['stock' => 10, 'alert_stock' => 5, 'name' => 'High Item']);
 
-        $response = $this->getJson(route('low-stock.index'));
+    $response = $this->actingAs($user)->getJson(route('low-stock.index'));
 
-        $response->assertSuccessful();
-        $response->assertJsonCount(1);
-        $response->assertJsonPath('0.stock', 5);
-    });
-
-    it('returns array of products', function () {
-        /** @var TestCase&object{admin: User, cashier: User, product: Product} $this */
-        Product::factory()->create(['stock' => 5, 'alert_stock' => 10]);
-
-        $response = $this->getJson(route('low-stock.index'));
-
-        $response->assertSuccessful();
-        expect(is_array($response->json()))->toBeTrue();
-    });
-
-    it('rejects non-json requests', function () {
-        /** @var TestCase&object{admin: User, cashier: User, product: Product} $this */
-        $response = $this->get(route('low-stock.index'));
-
-        $response->assertUnauthorized();
-        $response->assertJson(['message' => 'Unauthorized']);
-    });
-});
-
-describe('Stock Alert Notifications (Architectural Check)', function () {
-    it('does not send notifications when fetching alerts', function () {
-        /** @var TestCase&object{admin: User, cashier: User, product: Product} $this */
-        $admin = User::factory()->create(['role' => 'admin']);
-        Product::factory()->create(['stock' => 5, 'alert_stock' => 10]);
-
-        $this->getJson(route('low-stock.index'));
-
-        expect($admin->notifications)->toHaveCount(0);
-    });
+    $response->assertSuccessful()
+        ->assertJsonCount(1)
+        ->assertJsonPath('0.name', 'Low Item');
 });

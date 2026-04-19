@@ -69,14 +69,11 @@ it('allows admin to update a product', function () {
     $category = Category::factory()->create();
 
     $response = actingAs($admin)
-        ->put(route('product.update', $product), [
+        ->patch(route('product.update', $product), [
             'name' => 'Updated Product',
             'category_id' => $category->id,
             'sku' => $product->sku,
             'barcode' => $product->barcode,
-            'purchase_price' => 1500,
-            'selling_price' => 2500,
-            'stock' => 20,
             'alert_stock' => 10,
             'unit_id' => Unit::factory()->create()->id,
         ]);
