@@ -10,6 +10,9 @@ import { Separator } from "@/Components/ui/separator";
 import VueCropper from "vue-cropperjs/VueCropper.js";
 import "cropperjs/dist/cropper.css";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import DatePicker from "@/Components/DatePicker.vue";
+import { toast } from "vue-sonner";
+import InputError from "@/Components/InputError.vue";
 
 import {
     Breadcrumb,
@@ -39,14 +42,13 @@ import {
     ComboboxList,
     ComboboxTrigger,
 } from "@/Components/ui/combobox";
+
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
-import { toast } from "vue-sonner";
-import InputError from "@/Components/InputError.vue";
 
 const props = defineProps({
     units: {
@@ -61,14 +63,19 @@ const props = defineProps({
 
 const category = ref();
 const unit = ref();
+const expiryDate = ref();
 const showCropperModal = ref(false);
+
+watch(expiryDate, (newValue) => {
+    form.expiry_date = newValue ? newValue.toISOString().split("T")[0] : "";
+});
 
 watch(category, (newValue) => {
     form.category_id = newValue.value;
 });
 
 watch(unit, (newValue) => {
-    form.unit = newValue.value;
+    form.unit_id = newValue.value;
 });
 
 const form = useForm({
@@ -76,11 +83,12 @@ const form = useForm({
     name: "",
     sku: "",
     barcode: "",
-    unit: "",
+    unit_id: "",
     stock: 0,
     purchase_price: 0,
     selling_price: 0,
     alert_stock: 0,
+    expiry_date: "",
     image: null,
 });
 
@@ -170,7 +178,13 @@ watch(showScannerModal, (newVal) => {
 const user = usePage().props.auth.user.name;
 
 const submit = () => {
-    form.post(route("product.store"), {
+    const payload = {
+        ...form.data(),
+        purchase_price: parseFloat(form.purchase_price) || 0,
+        selling_price: parseFloat(form.selling_price) || 0,
+    };
+
+    form.transform((data) => payload).post(route("product.store"), {
         showProgress: false,
         preserveScroll: true,
         onSuccess: () => {
@@ -185,6 +199,26 @@ const submit = () => {
             toast.error("Produk gagal ditambahkan");
         },
     });
+};
+
+const formatInput = (val) => {
+    if (val === null || val === undefined || val === "") return "";
+    let str = val.toString().replace(".", ",");
+    let parts = str.split(",");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return parts.join(",");
+};
+
+const parseInput = (val) => {
+    if (val === null || val === undefined) return "";
+    let clean = val.toString().replace(/[^\d,]/g, "");
+    const commaIndex = clean.indexOf(",");
+    if (commaIndex !== -1) {
+        clean =
+            clean.slice(0, commaIndex + 1) +
+            clean.slice(commaIndex + 1).replace(/,/g, "");
+    }
+    return clean.replace(",", ".");
 };
 </script>
 
@@ -425,27 +459,48 @@ const submit = () => {
 
                         <div>
                             <Label for="purchase_price">Harga Beli</Label>
-                            <Input
-                                id="purchase_price"
-                                v-model="form.purchase_price"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="[&::-webkit-inner-spin-button]:appearance-none"
-                            />
+                            <div class="relative">
+                                <span
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
+                                    >Rp</span
+                                >
+                                <Input
+                                    id="purchase_price"
+                                    :model-value="
+                                        formatInput(form.purchase_price)
+                                    "
+                                    @update:model-value="
+                                        (v) =>
+                                            (form.purchase_price =
+                                                parseInput(v))
+                                    "
+                                    type="text"
+                                    class="pl-9 font-mono"
+                                />
+                            </div>
                             <InputError :message="form.errors.purchase_price" />
                         </div>
 
                         <div>
                             <Label for="selling_price">Harga Jual</Label>
-                            <Input
-                                id="selling_price"
-                                v-model="form.selling_price"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="[&::-webkit-inner-spin-button]:appearance-none"
-                            />
+                            <div class="relative">
+                                <span
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
+                                    >Rp</span
+                                >
+                                <Input
+                                    id="selling_price"
+                                    :model-value="
+                                        formatInput(form.selling_price)
+                                    "
+                                    @update:model-value="
+                                        (v) =>
+                                            (form.selling_price = parseInput(v))
+                                    "
+                                    type="text"
+                                    class="pl-9 font-mono text-blue-600 dark:text-blue-400"
+                                />
+                            </div>
                             <InputError :message="form.errors.selling_price" />
                         </div>
 
@@ -459,6 +514,20 @@ const submit = () => {
                                 class="[&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <InputError :message="form.errors.alert_stock" />
+                        </div>
+
+                        <div>
+                            <Label for="expiry_date">Tanggal Kedaluwarsa</Label>
+                            <DatePicker
+                                id="expiry_date"
+                                v-model="expiryDate"
+                                placeholder="Pilih tanggal kedaluwarsa (opsional)"
+                            />
+                            <span class="text-xs text-muted-foreground">
+                                Opsional. Setelah ada pembelian, tanggal ini
+                                diperbarui otomatis berdasarkan batch (FEFO).
+                            </span>
+                            <InputError :message="form.errors.expiry_date" />
                         </div>
 
                         <div>
