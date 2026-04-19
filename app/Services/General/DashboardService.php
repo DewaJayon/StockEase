@@ -2,6 +2,7 @@
 
 namespace App\Services\General;
 
+use App\Models\PriceHistory;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Sale;
@@ -53,6 +54,7 @@ class DashboardService
             'lowStock' => $lowStock,
             'activities' => $this->getActivityHistory(),
             'weeklySalesChart' => $this->getWeeklySalesChart(),
+            'priceUpdateChart' => $this->getPriceUpdateChartData(),
         ];
     }
 
@@ -201,10 +203,24 @@ class DashboardService
                 ];
             });
 
+        $latestPriceUpdates = PriceHistory::with('product')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(function ($history) {
+                return [
+                    'type' => 'price',
+                    'desc' => "Harga {$history->product->name} diperbarui oleh {$history->user->name}",
+                    'time' => $history->created_at->diffForHumans(),
+                    'created_at' => $history->created_at,
+                ];
+            });
+
         return collect()
             ->merge($latestSales)
             ->merge($latestPurchases)
             ->merge($latestStockLogs)
+            ->merge($latestPriceUpdates)
             ->sortByDesc('created_at')
             ->take(10)
             ->values()
@@ -220,12 +236,12 @@ class DashboardService
         $end = Carbon::now()->endOfWeek();
 
         $weeklySales = Sale::select(
-            DB::raw('DATE(created_at) as date'),
+            'date',
             DB::raw('SUM(total) as total')
         )
             ->where('status', 'completed')
-            ->whereBetween('created_at', [$start, $end])
-            ->groupBy(DB::raw('DATE(created_at)'))
+            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->groupBy('date')
             ->orderBy('date', 'asc')
             ->pluck('total', 'date');
 
@@ -237,6 +253,39 @@ class DashboardService
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
             $chartCategories[] = $date->isoFormat('ddd');
             $chartData[] = $weeklySales[$date->toDateString()] ?? 0;
+        }
+
+        return [
+            'categories' => $chartCategories,
+            'data' => $chartData,
+        ];
+    }
+
+    /**
+     * Get price update chart data (Volume of updates per day).
+     */
+    public function getPriceUpdateChartData(): array
+    {
+        Carbon::setLocale('id');
+        $startDate = Carbon::now()->subDays(6)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+
+        $rawUpdates = PriceHistory::selectRaw('
+            DATE(created_at) as date,
+            COUNT(*) as count
+        ')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('count', 'date');
+
+        $chartData = [];
+        $chartCategories = [];
+
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $dateKey = $date->toDateString();
+            $chartCategories[] = $date->isoFormat('DD MMM');
+            $chartData[] = $rawUpdates[$dateKey] ?? 0;
         }
 
         return [
