@@ -10,6 +10,9 @@ import { Separator } from "@/Components/ui/separator";
 import VueCropper from "vue-cropperjs/VueCropper.js";
 import "cropperjs/dist/cropper.css";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import { toast } from "vue-sonner";
+import InputError from "@/Components/InputError.vue";
+import { computed } from "vue";
 
 import {
     Breadcrumb,
@@ -45,9 +48,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
-import { toast } from "vue-sonner";
-import InputError from "@/Components/InputError.vue";
-import { computed } from "vue";
 
 const props = defineProps({
     units: {
@@ -69,7 +69,7 @@ const findOption = (options, value) => {
 };
 
 const category = ref(findOption(props.categories, props.product.category_id));
-const unit = ref(findOption(props.units, props.product.unit));
+const unit = ref(findOption(props.units, props.product.unit_id));
 const showCropperModal = ref(false);
 
 watch(category, (newValue) => {
@@ -77,7 +77,7 @@ watch(category, (newValue) => {
 });
 
 watch(unit, (newValue) => {
-    form.unit = newValue?.value || null;
+    form.unit_id = newValue?.value || null;
 });
 
 const form = useForm({
@@ -85,8 +85,7 @@ const form = useForm({
     name: props.product.name,
     sku: props.product.sku,
     barcode: props.product.barcode,
-    unit: props.product.unit,
-    stock: props.product.stock,
+    unit_id: props.product.unit_id,
     purchase_price: props.product.purchase_price,
     selling_price: props.product.selling_price,
     alert_stock: props.product.alert_stock,
@@ -202,8 +201,10 @@ const submit = () => {
                 showCropperModal.value = false;
                 isLoading.value = false;
             },
-            onError: () => {
+            onError: (e) => {
                 toast.error("Produk gagal diperbarui");
+                isLoading.value = false;
+                console.error(e);
             },
         },
     );
@@ -442,41 +443,53 @@ const image = computed(() => {
                         </div>
 
                         <div>
-                            <Label for="stock">Stok</Label>
+                            <Label for="stock">Stok Saat Ini</Label>
                             <Input
                                 id="stock"
-                                v-model="form.stock"
+                                :model-value="props.product.stock"
                                 type="number"
-                                min="0"
-                                class="[&::-webkit-inner-spin-button]:appearance-none"
+                                readonly
+                                class="bg-muted cursor-not-allowed"
                             />
-                            <InputError :message="form.errors.stock" />
+                            <p class="text-xs text-muted-foreground mt-1">
+                                Gunakan menu Stock Opname untuk mengubah stok.
+                            </p>
                         </div>
 
-                        <div>
-                            <Label for="purchase_price">Harga Beli</Label>
-                            <Input
-                                id="purchase_price"
-                                v-model="form.purchase_price"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="[&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <InputError :message="form.errors.purchase_price" />
-                        </div>
-
-                        <div>
-                            <Label for="selling_price">Harga Jual</Label>
-                            <Input
-                                id="selling_price"
-                                v-model="form.selling_price"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                class="[&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <InputError :message="form.errors.selling_price" />
+                        <div class="col-span-full">
+                            <div
+                                class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4 rounded-lg flex items-center justify-between"
+                            >
+                                <div>
+                                    <h5
+                                        class="font-medium text-blue-900 dark:text-blue-100"
+                                    >
+                                        Manajemen Harga
+                                    </h5>
+                                    <p
+                                        class="text-sm text-blue-700 dark:text-blue-300"
+                                    >
+                                        Harga beli dan harga jual sekarang
+                                        dikelola secara terpisah untuk audit.
+                                    </p>
+                                </div>
+                                <Link
+                                    :href="
+                                        route(
+                                            'product.price.edit',
+                                            product.slug,
+                                        )
+                                    "
+                                >
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        class="border-blue-300 dark:border-blue-700"
+                                    >
+                                        Update Harga
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
 
                         <div>
@@ -489,6 +502,37 @@ const image = computed(() => {
                                 class="[&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <InputError :message="form.errors.alert_stock" />
+                        </div>
+
+                        <div class="col-span-full">
+                            <div
+                                class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-lg flex items-center justify-between"
+                            >
+                                <div>
+                                    <p class="text-sm font-medium text-amber-900 dark:text-amber-100">
+                                        Tanggal Kedaluwarsa
+                                    </p>
+                                    <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                                        <span v-if="props.product.expiry_date" class="font-mono">
+                                            {{
+                                                new Date(
+                                                    props.product.expiry_date,
+                                                ).toLocaleDateString('id-ID', {
+                                                    day: '2-digit',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                })
+                                            }}
+                                        </span>
+                                        <span v-else class="italic text-amber-500 dark:text-amber-400">
+                                            Belum ada data
+                                        </span>
+                                        &mdash; Diperbarui otomatis berdasarkan batch pembelian
+                                        (FEFO). Ubah tanggal kadaluwarsa per produk di menu
+                                        <strong>Pembelian</strong>.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <div>

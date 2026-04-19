@@ -2,6 +2,7 @@
 
 namespace App\Services\Sale;
 
+use App\Actions\Product\ReduceProductStock;
 use App\Models\Category;
 use App\Models\PaymentTransaction;
 use App\Models\Product;
@@ -74,6 +75,20 @@ class PosService
         }
 
         return $cart;
+    }
+
+    /**
+     * Add product to cart by barcode.
+     */
+    public function addToCartByBarcode(string $barcode, int $qty = 1): array
+    {
+        $product = Product::where('barcode', $barcode)->first();
+
+        if (! $product) {
+            throw new \Exception('Produk dengan barcode tersebut tidak ditemukan');
+        }
+
+        return $this->addToCart($product->id, $qty);
     }
 
     /**
@@ -196,6 +211,7 @@ class PosService
                     'customer_name' => $data['customer_name'] ?? null,
                     'paid' => $sale->total, // QRIS total matches sale total
                     'status' => 'pending',   // QRIS stays pending until webhook
+                    'date' => now(),
                 ]);
 
                 PaymentTransaction::create([
@@ -219,9 +235,10 @@ class PosService
                     'paid' => $data['paid'],
                     'change' => $change,
                     'status' => 'completed',
+                    'date' => now(),
                 ]);
 
-                Product::reduceStockFromSaleItems($sale->saleItems);
+                resolve(ReduceProductStock::class)->execute($sale->saleItems);
             }
 
             // After checkout, we get/create a new empty cart for the next transaction

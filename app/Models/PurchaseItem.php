@@ -14,7 +14,9 @@ class PurchaseItem extends Model
         'purchase_id',
         'product_id',
         'qty',
+        'remaining_qty',
         'price',
+        'expiry_date',
     ];
 
     /**
@@ -26,6 +28,7 @@ class PurchaseItem extends Model
     {
         return [
             'price' => 'decimal:4',
+            'expiry_date' => 'date',
         ];
     }
 

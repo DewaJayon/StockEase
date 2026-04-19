@@ -1,6 +1,6 @@
 <script setup>
 import { Button } from "@/Components/ui/button";
-import { Eye, Loader2, Pencil, Trash2 } from "lucide-vue-next";
+import { Eye, Loader2, Pencil, Trash2, Banknote } from "lucide-vue-next";
 import { ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
@@ -54,18 +54,32 @@ const destroy = (slug, productName) => {
             variant="ghost"
             size="icon"
             class="group"
+            title="Edit Produk"
             @click="router.get(route('product.edit', row.slug))"
         >
-            <Pencil class="w-4 h-4 text-blue-500 dark:group-hover:text-white" />
+            <Pencil class="size-4 text-blue-500 dark:group-hover:text-white" />
         </Button>
 
         <Button
             variant="ghost"
             size="icon"
             class="group"
+            title="Update Harga"
+            @click="router.get(route('product.price.edit', row.slug))"
+        >
+            <Banknote
+                class="size-4 text-orange-500 dark:group-hover:text-white"
+            />
+        </Button>
+
+        <Button
+            variant="ghost"
+            size="icon"
+            class="group"
+            title="Detail Produk"
             @click="router.get(route('product.show', row.slug))"
         >
-            <Eye class="w-4 h-4 text-green-500 dark:group-hover:text-white" />
+            <Eye class="size-4 text-green-500 dark:group-hover:text-white" />
         </Button>
 
         <AlertDialog v-model:open="isDialogOpen">
@@ -74,9 +88,10 @@ const destroy = (slug, productName) => {
                     variant="ghost"
                     size="icon"
                     class="dark:hover:bg-red-900 hover:bg-red-500 group"
+                    title="Hapus Produk"
                 >
                     <Trash2
-                        class="w-4 h-4 text-red-500 dark:group-hover:text-white group-hover:text-black"
+                        class="size-4 text-red-500 dark:group-hover:text-white group-hover:text-black"
                     />
                 </Button>
             </AlertDialogTrigger>

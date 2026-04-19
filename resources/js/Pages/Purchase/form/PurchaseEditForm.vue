@@ -109,6 +109,7 @@ watch(
                 product_id: item.product_id,
                 qty: item.qty,
                 price: parseFloat(item.price),
+                expiry_date: item.expiry_date,
                 selling_price: parseFloat(item.product.selling_price),
                 unit: item.product.unit,
                 product: item.product,
@@ -123,6 +124,7 @@ const form = useForm({
         product_id: item.product_id,
         qty: item.qty,
         price: parseFloat(item.price),
+        expiry_date: item.expiry_date,
         selling_price: parseFloat(item.product.selling_price),
         unit: item.product.unit,
         product: item.product,
@@ -158,7 +160,9 @@ const submit = () => {
                 />
             </Button>
         </DialogTrigger>
-        <DialogContent class="max-w-4xl">
+        <DialogContent
+            class="max-w-[95vw] lg:max-w-6xl max-h-[90vh] overflow-y-auto"
+        >
             <DialogHeader>
                 <DialogTitle>Form edit pembelian produk</DialogTitle>
                 <DialogDescription>
@@ -233,7 +237,7 @@ const submit = () => {
                                     variant="outline"
                                     :class="
                                         cn(
-                                            'w-[280px] justify-start text-left font-normal',
+                                            'w-full justify-start text-left font-normal',
                                             !date && 'text-muted-foreground',
                                         )
                                     "
@@ -250,7 +254,7 @@ const submit = () => {
                                     }}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent class="w-auto p-0">
+                            <PopoverContent class="w-auto p-0" align="start">
                                 <Calendar v-model="date" initial-focus />
                             </PopoverContent>
                         </Popover>

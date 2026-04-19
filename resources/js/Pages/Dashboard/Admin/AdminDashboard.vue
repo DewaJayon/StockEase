@@ -19,6 +19,7 @@ const props = defineProps({
     lowStock: Array,
     activities: Array,
     weeklySalesChart: Object,
+    priceUpdateChart: Object,
 });
 
 const isDarkMode = ref(document.documentElement.classList.contains("dark"));
@@ -38,7 +39,7 @@ onBeforeUnmount(() => {
     if (observer) observer.disconnect();
 });
 
-const chartOptions = computed(() => ({
+const salesChartOptions = computed(() => ({
     theme: {
         mode: isDarkMode.value ? "dark" : "light",
     },
@@ -75,10 +76,51 @@ const chartOptions = computed(() => ({
     },
 }));
 
-const chartSeries = computed(() => [
+const salesChartSeries = computed(() => [
     {
         name: "Penjualan",
         data: props.weeklySalesChart?.data ?? [],
+    },
+]);
+
+const priceChartOptions = computed(() => ({
+    theme: {
+        mode: isDarkMode.value ? "dark" : "light",
+    },
+    chart: {
+        type: "line",
+        toolbar: { show: false },
+        background: "transparent",
+    },
+    colors: ["#f59e0b"],
+    stroke: {
+        curve: "smooth",
+        width: 3,
+    },
+    dataLabels: {
+        enabled: true,
+    },
+    legend: { show: false },
+    grid: { show: false },
+    xaxis: {
+        categories: props.priceUpdateChart?.categories ?? [],
+    },
+    yaxis: {
+        labels: {
+            formatter: (value) => `${value} Update`,
+        },
+    },
+    tooltip: {
+        y: {
+            formatter: (value) => `${value} Perubahan Harga`,
+        },
+    },
+}));
+
+const priceChartSeries = computed(() => [
+    {
+        name: "Update Harga",
+        data: props.priceUpdateChart?.data ?? [],
     },
 ]);
 </script>
@@ -120,7 +162,7 @@ const chartSeries = computed(() => [
         </div>
 
         <!-- Stok Kritis & Aktivitas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
             <template v-if="lowStock.length">
                 <Card>
                     <CardHeader><CardTitle>Stok Kritis</CardTitle></CardHeader>
@@ -171,28 +213,48 @@ const chartSeries = computed(() => [
                         <li
                             v-for="(act, i) in activities"
                             :key="i"
-                            class="border-b pb-1"
+                            class="border-b pb-1 flex justify-between gap-2"
                         >
-                            {{ act.desc }}
+                            <span class="flex-1">{{ act.desc }}</span>
+                            <span
+                                class="text-xs text-muted-foreground whitespace-nowrap"
+                                >{{ act.time }}</span
+                            >
                         </li>
                     </ul>
                 </CardContent>
             </Card>
         </div>
 
-        <!-- Grafik Penjualan -->
-        <Card class="mt-6">
-            <CardHeader>
-                <CardTitle> Grafik Penjualan Mingguan </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <apexchart
-                    type="bar"
-                    height="300"
-                    :options="chartOptions"
-                    :series="chartSeries"
-                />
-            </CardContent>
-        </Card>
+        <!-- Grafik -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle> Grafik Penjualan Mingguan </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <apexchart
+                        type="bar"
+                        height="300"
+                        :options="salesChartOptions"
+                        :series="salesChartSeries"
+                    />
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle> Aktivitas Update Harga </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <apexchart
+                        type="line"
+                        height="300"
+                        :options="priceChartOptions"
+                        :series="priceChartSeries"
+                    />
+                </CardContent>
+            </Card>
+        </div>
     </div>
 </template>

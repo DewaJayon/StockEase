@@ -32,6 +32,7 @@ import {
     Logs,
     File,
     Scale,
+    CalendarClock,
 } from "lucide-vue-next";
 
 import {
@@ -131,9 +132,21 @@ const reports = [
         icon: Warehouse,
         roles: ["admin", "warehouse"],
     },
+    {
+        title: "Laporan Kedaluwarsa",
+        routeName: "reports.expiry.index",
+        icon: CalendarClock,
+        roles: ["admin", "warehouse"],
+    },
 ];
 
 const other = [
+    {
+        title: "Stock Opname",
+        routeName: "stock-adjustment.index",
+        icon: Scale,
+        roles: ["admin", "warehouse"],
+    },
     {
         title: "Log Stock",
         routeName: "log-stock.index",

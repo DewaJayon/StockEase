@@ -33,7 +33,8 @@ class StoreProductRequest extends FormRequest
             'purchase_price' => 'required|numeric|min:0|max:999999999999999',
             'selling_price' => 'required|numeric|min:0|max:999999999999999',
             'alert_stock' => 'required|numeric|min:0|max:999999999999999',
-            'image_path' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+            'expiry_date' => 'nullable|date',
+            'image' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
         ];
     }
 }

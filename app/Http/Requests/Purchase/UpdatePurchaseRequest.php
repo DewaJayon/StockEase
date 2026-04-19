@@ -32,6 +32,7 @@ class UpdatePurchaseRequest extends FormRequest
             'product_items.*.qty' => ['required', 'integer', 'min:1', 'max:999999999999999'],
             'product_items.*.price' => ['required', 'numeric', 'min:1', 'max:999999999999999'],
             'product_items.*.selling_price' => ['required', 'numeric', 'min:1', 'max:999999999999999'],
+            'product_items.*.expiry_date' => ['nullable', 'date'],
         ];
     }
 

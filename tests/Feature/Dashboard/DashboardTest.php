@@ -29,6 +29,7 @@ describe('Dashboard Sales Chart and Summary', function () {
             'total' => 10000,
             'payment_method' => 'cash',
             'created_at' => Carbon::now(),
+            'date' => Carbon::today(),
         ]);
         SaleItem::factory()->create([
             'sale_id' => $completedSale->id,
@@ -44,6 +45,7 @@ describe('Dashboard Sales Chart and Summary', function () {
             'total' => 50000,
             'payment_method' => 'cash',
             'created_at' => Carbon::now(),
+            'date' => Carbon::today(),
         ]);
         SaleItem::factory()->create([
             'sale_id' => $draftSale->id,
@@ -76,5 +78,37 @@ describe('Dashboard Sales Chart and Summary', function () {
 
         // Assert best selling product doesn't include draft quantities
         expect($cashierData['cashierSalesSummary']['bestSellingProduct'])->toEqual($this->product->name);
+    });
+
+    it('correctly displays weekly sales data across multiple days', function () {
+        $startOfWeek = Carbon::now()->startOfWeek();
+
+        // Sale on Monday
+        $saleMon = Sale::factory()->create([
+            'user_id' => $this->admin->id,
+            'status' => 'completed',
+            'total' => 15000,
+            'date' => $startOfWeek->copy()->toDateString(),
+            'created_at' => $startOfWeek->copy(),
+        ]);
+
+        // Sale on Wednesday
+        $saleWed = Sale::factory()->create([
+            'user_id' => $this->admin->id,
+            'status' => 'completed',
+            'total' => 25000,
+            'date' => $startOfWeek->copy()->addDays(2)->toDateString(),
+            'created_at' => $startOfWeek->copy()->addDays(2),
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('dashboard'));
+        $response->assertSuccessful();
+
+        $data = $response->original->getData()['page']['props']['data'];
+        $chartData = $data['weeklySalesChart']['data'];
+
+        expect($chartData[0])->toEqual(15000); // Monday
+        expect($chartData[1])->toEqual(0);     // Tuesday
+        expect($chartData[2])->toEqual(25000); // Wednesday
     });
 });

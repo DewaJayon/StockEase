@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Actions\NotifyStockAlert;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +23,7 @@ class Product extends Model
         'purchase_price',
         'selling_price',
         'alert_stock',
+        'expiry_date',
         'image_path',
     ];
 
@@ -37,6 +37,7 @@ class Product extends Model
         return [
             'purchase_price' => 'decimal:4',
             'selling_price' => 'decimal:4',
+            'expiry_date' => 'date',
         ];
     }
 
@@ -107,6 +108,16 @@ class Product extends Model
     }
 
     /**
+     * Get the price histories for the product.
+     *
+     * @return HasMany
+     */
+    public function priceHistories()
+    {
+        return $this->hasMany(PriceHistory::class);
+    }
+
+    /**
      * Get the stock logs that belong to the product.
      *
      * @return HasMany
@@ -114,38 +125,5 @@ class Product extends Model
     public function stockLogs()
     {
         return $this->hasMany(StockLog::class);
-    }
-
-    /**
-     * Reduce the stock of a product based on the given sale items.
-     */
-    public static function reduceStockFromSaleItems($saleItems)
-    {
-        $productIds = $saleItems->pluck('product_id')->toArray();
-        $products = self::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
-
-        foreach ($saleItems as $item) {
-            $product = $products[$item->product_id];
-
-            if ($product->stock < $item->qty) {
-                throw new \Exception("Stok produk {$product->name} tidak cukup.");
-            }
-
-            $product->decrement('stock', $item->qty);
-            $product->refresh(); // Refresh to get the actual stock value after decrement
-
-            if ($product->stock <= $product->alert_stock) {
-                (new NotifyStockAlert)->execute($product);
-            }
-
-            StockLog::create([
-                'product_id' => $product->id,
-                'qty' => $item->qty,
-                'type' => 'out',
-                'reference_type' => 'Sale',
-                'reference_id' => $item->sale_id,
-                'note' => 'Penjualan produk '.$product->name,
-            ]);
-        }
     }
 }

@@ -29,11 +29,8 @@ class UpdateProductRequest extends FormRequest
             'sku' => 'required|string|max:255',
             'barcode' => 'required|string|max:255',
             'unit_id' => 'required|exists:units,id',
-            'stock' => 'required|numeric|min:0|max:999999999999999',
-            'purchase_price' => 'required|numeric|min:0|max:999999999999999',
-            'selling_price' => 'required|numeric|min:0|max:999999999999999',
             'alert_stock' => 'required|numeric|min:0|max:999999999999999',
-            'image_path' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+            'image' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
         ];
     }
 }

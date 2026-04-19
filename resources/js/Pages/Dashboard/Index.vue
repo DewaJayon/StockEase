@@ -20,6 +20,7 @@ const salesSummary = page.props.data?.salesSummary;
 const lowStock = page.props.data?.lowStock;
 const activities = page.props.data?.activities;
 const weeklySalesChart = page.props.data?.weeklySalesChart;
+const priceUpdateChart = page.props.data?.priceUpdateChart;
 
 // Data Cashier
 const cashierSalesSummary = page.props.data?.cashierSalesSummary;
@@ -56,6 +57,7 @@ const role = page.props.auth.user.role;
             :low-stock="lowStock"
             :activities="activities"
             :weekly-sales-chart="weeklySalesChart"
+            :price-update-chart="priceUpdateChart"
         />
 
         <CashierDashboard
