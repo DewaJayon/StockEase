@@ -29,6 +29,7 @@ class ProductFactory extends Factory
             'purchase_price' => fake()->numberBetween(1000, 10000),
             'selling_price' => fake()->numberBetween(11000, 20000),
             'alert_stock' => 10,
+            'expiry_date' => fake()->dateTimeBetween('now', '+2 years')->format('Y-m-d'),
         ];
     }
 }

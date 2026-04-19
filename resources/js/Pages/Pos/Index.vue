@@ -9,6 +9,10 @@ import Cart from "./partials/Cart.vue";
 import ProductCard from "./partials/ProductCard.vue";
 import ProductPagination from "./partials/ProductPagination.vue";
 import { computed } from "vue";
+import BarcodeScanner from "@/Components/BarcodeScanner.vue";
+import { Button } from "@/Components/ui/button";
+import { ScanBarcode } from "lucide-vue-next";
+import { toast } from "vue-sonner";
 
 import {
     Breadcrumb,
@@ -36,6 +40,7 @@ const props = defineProps({
 
 const cart = ref(props.cart);
 const products = computed(() => props.products);
+const showScanner = ref(false);
 
 const fetchCart = async () => {
     const response = await axios.get(route("pos.get-cart"));
@@ -49,6 +54,20 @@ const reloadPage = () => {
         preserveState: true,
         only: ["products"],
     });
+};
+
+const handleScanResult = async (barcode) => {
+    try {
+        const response = await axios.post(route("pos.add-to-cart-barcode"), {
+            barcode: barcode,
+        });
+
+        toast.success(response.data.message);
+        fetchCart();
+        showScanner.value = false;
+    } catch (error) {
+        toast.error(error.response?.data?.message || "Terjadi kesalahan");
+    }
 };
 </script>
 
@@ -76,6 +95,14 @@ const reloadPage = () => {
             <div class="rounded-xl bg-muted/50 h-full p-4">
                 <div class="flex justify-between items-center">
                     <h1 class="font-semibold">POS</h1>
+                    <Button
+                        variant="outline"
+                        @click="showScanner = true"
+                        class="flex items-center gap-2"
+                    >
+                        <ScanBarcode class="w-4 h-4" />
+                        Scan Barcode
+                    </Button>
                 </div>
 
                 <Separator class="my-4" />
@@ -123,5 +150,7 @@ const reloadPage = () => {
                 </div>
             </div>
         </div>
+
+        <BarcodeScanner v-model:show="showScanner" @result="handleScanResult" />
     </AuthenticatedLayout>
 </template>
