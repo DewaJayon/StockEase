@@ -253,6 +253,23 @@ const destroy = (slug, productName) => {
                                                 {{ props.product.alert_stock }}
                                             </span>
                                         </div>
+                                        <div
+                                            class="flex justify-between py-2 border-b border-gray-700"
+                                        >
+                                            <span class="text-muted-foreground">
+                                                Tanggal Kedaluwarsa
+                                            </span>
+                                            <span class="font-semibold">
+                                                {{
+                                                    props.product.expiry_date
+                                                        ? formatDate(
+                                                              props.product
+                                                                  .expiry_date,
+                                                          )
+                                                        : "-"
+                                                }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 

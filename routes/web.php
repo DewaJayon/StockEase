@@ -5,6 +5,7 @@ use App\Http\Controllers\Media\FileManagerController;
 use App\Http\Controllers\Payment\MidtransTransactionController;
 use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\Product\CategoryController;
+use App\Http\Controllers\Product\PriceController;
 use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\Purchase\PurchaseController;
 use App\Http\Controllers\Purchase\PurchaseReportController;
@@ -12,7 +13,9 @@ use App\Http\Controllers\Purchase\SupplierController;
 use App\Http\Controllers\Sale\PosController;
 use App\Http\Controllers\Sale\SaleHistoryController;
 use App\Http\Controllers\Sale\SaleReportController;
+use App\Http\Controllers\Stock\ExpiryReportController;
 use App\Http\Controllers\Stock\LogStockController;
+use App\Http\Controllers\Stock\StockAdjustmentController;
 use App\Http\Controllers\Stock\StockReportController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\User\ProfileController;
@@ -52,6 +55,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 // master data route
 Route::middleware(['auth', 'role:admin, warehouse'])->group(function () {
     Route::resource('supplier', SupplierController::class);
+    Route::get('product/{product}/price', [PriceController::class, 'edit'])->name('product.price.edit');
+    Route::patch('product/{product}/price', [PriceController::class, 'update'])->name('product.price.update');
     Route::resource('product', ProductController::class);
     Route::resource('unit', UnitController::class);
 });
@@ -61,6 +66,7 @@ Route::prefix('pos')->middleware('auth', 'role:admin, cashier')->group(function 
     Route::get('/', [PosController::class, 'index'])->name('pos.index');
     Route::patch('/change-qty', [PosController::class, 'changeQty'])->name('pos.change-qty');
     Route::post('/add-to-cart', [PosController::class, 'addToCart'])->name('pos.add-to-cart');
+    Route::post('/add-to-cart-barcode', [PosController::class, 'addToCartByBarcode'])->name('pos.add-to-cart-barcode');
     Route::get('/get-cart', [PosController::class, 'getCartJson'])->name('pos.get-cart');
     Route::delete('/remove-from-cart', [PosController::class, 'removeFromCart'])->name('pos.remove-from-cart');
     Route::delete('/empty-cart', [PosController::class, 'emptyCart'])->name('pos.empty-cart');
@@ -118,4 +124,16 @@ Route::prefix('reports')->group(function () {
 // Log Stock
 Route::middleware('auth', 'role:admin, warehouse')->group(function () {
     Route::get('/log-stock', [LogStockController::class, 'index'])->name('log-stock.index');
+});
+
+// Stock Adjustment
+Route::middleware(['auth', 'role:admin, warehouse'])->group(function () {
+    Route::get('/stock-adjustment', [StockAdjustmentController::class, 'index'])->name('stock-adjustment.index');
+    Route::post('/stock-adjustment', [StockAdjustmentController::class, 'store'])->name('stock-adjustment.store');
+    Route::get('/stock-adjustment/search-product', [StockAdjustmentController::class, 'searchProduct'])->name('stock-adjustment.search-product');
+});
+
+// Laporan Kedaluwarsa Route
+Route::middleware('auth', 'role:admin, warehouse')->group(function () {
+    Route::get('/reports/expiry', [ExpiryReportController::class, 'index'])->name('reports.expiry.index');
 });

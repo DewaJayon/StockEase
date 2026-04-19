@@ -100,9 +100,9 @@ const table = useVueTable({
             {
                 page: pagination.value.pageIndex + 1,
                 per_page: pagination.value.pageSize,
-                seaarch: search.value,
+                search: search.value,
             },
-            { preseaaarveState: false, preserveScroll: true, replace: true },
+            { preserveState: false, preserveScroll: true, replace: true },
         );
     },
 
@@ -207,7 +207,7 @@ watchDebounced(
                 class="pl-10 shadow-md focus:ring-0 focus:ring-offset-0"
             />
             <span
-                class="absolute start-0 inset-y-0 flex items-center justify-center px-2"
+                class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-2"
             >
                 <Search class="w-5 h-5 text-muted-foreground" />
             </span>
@@ -224,7 +224,7 @@ watchDebounced(
                         <TableHead
                             v-for="header in headerGroup.headers"
                             :key="header.id"
-                            class="border-b text-center"
+                            class="border-b"
                         >
                             <FlexRender
                                 v-if="!header.isPlaceholder"
@@ -281,7 +281,7 @@ watchDebounced(
                     :model-value="`${table.getState().pagination.pageSize}`"
                     @update:model-value="table.setPageSize(Number($event))"
                 >
-                    <SelectTrigger class="h-8 w-[70px]">
+                    <SelectTrigger class="h-8 w-17.5">
                         <SelectValue
                             :placeholder="`${
                                 table.getState().pagination.pageSize
