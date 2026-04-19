@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sale;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Sale\PosBarcodeCartItemRequest;
 use App\Http\Requests\Sale\PosCartItemRequest;
 use App\Http\Requests\Sale\PosCheckoutRequest;
 use App\Services\Sale\PosService;
@@ -82,6 +83,29 @@ class PosController extends Controller
         try {
             $validated = $request->validated();
             $result = $this->posService->addToCart((int) $validated['product_id']);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Item berhasil ditambahkan ke keranjang',
+                    'total' => $result['total'],
+                    'cart' => $result['cart'],
+                ]);
+            }
+        } catch (\Throwable $th) {
+            return response()->json(['message' => $th->getMessage()], 400);
+        }
+
+        return back();
+    }
+
+    /**
+     * Tambahkan item produk ke keranjang via barcode.
+     */
+    public function addToCartByBarcode(PosBarcodeCartItemRequest $request)
+    {
+        try {
+            $validated = $request->validated();
+            $result = $this->posService->addToCartByBarcode($validated['barcode'], (int) ($validated['qty'] ?? 1));
 
             if ($request->expectsJson()) {
                 return response()->json([
