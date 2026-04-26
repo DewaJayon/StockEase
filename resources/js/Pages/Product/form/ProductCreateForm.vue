@@ -1,18 +1,18 @@
 <script setup>
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Button } from "@/Components/ui/button";
-import { Label } from "@/Components/ui/label";
-import { Input } from "@/Components/ui/input";
-import { nextTick, ref, watch } from "vue";
-import { cn } from "@/lib/utils";
-import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
-import { Separator } from "@/Components/ui/separator";
-import VueCropper from "vue-cropperjs/VueCropper.js";
-import "cropperjs/dist/cropper.css";
-import { Html5QrcodeScanner } from "html5-qrcode";
-import DatePicker from "@/Components/DatePicker.vue";
-import { toast } from "vue-sonner";
-import InputError from "@/Components/InputError.vue";
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Button } from '@/Components/ui/button';
+import { Label } from '@/Components/ui/label';
+import { Input } from '@/Components/ui/input';
+import { nextTick, ref, watch } from 'vue';
+import { cn } from '@/lib/utils';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Separator } from '@/Components/ui/separator';
+import VueCropper from 'vue-cropperjs/VueCropper.js';
+import 'cropperjs/dist/cropper.css';
+import { Html5QrcodeScanner } from 'html5-qrcode';
+import DatePicker from '@/Components/DatePicker.vue';
+import { toast } from 'vue-sonner';
+import InputError from '@/Components/InputError.vue';
 
 import {
     Breadcrumb,
@@ -21,7 +21,7 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "@/Components/ui/breadcrumb";
+} from '@/Components/ui/breadcrumb';
 
 import {
     ArrowLeftToLine,
@@ -29,7 +29,7 @@ import {
     ChevronsUpDown,
     Loader2,
     Search,
-} from "lucide-vue-next";
+} from 'lucide-vue-next';
 
 import {
     Combobox,
@@ -41,14 +41,14 @@ import {
     ComboboxItemIndicator,
     ComboboxList,
     ComboboxTrigger,
-} from "@/Components/ui/combobox";
+} from '@/Components/ui/combobox';
 
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from "@/Components/ui/dialog";
+} from '@/Components/ui/dialog';
 
 const props = defineProps({
     units: {
@@ -67,7 +67,7 @@ const expiryDate = ref();
 const showCropperModal = ref(false);
 
 watch(expiryDate, (newValue) => {
-    form.expiry_date = newValue ? newValue.toISOString().split("T")[0] : "";
+    form.expiry_date = newValue ? newValue.toISOString().split('T')[0] : '';
 });
 
 watch(category, (newValue) => {
@@ -79,16 +79,16 @@ watch(unit, (newValue) => {
 });
 
 const form = useForm({
-    category_id: "",
-    name: "",
-    sku: "",
-    barcode: "",
-    unit_id: "",
+    category_id: '',
+    name: '',
+    sku: '',
+    barcode: '',
+    unit_id: '',
     stock: 0,
     purchase_price: 0,
     selling_price: 0,
     alert_stock: 0,
-    expiry_date: "",
+    expiry_date: '',
     image: null,
 });
 
@@ -98,8 +98,8 @@ const cropper = ref(null);
 
 const setImage = (e) => {
     const file = e.target.files[0];
-    if (!file?.type?.includes("image/")) {
-        alert("Please select an image file");
+    if (!file?.type?.includes('image/')) {
+        alert('Please select an image file');
         return;
     }
 
@@ -122,13 +122,13 @@ const handleCrop = () => {
 
         canvas.toBlob((blob) => {
             if (blob) {
-                const file = new File([blob], "cropped.jpg", {
-                    type: "image/jpeg",
+                const file = new File([blob], 'cropped.jpg', {
+                    type: 'image/jpeg',
                 });
 
                 form.image = file;
             }
-        }, "image/jpeg");
+        }, 'image/jpeg');
     }
 
     showCropperModal.value = false;
@@ -139,7 +139,7 @@ const showScannerModal = ref(false);
 let html5QrcodeScanner = null;
 
 const onScanSuccess = (decodedText, decodedResult) => {
-    toast.success("Barcode berhasil terdeteksi", {
+    toast.success('Barcode berhasil terdeteksi', {
         description: `Barcode ${decodedText} berhasil terdeteksi oleh ${user}`,
     });
 
@@ -155,7 +155,7 @@ watch(showScannerModal, (newVal) => {
     if (newVal) {
         nextTick(() => {
             html5QrcodeScanner = new Html5QrcodeScanner(
-                "reader",
+                'reader',
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 false,
             );
@@ -169,7 +169,7 @@ watch(showScannerModal, (newVal) => {
                     html5QrcodeScanner = null;
                 })
                 .catch((err) => {
-                    console.error("Failed to clear scanner", err);
+                    console.error('Failed to clear scanner', err);
                 });
         }
     }
@@ -184,439 +184,457 @@ const submit = () => {
         selling_price: parseFloat(form.selling_price) || 0,
     };
 
-    form.transform((data) => payload).post(route("product.store"), {
+    form.transform((data) => payload).post(route('product.store'), {
         showProgress: false,
         preserveScroll: true,
         onSuccess: () => {
             form.reset();
-            toast.success("Produk berhasil ditambahkan", {
+            toast.success('Produk berhasil ditambahkan', {
                 description: `Produk ${form.name} berhasil ditambahkan oleh ${user}`,
             });
 
             showCropperModal.value = false;
         },
         onError: () => {
-            toast.error("Produk gagal ditambahkan");
+            toast.error('Produk gagal ditambahkan');
         },
     });
 };
 
 const formatInput = (val) => {
-    if (val === null || val === undefined || val === "") return "";
-    let str = val.toString().replace(".", ",");
-    let parts = str.split(",");
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return parts.join(",");
+    if (val === null || val === undefined || val === '') return '';
+    let str = val.toString().replace('.', ',');
+    let parts = str.split(',');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return parts.join(',');
 };
 
 const parseInput = (val) => {
-    if (val === null || val === undefined) return "";
-    let clean = val.toString().replace(/[^\d,]/g, "");
-    const commaIndex = clean.indexOf(",");
+    if (val === null || val === undefined) return '';
+    let clean = val.toString().replace(/[^\d,]/g, '');
+    const commaIndex = clean.indexOf(',');
     if (commaIndex !== -1) {
         clean =
             clean.slice(0, commaIndex + 1) +
-            clean.slice(commaIndex + 1).replace(/,/g, "");
+            clean.slice(commaIndex + 1).replace(/,/g, '');
     }
-    return clean.replace(",", ".");
+    return clean.replace(',', '.');
 };
 </script>
 
 <template>
-    <AuthenticatedLayout>
-        <Head>
-            <title>Tambah Produk</title>
-        </Head>
-        <template #breadcrumb>
-            <Breadcrumb>
-                <BreadcrumbList>
-                    <BreadcrumbItem>
-                        <Link :href="route('dashboard')">
-                            <BreadcrumbLink> Dashboard </BreadcrumbLink>
-                        </Link>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                        <Link :href="route('product.index')">
-                            <BreadcrumbLink> Produk </BreadcrumbLink>
-                        </Link>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                        <BreadcrumbPage> Tambah Produk </BreadcrumbPage>
-                    </BreadcrumbItem>
-                </BreadcrumbList>
-            </Breadcrumb>
-        </template>
-        <div class="flex flex-1 flex-col gap-4 p-4">
-            <div class="rounded-xl bg-muted/50 h-full p-4">
-                <div class="flex justify-between items-center">
-                    <h4 class="font-semibold">Tambah Produk</h4>
-                    <Link :href="route('product.index')">
-                        <Button
-                            variant="outline"
-                            class="dark:border-white border-zinc-600"
-                        >
-                            <ArrowLeftToLine />
-                            Kembali ke daftar produk
-                        </Button>
-                    </Link>
-                </div>
-                <Separator class="my-4" />
+  <AuthenticatedLayout>
+    <Head>
+      <title>Tambah Produk</title>
+    </Head>
+    <template #breadcrumb>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <Link :href="route('dashboard')">
+              <BreadcrumbLink> Dashboard </BreadcrumbLink>
+            </Link>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <Link :href="route('product.index')">
+              <BreadcrumbLink> Produk </BreadcrumbLink>
+            </Link>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage> Tambah Produk </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </template>
+    <div class="flex flex-1 flex-col gap-4 p-4">
+      <div class="rounded-xl bg-muted/50 h-full p-4">
+        <div class="flex justify-between items-center">
+          <h4 class="font-semibold">
+            Tambah Produk
+          </h4>
+          <Link :href="route('product.index')">
+            <Button
+              variant="outline"
+              class="dark:border-white border-zinc-600"
+            >
+              <ArrowLeftToLine />
+              Kembali ke daftar produk
+            </Button>
+          </Link>
+        </div>
+        <Separator class="my-4" />
 
-                <div class="mt-4">
-                    <form
-                        class="grid grid-cols-1 md:grid-cols-2 gap-4"
-                        @submit.prevent="submit"
+        <div class="mt-4">
+          <form
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            @submit.prevent="submit"
+          >
+            <div>
+              <Label for="name">Nama Produk</Label>
+              <Input
+                id="name"
+                v-model="form.name"
+                type="text"
+                placeholder="Contoh: Indomie Goreng"
+              />
+              <InputError :message="form.errors.name" />
+            </div>
+
+            <div>
+              <Label for="category">Kategori</Label>
+              <Combobox
+                v-model="category"
+                by="label"
+              >
+                <ComboboxAnchor class="w-full">
+                  <ComboboxTrigger
+                    as-child
+                    class="w-full"
+                  >
+                    <Button
+                      variant="outline"
+                      class="justify-between"
                     >
-                        <div>
-                            <Label for="name">Nama Produk</Label>
-                            <Input
-                                id="name"
-                                v-model="form.name"
-                                type="text"
-                                placeholder="Contoh: Indomie Goreng"
-                            />
-                            <InputError :message="form.errors.name" />
-                        </div>
+                      {{
+                        category?.label ??
+                          'Pilih kategori'
+                      }}
 
-                        <div>
-                            <Label for="category">Kategori</Label>
-                            <Combobox v-model="category" by="label">
-                                <ComboboxAnchor class="w-full">
-                                    <ComboboxTrigger as-child class="w-full">
-                                        <Button
-                                            variant="outline"
-                                            class="justify-between"
-                                        >
-                                            {{
-                                                category?.label ??
-                                                "Pilih kategori"
-                                            }}
+                      <ChevronsUpDown
+                        class="ml-2 h-4 w-4 shrink-0 opacity-50"
+                      />
+                    </Button>
+                  </ComboboxTrigger>
+                </ComboboxAnchor>
 
-                                            <ChevronsUpDown
-                                                class="ml-2 h-4 w-4 shrink-0 opacity-50"
-                                            />
-                                        </Button>
-                                    </ComboboxTrigger>
-                                </ComboboxAnchor>
+                <ComboboxList>
+                  <div
+                    class="relative w-full max-w-sm items-center"
+                  >
+                    <ComboboxInput
+                      class="pl-9 focus-visible:ring-0 border-0 border-b rounded-none h-10"
+                      placeholder="Cari kategori..."
+                    />
+                    <span
+                      class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
+                    >
+                      <Search
+                        class="size-4 text-muted-foreground"
+                      />
+                    </span>
+                  </div>
 
-                                <ComboboxList>
-                                    <div
-                                        class="relative w-full max-w-sm items-center"
-                                    >
-                                        <ComboboxInput
-                                            class="pl-9 focus-visible:ring-0 border-0 border-b rounded-none h-10"
-                                            placeholder="Cari kategori..."
-                                        />
-                                        <span
-                                            class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
-                                        >
-                                            <Search
-                                                class="size-4 text-muted-foreground"
-                                            />
-                                        </span>
-                                    </div>
+                  <ComboboxEmpty>
+                    Tidak ada kategori ditemukan.
+                  </ComboboxEmpty>
 
-                                    <ComboboxEmpty>
-                                        Tidak ada kategori ditemukan.
-                                    </ComboboxEmpty>
+                  <ComboboxGroup>
+                    <ComboboxItem
+                      v-for="cat in categories"
+                      :key="cat.value"
+                      :value="cat"
+                      class="cursor-pointer"
+                    >
+                      {{ cat.label }}
 
-                                    <ComboboxGroup>
-                                        <ComboboxItem
-                                            v-for="category in categories"
-                                            :key="category.value"
-                                            :value="category"
-                                            class="cursor-pointer"
-                                        >
-                                            {{ category.label }}
+                      <ComboboxItemIndicator>
+                        <Check
+                          :class="
+                            cn('ml-auto h-4 w-4')
+                          "
+                        />
+                      </ComboboxItemIndicator>
+                    </ComboboxItem>
+                  </ComboboxGroup>
+                </ComboboxList>
+              </Combobox>
 
-                                            <ComboboxItemIndicator>
-                                                <Check
-                                                    :class="
-                                                        cn('ml-auto h-4 w-4')
-                                                    "
-                                                />
-                                            </ComboboxItemIndicator>
-                                        </ComboboxItem>
-                                    </ComboboxGroup>
-                                </ComboboxList>
-                            </Combobox>
+              <InputError :message="form.errors.category_id" />
+            </div>
 
-                            <InputError :message="form.errors.category_id" />
-                        </div>
+            <div>
+              <Label for="sku">SKU</Label>
+              <Input
+                id="sku"
+                v-model="form.sku"
+                type="text"
+                placeholder="Contoh: SKU001"
+              />
 
-                        <div>
-                            <Label for="sku">SKU</Label>
-                            <Input
-                                id="sku"
-                                v-model="form.sku"
-                                type="text"
-                                placeholder="Contoh: SKU001"
-                            />
+              <InputError :message="form.errors.sku" />
+            </div>
 
-                            <InputError :message="form.errors.sku" />
-                        </div>
+            <div class="w-full">
+              <Label for="barcode">Barcode</Label>
+              <div class="flex items-center gap-1.5">
+                <Input
+                  id="barcode"
+                  v-model="form.barcode"
+                  type="text"
+                  placeholder="Opsional"
+                  class="flex-1"
+                />
+                <Button
+                  type="button"
+                  @click="showScannerModal = true"
+                >
+                  Scan Barcode
+                </Button>
+              </div>
+              <span class="text-xs text-muted-foreground">
+                Klik Scan Barcode untuk memasukkan data secara
+                otomatis dengan menggunakan kamera.
+              </span>
+              <InputError :message="form.errors.barcode" />
+            </div>
 
-                        <div class="w-full">
-                            <Label for="barcode">Barcode</Label>
-                            <div class="flex items-center gap-1.5">
-                                <Input
-                                    id="barcode"
-                                    v-model="form.barcode"
-                                    type="text"
-                                    placeholder="Opsional"
-                                    class="flex-1"
-                                />
-                                <Button
-                                    type="button"
-                                    @click="showScannerModal = true"
-                                >
-                                    Scan Barcode
-                                </Button>
-                            </div>
-                            <span class="text-xs text-muted-foreground">
-                                Klik Scan Barcode untuk memasukkan data secara
-                                otomatis dengan menggunakan kamera.
-                            </span>
-                            <InputError :message="form.errors.barcode" />
-                        </div>
+            <div>
+              <Label for="unit">Satuan</Label>
+              <Combobox
+                v-model="unit"
+                by="label"
+              >
+                <ComboboxAnchor class="w-full">
+                  <ComboboxTrigger
+                    as-child
+                    class="w-full"
+                  >
+                    <Button
+                      variant="outline"
+                      class="justify-between"
+                    >
+                      {{ unit?.label ?? 'Pilih satuan' }}
 
-                        <div>
-                            <Label for="unit">Satuan</Label>
-                            <Combobox v-model="unit" by="label">
-                                <ComboboxAnchor class="w-full">
-                                    <ComboboxTrigger as-child class="w-full">
-                                        <Button
-                                            variant="outline"
-                                            class="justify-between"
-                                        >
-                                            {{ unit?.label ?? "Pilih satuan" }}
+                      <ChevronsUpDown
+                        class="ml-2 h-4 w-4 shrink-0 opacity-50"
+                      />
+                    </Button>
+                  </ComboboxTrigger>
+                </ComboboxAnchor>
 
-                                            <ChevronsUpDown
-                                                class="ml-2 h-4 w-4 shrink-0 opacity-50"
-                                            />
-                                        </Button>
-                                    </ComboboxTrigger>
-                                </ComboboxAnchor>
+                <ComboboxList>
+                  <div
+                    class="relative w-full max-w-sm items-center"
+                  >
+                    <ComboboxInput
+                      class="pl-9 focus-visible:ring-0 border-0 border-b rounded-none h-10"
+                      placeholder="Cari satuan..."
+                    />
+                    <span
+                      class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
+                    >
+                      <Search
+                        class="size-4 text-muted-foreground"
+                      />
+                    </span>
+                  </div>
 
-                                <ComboboxList>
-                                    <div
-                                        class="relative w-full max-w-sm items-center"
-                                    >
-                                        <ComboboxInput
-                                            class="pl-9 focus-visible:ring-0 border-0 border-b rounded-none h-10"
-                                            placeholder="Cari satuan..."
-                                        />
-                                        <span
-                                            class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
-                                        >
-                                            <Search
-                                                class="size-4 text-muted-foreground"
-                                            />
-                                        </span>
-                                    </div>
+                  <ComboboxEmpty>
+                    Tidak ada satuan ditemukan.
+                  </ComboboxEmpty>
 
-                                    <ComboboxEmpty>
-                                        Tidak ada satuan ditemukan.
-                                    </ComboboxEmpty>
+                  <ComboboxGroup>
+                    <ComboboxItem
+                      v-for="u in units"
+                      :key="u.value"
+                      :value="u"
+                      class="cursor-pointer"
+                    >
+                      {{ u.label }}
 
-                                    <ComboboxGroup>
-                                        <ComboboxItem
-                                            v-for="unit in units"
-                                            :key="unit.value"
-                                            :value="unit"
-                                            class="cursor-pointer"
-                                        >
-                                            {{ unit.label }}
+                      <ComboboxItemIndicator>
+                        <Check
+                          :class="
+                            cn('ml-auto h-4 w-4')
+                          "
+                        />
+                      </ComboboxItemIndicator>
+                    </ComboboxItem>
+                  </ComboboxGroup>
+                </ComboboxList>
+              </Combobox>
 
-                                            <ComboboxItemIndicator>
-                                                <Check
-                                                    :class="
-                                                        cn('ml-auto h-4 w-4')
-                                                    "
-                                                />
-                                            </ComboboxItemIndicator>
-                                        </ComboboxItem>
-                                    </ComboboxGroup>
-                                </ComboboxList>
-                            </Combobox>
+              <InputError :message="form.errors.unit_id" />
+            </div>
 
-                            <InputError :message="form.errors.unit_id" />
-                        </div>
+            <div>
+              <Label for="stock">Stok</Label>
+              <Input
+                id="stock"
+                v-model="form.stock"
+                type="number"
+                min="0"
+                class="[&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <InputError :message="form.errors.stock" />
+            </div>
 
-                        <div>
-                            <Label for="stock">Stok</Label>
-                            <Input
-                                id="stock"
-                                v-model="form.stock"
-                                type="number"
-                                min="0"
-                                class="[&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <InputError :message="form.errors.stock" />
-                        </div>
+            <div>
+              <Label for="purchase_price">Harga Beli</Label>
+              <div class="relative">
+                <span
+                  class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
+                >Rp</span>
+                <Input
+                  id="purchase_price"
+                  :model-value="
+                    formatInput(form.purchase_price)
+                  "
+                  type="text"
+                  class="pl-9 font-mono"
+                  @update:model-value="
+                    (v) =>
+                      (form.purchase_price =
+                        parseInput(v))
+                  "
+                />
+              </div>
+              <InputError :message="form.errors.purchase_price" />
+            </div>
 
-                        <div>
-                            <Label for="purchase_price">Harga Beli</Label>
-                            <div class="relative">
-                                <span
-                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
-                                    >Rp</span
-                                >
-                                <Input
-                                    id="purchase_price"
-                                    :model-value="
-                                        formatInput(form.purchase_price)
-                                    "
-                                    @update:model-value="
-                                        (v) =>
-                                            (form.purchase_price =
-                                                parseInput(v))
-                                    "
-                                    type="text"
-                                    class="pl-9 font-mono"
-                                />
-                            </div>
-                            <InputError :message="form.errors.purchase_price" />
-                        </div>
+            <div>
+              <Label for="selling_price">Harga Jual</Label>
+              <div class="relative">
+                <span
+                  class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
+                >Rp</span>
+                <Input
+                  id="selling_price"
+                  :model-value="
+                    formatInput(form.selling_price)
+                  "
+                  type="text"
+                  class="pl-9 font-mono text-blue-600 dark:text-blue-400"
+                  @update:model-value="
+                    (v) =>
+                      (form.selling_price = parseInput(v))
+                  "
+                />
+              </div>
+              <InputError :message="form.errors.selling_price" />
+            </div>
 
-                        <div>
-                            <Label for="selling_price">Harga Jual</Label>
-                            <div class="relative">
-                                <span
-                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
-                                    >Rp</span
-                                >
-                                <Input
-                                    id="selling_price"
-                                    :model-value="
-                                        formatInput(form.selling_price)
-                                    "
-                                    @update:model-value="
-                                        (v) =>
-                                            (form.selling_price = parseInput(v))
-                                    "
-                                    type="text"
-                                    class="pl-9 font-mono text-blue-600 dark:text-blue-400"
-                                />
-                            </div>
-                            <InputError :message="form.errors.selling_price" />
-                        </div>
+            <div>
+              <Label for="alert_stock">Stok Minimum</Label>
+              <Input
+                id="alert_stock"
+                v-model="form.alert_stock"
+                type="number"
+                min="0"
+                class="[&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <InputError :message="form.errors.alert_stock" />
+            </div>
 
-                        <div>
-                            <Label for="alert_stock">Stok Minimum</Label>
-                            <Input
-                                id="alert_stock"
-                                v-model="form.alert_stock"
-                                type="number"
-                                min="0"
-                                class="[&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <InputError :message="form.errors.alert_stock" />
-                        </div>
+            <div>
+              <Label for="expiry_date">Tanggal Kedaluwarsa</Label>
+              <DatePicker
+                id="expiry_date"
+                v-model="expiryDate"
+                placeholder="Pilih tanggal kedaluwarsa (opsional)"
+              />
+              <span class="text-xs text-muted-foreground">
+                Opsional. Setelah ada pembelian, tanggal ini
+                diperbarui otomatis berdasarkan batch (FEFO).
+              </span>
+              <InputError :message="form.errors.expiry_date" />
+            </div>
 
-                        <div>
-                            <Label for="expiry_date">Tanggal Kedaluwarsa</Label>
-                            <DatePicker
-                                id="expiry_date"
-                                v-model="expiryDate"
-                                placeholder="Pilih tanggal kedaluwarsa (opsional)"
-                            />
-                            <span class="text-xs text-muted-foreground">
-                                Opsional. Setelah ada pembelian, tanggal ini
-                                diperbarui otomatis berdasarkan batch (FEFO).
-                            </span>
-                            <InputError :message="form.errors.expiry_date" />
-                        </div>
-
-                        <div>
-                            <Label for="image">Gambar Produk</Label>
-                            <Input
-                                id="image"
-                                type="file"
-                                accept="image/*"
-                                @change="setImage"
-                            />
-                            <img
-                                v-if="cropImg"
-                                :src="cropImg"
-                                class="mt-2 rounded border"
-                                style="
+            <div>
+              <Label for="image">Gambar Produk</Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                @change="setImage"
+              />
+              <img
+                v-if="cropImg"
+                :src="cropImg"
+                class="mt-2 rounded border"
+                style="
                                     width: 150px;
                                     height: 150px;
                                     object-fit: cover;
                                 "
-                            />
-                            <InputError :message="form.errors.image" />
-                        </div>
-
-                        <div class="col-span-full flex justify-end">
-                            <Button type="submit" :disabled="form.processing">
-                                <Loader2
-                                    v-if="form.processing"
-                                    class="w-4 h-4 animate-spin"
-                                />
-                                Simpan Produk
-                            </Button>
-                        </div>
-                    </form>
-
-                    <Dialog v-model:open="showCropperModal">
-                        <DialogContent class="max-w-3xl">
-                            <DialogHeader>
-                                <DialogTitle>Crop Gambar</DialogTitle>
-                            </DialogHeader>
-
-                            <div class="flex flex-col gap-4">
-                                <vue-cropper
-                                    ref="cropper"
-                                    :src="imgSrc"
-                                    :guides="true"
-                                    :view-mode="2"
-                                    drag-mode="crop"
-                                    :auto-crop-area="0.5"
-                                    :min-container-width="250"
-                                    :min-container-height="180"
-                                    :background="true"
-                                    :rotatable="true"
-                                    :aspect-ratio="1 / 1"
-                                    :img-style="{
-                                        width: '100%',
-                                        maxHeight: '400px',
-                                    }"
-                                />
-
-                                <div class="flex justify-end gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        @click="showCropperModal = false"
-                                    >
-                                        Batal
-                                    </Button>
-                                    <Button @click="handleCrop">
-                                        Simpan Gambar
-                                    </Button>
-                                </div>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-
-                    <Dialog v-model:open="showScannerModal">
-                        <DialogContent class="max-w-xl">
-                            <DialogHeader>
-                                <DialogTitle>Scan Barcode</DialogTitle>
-                            </DialogHeader>
-                            <div class="flex flex-col gap-4 items-center">
-                                <div id="reader" class="w-full" />
-                                <Button @click="showScannerModal = false">
-                                    Tutup
-                                </Button>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                </div>
+              >
+              <InputError :message="form.errors.image" />
             </div>
+
+            <div class="col-span-full flex justify-end">
+              <Button
+                type="submit"
+                :disabled="form.processing"
+              >
+                <Loader2
+                  v-if="form.processing"
+                  class="w-4 h-4 animate-spin"
+                />
+                Simpan Produk
+              </Button>
+            </div>
+          </form>
+
+          <Dialog v-model:open="showCropperModal">
+            <DialogContent class="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Crop Gambar</DialogTitle>
+              </DialogHeader>
+
+              <div class="flex flex-col gap-4">
+                <vue-cropper
+                  ref="cropper"
+                  :src="imgSrc"
+                  :guides="true"
+                  :view-mode="2"
+                  drag-mode="crop"
+                  :auto-crop-area="0.5"
+                  :min-container-width="250"
+                  :min-container-height="180"
+                  :background="true"
+                  :rotatable="true"
+                  :aspect-ratio="1 / 1"
+                  :img-style="{
+                    width: '100%',
+                    maxHeight: '400px',
+                  }"
+                />
+
+                <div class="flex justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    @click="showCropperModal = false"
+                  >
+                    Batal
+                  </Button>
+                  <Button @click="handleCrop">
+                    Simpan Gambar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog v-model:open="showScannerModal">
+            <DialogContent class="max-w-xl">
+              <DialogHeader>
+                <DialogTitle>Scan Barcode</DialogTitle>
+              </DialogHeader>
+              <div class="flex flex-col gap-4 items-center">
+                <div
+                  id="reader"
+                  class="w-full"
+                />
+                <Button @click="showScannerModal = false">
+                  Tutup
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
-    </AuthenticatedLayout>
+      </div>
+    </div>
+  </AuthenticatedLayout>
 </template>

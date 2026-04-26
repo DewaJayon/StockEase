@@ -1,7 +1,7 @@
-import { ref, computed } from "vue";
-import axios from "axios";
-import { usePage } from "@inertiajs/vue3";
-import { formatRelative } from "@/lib/utils";
+import { ref, computed } from 'vue';
+import axios from 'axios';
+import { usePage } from '@inertiajs/vue3';
+import { formatRelative } from '@/lib/utils';
 
 /** Module-level state — persists across component remounts (Inertia page navigations). */
 const notifications = ref([]);
@@ -17,7 +17,7 @@ export function useNotifications() {
 
     const fetchNotifications = async () => {
         try {
-            const response = await axios.get(route("notifications.index"));
+            const response = await axios.get(route('notifications.index'));
             notifications.value = response.data.data.map((notif) => ({
                 id: notif.id,
                 slug: notif.data.product_slug,
@@ -31,7 +31,7 @@ export function useNotifications() {
                 time_ago: formatRelative(notif.created_at),
             }));
         } catch (error) {
-            console.error("Failed to fetch notifications:", error);
+            console.error('Failed to fetch notifications:', error);
         }
     };
 
@@ -43,7 +43,7 @@ export function useNotifications() {
         window.Echo.private(
             `App.Models.User.${page.props.auth.user.id}`,
         ).notification((notification) => {
-            if (notification.type === "stock.alert") {
+            if (notification.type === 'stock.alert') {
                 notifications.value.unshift({
                     id: notification.id,
                     slug: notification.product_slug,
@@ -74,7 +74,7 @@ export function useNotifications() {
     const markAsRead = async (notificationId) => {
         try {
             await axios.post(
-                route("notifications.read", { id: notificationId }),
+                route('notifications.read', { id: notificationId }),
             );
             notifications.value = notifications.value.map((n) =>
                 n.id === notificationId
@@ -82,32 +82,32 @@ export function useNotifications() {
                     : n,
             );
         } catch (error) {
-            console.error("Failed to mark notification as read:", error);
+            console.error('Failed to mark notification as read:', error);
         }
     };
 
     const markAllAsRead = async () => {
         try {
-            await axios.post(route("notifications.read-all"));
+            await axios.post(route('notifications.read-all'));
             notifications.value = notifications.value.map((n) => ({
                 ...n,
                 read_at: new Date().toISOString(),
             }));
         } catch (error) {
-            console.error("Failed to mark all notifications as read:", error);
+            console.error('Failed to mark all notifications as read:', error);
         }
     };
 
     const deleteNotification = async (notificationId) => {
         try {
             await axios.delete(
-                route("notifications.destroy", { id: notificationId }),
+                route('notifications.destroy', { id: notificationId }),
             );
             notifications.value = notifications.value.filter(
                 (n) => n.id !== notificationId,
             );
         } catch (error) {
-            console.error("Failed to delete notification:", error);
+            console.error('Failed to delete notification:', error);
         }
     };
 

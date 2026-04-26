@@ -5,7 +5,7 @@
     </tr>
     <tr>
         <td>Periode</td>
-        <td>{{ $filters['start_date'] }} - {{ $filters['end_date'] }}</td>
+        <td>{{ $filters['start'] }} - {{ $filters['end'] }}</td>
     </tr>
     <tr>
         <td>Kasir</td>

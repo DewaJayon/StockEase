@@ -4,19 +4,19 @@ const props = defineProps({
 });
 
 const formatQty = (row) => {
-    if (row.type == "in") {
-        return "+" + row.qty;
-    } else if (row.type == "out") {
-        return "-" + row.qty;
-    } else if (row.type == "adjust") {
-        return "±" + row.qty;
+    if (row.type == 'in') {
+        return '+' + row.qty;
+    } else if (row.type == 'out') {
+        return '-' + row.qty;
+    } else if (row.type == 'adjust') {
+        return '±' + row.qty;
     }
     return row.qty;
 };
 </script>
 
 <template>
-    <span class="flex items-center justify-center">
-        {{ formatQty(props.row) }}
-    </span>
+  <span class="flex items-center justify-start">
+    {{ formatQty(props.row) }}
+  </span>
 </template>

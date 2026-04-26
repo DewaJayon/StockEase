@@ -1,19 +1,19 @@
-import { DataTableColumnHeader } from "@/Components/ui/data-table";
-import { h } from "vue";
-import CategoryActionRow from "./CategoryActionRow.vue";
+import { DataTableColumnHeader } from '@/Components/ui/data-table';
+import { h } from 'vue';
+import CategoryActionRow from './CategoryActionRow.vue';
 
 export const categoryColumns = [
     {
-        accessorKey: "name",
+        accessorKey: 'name',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Nama Kategori",
+                title: 'Nama Kategori',
             }),
     },
     {
-        accessorKey: "action",
-        header: "Aksi",
+        accessorKey: 'action',
+        header: () => h('div', { class: 'text-center w-full' }, 'Aksi'),
         cell: ({ row }) =>
             h(CategoryActionRow, {
                 row: row.original,

@@ -1,35 +1,35 @@
-import { DataTableColumnHeader } from "@/Components/ui/data-table";
-import { h } from "vue";
-import SupplierActionRow from "./SupplierActionRow.vue";
+import { DataTableColumnHeader } from '@/Components/ui/data-table';
+import { h } from 'vue';
+import SupplierActionRow from './SupplierActionRow.vue';
 
 export const supplierColumns = [
     {
-        accessorKey: "name",
+        accessorKey: 'name',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Nama Supplier",
+                title: 'Nama Supplier',
             }),
     },
     {
-        accessorKey: "phone",
+        accessorKey: 'phone',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Nomor Telepon",
+                title: 'Nomor Telepon',
             }),
     },
     {
-        accessorKey: "address",
+        accessorKey: 'address',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Alamat Supplier",
+                title: 'Alamat Supplier',
             }),
     },
     {
-        accessorKey: "action",
-        header: "Aksi",
+        accessorKey: 'action',
+        header: () => h('div', { class: 'text-center w-full' }, 'Aksi'),
         cell: ({ row }) =>
             h(SupplierActionRow, {
                 row: row.original,

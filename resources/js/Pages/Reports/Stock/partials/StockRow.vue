@@ -1,5 +1,5 @@
 <script setup>
-import { Badge } from "@/Components/ui/badge";
+import { Badge } from '@/Components/ui/badge';
 
 const props = defineProps({
     row: {
@@ -10,23 +10,26 @@ const props = defineProps({
 
 const statusColor = (row) => {
     if (row.stock <= row.alert_stock) {
-        return "border-red-500";
+        return 'border-red-500';
     } else {
-        return "border-green-500";
+        return 'border-green-500';
     }
 };
 
 const statusText = (row) => {
     if (row.stock <= row.alert_stock) {
-        return "Stock Kurang";
+        return 'Stock Kurang';
     } else {
-        return "Stock Tersedia";
+        return 'Stock Tersedia';
     }
 };
 </script>
 
 <template>
-    <Badge variant="outline" :class="statusColor(row)">
-        {{ statusText(row) }}
-    </Badge>
+  <Badge
+    variant="outline"
+    :class="statusColor(row)"
+  >
+    {{ statusText(row) }}
+  </Badge>
 </template>

@@ -1,37 +1,31 @@
 <script setup>
-import { formatPrice } from "@/lib/utils";
-import { onBeforeUnmount, onMounted, ref, computed } from "vue";
+import { formatPrice } from '@/lib/utils';
+import { onBeforeUnmount, onMounted, ref, computed, h } from 'vue';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/Components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { DataTable, DataTableColumnHeader } from '@/Components/ui/data-table';
 
-import { TrendingUp, Calendar } from "lucide-vue-next";
+import { TrendingUp, Calendar, PackageSearch, CreditCard } from 'lucide-vue-next';
 
 const props = defineProps({
     salesSummary: Object,
-    lowStock: Array,
-    activities: Array,
+    lowStock: Object,
+    activities: Object,
     weeklySalesChart: Object,
     priceUpdateChart: Object,
 });
 
-const isDarkMode = ref(document.documentElement.classList.contains("dark"));
+const isDarkMode = ref(document.documentElement.classList.contains('dark'));
 let observer = null;
 
 onMounted(() => {
     observer = new MutationObserver(() => {
-        isDarkMode.value = document.documentElement.classList.contains("dark");
+        isDarkMode.value = document.documentElement.classList.contains('dark');
     });
     observer.observe(document.documentElement, {
         attributes: true,
-        attributeFilter: ["class"],
+        attributeFilter: ['class'],
     });
 });
 
@@ -41,28 +35,34 @@ onBeforeUnmount(() => {
 
 const salesChartOptions = computed(() => ({
     theme: {
-        mode: isDarkMode.value ? "dark" : "light",
+        mode: isDarkMode.value ? 'dark' : 'light',
     },
     chart: {
-        type: "bar",
+        type: 'bar',
         toolbar: { show: false },
-        background: "transparent",
+        background: 'transparent',
+        fontFamily: 'inherit',
     },
-    colors: ["#3b82f6"],
+    colors: ['#3b82f6'],
     dataLabels: {
-        enabled: true,
-        formatter: (val) => `Rp ${val.toLocaleString()}`,
+        enabled: false,
     },
     plotOptions: {
         bar: {
-            borderRadius: 6,
-            columnWidth: "50%",
+            borderRadius: 4,
+            columnWidth: '40%',
         },
     },
     legend: { show: false },
-    grid: { show: false },
+    grid: { 
+        show: true,
+        borderColor: isDarkMode.value ? '#333' : '#e5e7eb',
+        strokeDashArray: 4,
+    },
     xaxis: {
         categories: props.weeklySalesChart?.categories ?? [],
+        axisBorder: { show: false },
+        axisTicks: { show: false },
     },
     yaxis: {
         labels: {
@@ -70,40 +70,58 @@ const salesChartOptions = computed(() => ({
         },
     },
     tooltip: {
+        theme: isDarkMode.value ? 'dark' : 'light',
         y: {
             formatter: (value) => `Rp ${value.toLocaleString()}`,
         },
+        marker: { show: false },
     },
 }));
 
 const salesChartSeries = computed(() => [
     {
-        name: "Penjualan",
+        name: 'Penjualan',
         data: props.weeklySalesChart?.data ?? [],
     },
 ]);
 
 const priceChartOptions = computed(() => ({
     theme: {
-        mode: isDarkMode.value ? "dark" : "light",
+        mode: isDarkMode.value ? 'dark' : 'light',
     },
     chart: {
-        type: "line",
+        type: 'area',
         toolbar: { show: false },
-        background: "transparent",
+        background: 'transparent',
+        fontFamily: 'inherit',
     },
-    colors: ["#f59e0b"],
+    colors: ['#10b981'],
+    fill: {
+        type: 'gradient',
+        gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.4,
+            opacityTo: 0.05,
+            stops: [0, 90, 100]
+        }
+    },
     stroke: {
-        curve: "smooth",
+        curve: 'smooth',
         width: 3,
     },
     dataLabels: {
-        enabled: true,
+        enabled: false,
     },
     legend: { show: false },
-    grid: { show: false },
+    grid: { 
+        show: true,
+        borderColor: isDarkMode.value ? '#333' : '#e5e7eb',
+        strokeDashArray: 4,
+    },
     xaxis: {
         categories: props.priceUpdateChart?.categories ?? [],
+        axisBorder: { show: false },
+        axisTicks: { show: false },
     },
     yaxis: {
         labels: {
@@ -111,6 +129,7 @@ const priceChartOptions = computed(() => ({
         },
     },
     tooltip: {
+        theme: isDarkMode.value ? 'dark' : 'light',
         y: {
             formatter: (value) => `${value} Perubahan Harga`,
         },
@@ -119,142 +138,169 @@ const priceChartOptions = computed(() => ({
 
 const priceChartSeries = computed(() => [
     {
-        name: "Update Harga",
+        name: 'Update Harga',
         data: props.priceUpdateChart?.data ?? [],
     },
 ]);
+
+const lowStockColumns = [
+    {
+        accessorKey: 'name',
+        header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Nama Produk' }),
+        cell: ({ row }) => h('div', { class: 'font-medium' }, row.getValue('name')),
+    },
+    {
+        accessorKey: 'sku',
+        header: ({ column }) => h(DataTableColumnHeader, { column, title: 'SKU' }),
+        cell: ({ row }) => h('div', { class: 'text-sm text-muted-foreground' }, row.getValue('sku')),
+    },
+    {
+        accessorKey: 'stock',
+        header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Stok' }),
+        cell: ({ row }) => h(Badge, { variant: 'destructive' }, () => `Sisa ${row.getValue('stock')}`),
+    },
+];
+
+const activityColumns = [
+    {
+        accessorKey: 'desc',
+        header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Aktivitas' }),
+        cell: ({ row }) => h('div', { class: 'font-medium' }, row.getValue('desc')),
+    },
+    {
+        accessorKey: 'time',
+        header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Waktu' }),
+        cell: ({ row }) => h('div', { class: 'text-xs text-muted-foreground whitespace-nowrap' }, row.getValue('time')),
+    },
+];
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-4 p-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <!-- Penjualan Hari Ini -->
-            <Card>
-                <CardHeader
-                    class="flex flex-row items-center justify-between space-y-0 pb-2"
-                >
-                    <CardTitle class="text-sm font-medium">
-                        Penjualan Hari Ini
-                    </CardTitle>
+  <div class="flex flex-1 flex-col gap-4 p-4">
+    <!-- Summary Cards (4 Grid) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <Card>
+        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle class="text-sm font-medium">
+            Penjualan Hari Ini
+          </CardTitle>
+          <TrendingUp class="h-5 w-5 text-blue-500" />
+        </CardHeader>
+        <CardContent>
+          <div class="text-2xl font-bold">
+            {{ formatPrice(salesSummary.today) }}
+          </div>
+        </CardContent>
+      </Card>
 
-                    <TrendingUp class="h-5 w-5 text-blue-500" />
-                </CardHeader>
-                <CardContent class="text-2xl font-bold">
-                    {{ formatPrice(salesSummary.today) }}
-                </CardContent>
-            </Card>
+      <Card>
+        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle class="text-sm font-medium">
+            Penjualan Bulan Ini
+          </CardTitle>
+          <Calendar class="h-5 w-5 text-green-500" />
+        </CardHeader>
+        <CardContent>
+          <div class="text-2xl font-bold">
+            {{ formatPrice(salesSummary.month) }}
+          </div>
+        </CardContent>
+      </Card>
 
-            <!-- Penjualan Bulan Ini -->
-            <Card>
-                <CardHeader
-                    class="flex flex-row items-center justify-between space-y-0 pb-2"
-                >
-                    <CardTitle class="text-sm font-medium">
-                        Penjualan Bulan Ini
-                    </CardTitle>
+      <Card>
+        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle class="text-sm font-medium">
+            Pengeluaran Bulan Ini
+          </CardTitle>
+          <CreditCard class="h-5 w-5 text-red-500" />
+        </CardHeader>
+        <CardContent>
+          <div class="text-2xl font-bold">
+            {{ formatPrice(salesSummary.monthPurchases) }}
+          </div>
+        </CardContent>
+      </Card>
 
-                    <Calendar class="h-5 w-5 text-green-500" />
-                </CardHeader>
-                <CardContent class="text-2xl font-bold">
-                    {{ formatPrice(salesSummary.month) }}
-                </CardContent>
-            </Card>
-        </div>
-
-        <!-- Stok Kritis & Aktivitas -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
-            <template v-if="lowStock.length">
-                <Card>
-                    <CardHeader><CardTitle>Stok Kritis</CardTitle></CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead> Nama Produk </TableHead>
-                                    <TableHead> Stok </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                <TableRow
-                                    v-for="item in lowStock"
-                                    :key="item.name"
-                                >
-                                    <TableCell class="font-medium">
-                                        {{ item.name }}
-                                    </TableCell>
-                                    <TableCell>{{ item.stock }}</TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-            </template>
-
-            <template v-else>
-                <Card>
-                    <CardContent class="h-full">
-                        <div
-                            class="w-full h-full flex justify-center items-center"
-                        >
-                            <p class="text-sm text-muted-foreground">
-                                Tidak ada stok kritis
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </template>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle> Aktivitas Terbaru </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ul class="space-y-2 text-sm">
-                        <li
-                            v-for="(act, i) in activities"
-                            :key="i"
-                            class="border-b pb-1 flex justify-between gap-2"
-                        >
-                            <span class="flex-1">{{ act.desc }}</span>
-                            <span
-                                class="text-xs text-muted-foreground whitespace-nowrap"
-                                >{{ act.time }}</span
-                            >
-                        </li>
-                    </ul>
-                </CardContent>
-            </Card>
-        </div>
-
-        <!-- Grafik -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle> Grafik Penjualan Mingguan </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <apexchart
-                        type="bar"
-                        height="300"
-                        :options="salesChartOptions"
-                        :series="salesChartSeries"
-                    />
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle> Aktivitas Update Harga </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <apexchart
-                        type="line"
-                        height="300"
-                        :options="priceChartOptions"
-                        :series="priceChartSeries"
-                    />
-                </CardContent>
-            </Card>
-        </div>
+      <Card>
+        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle class="text-sm font-medium">
+            Total Produk Aktif
+          </CardTitle>
+          <PackageSearch class="h-5 w-5 text-orange-500" />
+        </CardHeader>
+        <CardContent>
+          <div class="text-2xl font-bold">
+            {{ salesSummary.activeProducts.toLocaleString() }}
+          </div>
+        </CardContent>
+      </Card>
     </div>
+
+    <!-- Stok Kritis & Aktivitas (Data Tables) -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Stok Kritis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            :data="lowStock.data"
+            :columns="lowStockColumns"
+            :pagination="lowStock"
+            route-name="dashboard"
+            page-param="low_stock_page"
+            per-page-param="low_stock_per_page"
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Aktivitas Terbaru</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            :data="activities.data"
+            :columns="activityColumns"
+            :pagination="activities"
+            route-name="dashboard"
+            page-param="activities_page"
+            per-page-param="activities_per_page"
+          />
+        </CardContent>
+      </Card>
+    </div>
+
+    <!-- Grafik -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Grafik Penjualan Mingguan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <apexchart
+            type="bar"
+            height="300"
+            :options="salesChartOptions"
+            :series="salesChartSeries"
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Aktivitas Update Harga</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <apexchart
+            type="area"
+            height="300"
+            :options="priceChartOptions"
+            :series="priceChartSeries"
+          />
+        </CardContent>
+      </Card>
+    </div>
+  </div>
 </template>
+

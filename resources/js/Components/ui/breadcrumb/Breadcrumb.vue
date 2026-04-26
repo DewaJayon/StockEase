@@ -5,7 +5,10 @@ const props = defineProps({
 </script>
 
 <template>
-    <nav aria-label="breadcrumb" :class="props.class">
-        <slot />
-    </nav>
+  <nav
+    aria-label="breadcrumb"
+    :class="props.class"
+  >
+    <slot />
+  </nav>
 </template>

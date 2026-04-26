@@ -11,7 +11,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <AvatarRoot :class="cn(avatarVariant({ size, shape }), props.class)">
-        <slot />
-    </AvatarRoot>
+  <AvatarRoot :class="cn(avatarVariant({ size, shape }), props.class)">
+    <slot />
+  </AvatarRoot>
 </template>

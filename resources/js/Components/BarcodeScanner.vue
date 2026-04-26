@@ -1,23 +1,23 @@
 <script setup>
-import { ref, watch, nextTick, onUnmounted } from "vue";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { ref, watch, nextTick, onUnmounted } from 'vue';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from "@/Components/ui/dialog";
+} from '@/Components/ui/dialog';
 
 const props = defineProps({
     show: Boolean,
 });
 
-const emit = defineEmits(["update:show", "result"]);
+const emit = defineEmits(['update:show', 'result']);
 
 let html5QrcodeScanner = null;
 
 const onScanSuccess = (decodedText, decodedResult) => {
-    emit("result", decodedText);
+    emit('result', decodedText);
 };
 
 const onScanFailure = (error) => {
@@ -32,7 +32,7 @@ const clearScanner = () => {
                 html5QrcodeScanner = null;
             })
             .catch((err) => {
-                console.error("Failed to clear scanner", err);
+                console.error('Failed to clear scanner', err);
             });
     }
 };
@@ -43,7 +43,7 @@ watch(
         if (newVal) {
             nextTick(() => {
                 html5QrcodeScanner = new Html5QrcodeScanner(
-                    "reader",
+                    'reader',
                     { fps: 10, qrbox: { width: 250, height: 250 } },
                     false,
                 );
@@ -61,12 +61,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Dialog :open="show" @update:open="$emit('update:show', $event)">
-        <DialogContent class="sm:max-w-106.25">
-            <DialogHeader>
-                <DialogTitle>Scan Barcode</DialogTitle>
-            </DialogHeader>
-            <div id="reader" width="600px"></div>
-        </DialogContent>
-    </Dialog>
+  <Dialog
+    :open="show"
+    @update:open="$emit('update:show', $event)"
+  >
+    <DialogContent class="sm:max-w-106.25">
+      <DialogHeader>
+        <DialogTitle>Scan Barcode</DialogTitle>
+      </DialogHeader>
+      <div
+        id="reader"
+        width="600px"
+      />
+    </DialogContent>
+  </Dialog>
 </template>

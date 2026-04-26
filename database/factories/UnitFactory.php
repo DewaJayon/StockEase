@@ -18,12 +18,11 @@ class UnitFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->unique()->word().' '.Str::random(5);
+        $name = $this->faker->unique()->word().' '.Str::random(10);
 
         return [
             'name' => ucfirst($name),
-            'short_name' => Str::random(10),
-            'slug' => Str::slug($name),
+            'short_name' => $this->faker->unique()->lexify('??????'),
         ];
     }
 }

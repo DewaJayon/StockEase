@@ -1,6 +1,6 @@
 <script setup>
-import { Card, CardContent } from "@/Components/ui/card";
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { Card, CardContent } from '@/Components/ui/card';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 
 const props = defineProps({
     chart: {
@@ -9,16 +9,16 @@ const props = defineProps({
     },
 });
 
-const isDarkMode = ref(document.documentElement.classList.contains("dark"));
+const isDarkMode = ref(document.documentElement.classList.contains('dark'));
 let observer = null;
 
 onMounted(() => {
     observer = new MutationObserver(() => {
-        isDarkMode.value = document.documentElement.classList.contains("dark");
+        isDarkMode.value = document.documentElement.classList.contains('dark');
     });
     observer.observe(document.documentElement, {
         attributes: true,
-        attributeFilter: ["class"],
+        attributeFilter: ['class'],
     });
 });
 
@@ -28,24 +28,24 @@ onBeforeUnmount(() => {
 
 const salesSeries = [
     {
-        name: "Penjualan",
+        name: 'Penjualan',
         data: props.chart.salesTrend?.data ?? [],
     },
 ];
 
 const chartOptions = computed(() => ({
     theme: {
-        mode: isDarkMode.value ? "dark" : "light",
+        mode: isDarkMode.value ? 'dark' : 'light',
     },
     chart: {
-        background: "transparent",
+        background: 'transparent',
     },
     toolbar: {
         show: true,
     },
-    colors: ["#4f46e5"],
+    colors: ['#4f46e5'],
     stroke: {
-        curve: "smooth",
+        curve: 'smooth',
         width: 3,
     },
     xaxis: {
@@ -68,8 +68,8 @@ const productSaleSeries =
 
 const productSaleOptions = computed(() => ({
     chart: {
-        type: "pie",
-        background: "transparent",
+        type: 'pie',
+        background: 'transparent',
     },
     labels:
         props.chart?.productSalesShare?.map((item) => item.product_name) ?? [],
@@ -81,42 +81,42 @@ const productSaleOptions = computed(() => ({
                     width: 200,
                 },
                 legend: {
-                    position: "bottom",
+                    position: 'bottom',
                 },
             },
         },
     ],
     theme: {
-        mode: isDarkMode.value ? "dark" : "light",
+        mode: isDarkMode.value ? 'dark' : 'light',
     },
 }));
 </script>
 
 <template>
-    <template v-if="salesSeries[0].data.length > 0">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card class="shadow-md">
-                <CardContent class="pb-0 pt-3">
-                    <apexchart
-                        type="line"
-                        height="350"
-                        :options="chartOptions"
-                        :series="salesSeries"
-                    />
-                </CardContent>
-            </Card>
-            <Card class="shadow-md">
-                <CardContent
-                    class="flex justify-center items-center h-full w-full"
-                >
-                    <apexchart
-                        type="pie"
-                        width="470"
-                        :options="productSaleOptions"
-                        :series="productSaleSeries"
-                    />
-                </CardContent>
-            </Card>
-        </div>
-    </template>
+  <template v-if="salesSeries[0].data.length > 0">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card class="shadow-md">
+        <CardContent class="pb-0 pt-3">
+          <apexchart
+            type="line"
+            height="350"
+            :options="chartOptions"
+            :series="salesSeries"
+          />
+        </CardContent>
+      </Card>
+      <Card class="shadow-md">
+        <CardContent
+          class="flex justify-center items-center h-full w-full"
+        >
+          <apexchart
+            type="pie"
+            width="470"
+            :options="productSaleOptions"
+            :series="productSaleSeries"
+          />
+        </CardContent>
+      </Card>
+    </div>
+  </template>
 </template>

@@ -8,7 +8,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <RangeCalendarGridBody v-bind="props">
-        <slot />
-    </RangeCalendarGridBody>
+  <RangeCalendarGridBody v-bind="props">
+    <slot />
+  </RangeCalendarGridBody>
 </template>

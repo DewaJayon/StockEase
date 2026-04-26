@@ -1,27 +1,27 @@
-import { DataTableColumnHeader } from "@/Components/ui/data-table";
-import { h } from "vue";
-import UnitActionRow from "./UnitActionRow.vue";
+import { DataTableColumnHeader } from '@/Components/ui/data-table';
+import { h } from 'vue';
+import UnitActionRow from './UnitActionRow.vue';
 
 export const unitColumns = [
     {
-        accessorKey: "name",
+        accessorKey: 'name',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Nama Satuan",
+                title: 'Nama Satuan',
             }),
     },
     {
-        accessorKey: "short_name",
+        accessorKey: 'short_name',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Singkatan",
+                title: 'Singkatan',
             }),
     },
     {
-        accessorKey: "action",
-        header: "Aksi",
+        accessorKey: 'action',
+        header: () => h('div', { class: 'text-center w-full' }, 'Aksi'),
         cell: ({ row }) =>
             h(UnitActionRow, {
                 row: row.original,

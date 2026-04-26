@@ -17,20 +17,20 @@ const forwarded = useForwardProps(delegatedProps);
 </script>
 
 <template>
-    <PaginationFirst
-        data-slot="pagination-first"
-        :class="
-            cn(
-                buttonVariants({ variant: 'ghost', size }),
-                'gap-1 px-2.5 sm:pr-2.5',
-                props.class,
-            )
-        "
-        v-bind="forwarded"
-    >
-        <slot>
-            <ChevronLeftIcon />
-            <span class="hidden sm:block">First</span>
-        </slot>
-    </PaginationFirst>
+  <PaginationFirst
+    data-slot="pagination-first"
+    :class="
+      cn(
+        buttonVariants({ variant: 'ghost', size }),
+        'gap-1 px-2.5 sm:pr-2.5',
+        props.class,
+      )
+    "
+    v-bind="forwarded"
+  >
+    <slot>
+      <ChevronLeftIcon />
+      <span class="hidden sm:block">First</span>
+    </slot>
+  </PaginationFirst>
 </template>

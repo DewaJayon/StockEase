@@ -1,5 +1,5 @@
 <script setup>
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -7,12 +7,12 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "@/Components/ui/breadcrumb";
-import { Head, Link } from "@inertiajs/vue3";
-import { Separator } from "@/Components/ui/separator";
-import { DataTable } from "@/Components/ui/data-table";
-import { stockLogColumns } from "./partials/StockLogColumn";
-import DateFilter from "@/Components/DateFilter.vue";
+} from '@/Components/ui/breadcrumb';
+import { Head, Link } from '@inertiajs/vue3';
+import { Separator } from '@/Components/ui/separator';
+import { DataTable } from '@/Components/ui/data-table';
+import { stockLogColumns } from './partials/StockLogColumn';
+import DateFilter from '@/Components/DateFilter.vue';
 
 const props = defineProps({
     logStocks: {
@@ -23,44 +23,44 @@ const props = defineProps({
 </script>
 
 <template>
-    <AuthenticatedLayout>
-        <Head>
-            <title>Log Stock</title>
-        </Head>
-        <template #breadcrumb>
-            <Breadcrumb>
-                <BreadcrumbList>
-                    <BreadcrumbItem>
-                        <Link :href="route('dashboard')">
-                            <BreadcrumbLink> Dashboard </BreadcrumbLink>
-                        </Link>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                        <BreadcrumbPage> Log Stock </BreadcrumbPage>
-                    </BreadcrumbItem>
-                </BreadcrumbList>
-            </Breadcrumb>
-        </template>
-        <div class="flex flex-1 flex-col gap-4 p-4">
-            <div class="rounded-xl bg-muted/50 h-full p-4">
-                <div class="flex justify-between items-center">
-                    <h4 class="font-semibold">Log Stock</h4>
-                    <DateFilter :route-name="'log-stock.index'" />
-                </div>
-                <Separator class="my-4" />
-
-                <div class="mt-4">
-                    <DataTable
-                        :data="logStocks.data"
-                        :columns="stockLogColumns"
-                        :route-name="'log-stock.index'"
-                        :pagination="logStocks"
-                        :date-filter-end="true"
-                        :date-filter-start="true"
-                    />
-                </div>
-            </div>
+  <AuthenticatedLayout>
+    <Head>
+      <title>Log Stock</title>
+    </Head>
+    <template #breadcrumb>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <Link :href="route('dashboard')">
+              <BreadcrumbLink> Dashboard </BreadcrumbLink>
+            </Link>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage> Log Stock </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </template>
+    <div class="flex flex-1 flex-col gap-4 p-4">
+      <div class="rounded-xl bg-muted/50 h-full p-4">
+        <div class="flex justify-between items-center">
+          <h4 class="font-semibold">
+            Log Stock
+          </h4>
+          <DateFilter :route-name="'log-stock.index'" />
         </div>
-    </AuthenticatedLayout>
+        <Separator class="my-4" />
+
+        <div class="mt-4">
+          <DataTable
+            :data="logStocks.data"
+            :columns="stockLogColumns"
+            :route-name="'log-stock.index'"
+            :pagination="logStocks"
+          />
+        </div>
+      </div>
+    </div>
+  </AuthenticatedLayout>
 </template>

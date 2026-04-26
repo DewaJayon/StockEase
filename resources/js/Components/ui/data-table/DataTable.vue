@@ -52,13 +52,13 @@ const props = defineProps({
         type: Object,
         required: false,
     },
-    dateFilterEnd: {
-        type: Boolean,
-        required: false,
+    pageParam: {
+        type: String,
+        default: 'page',
     },
-    dateFilterStart: {
-        type: Boolean,
-        required: false,
+    perPageParam: {
+        type: String,
+        default: 'per_page',
     },
 });
 
@@ -95,15 +95,19 @@ const table = useVueTable({
         } else {
             pagination.value = updater;
         }
-        router.get(
-            route(props.routeName, props.routeParams),
-            {
-                page: pagination.value.pageIndex + 1,
-                per_page: pagination.value.pageSize,
-                search: search.value,
-            },
-            { preserveState: false, preserveScroll: true, replace: true },
-        );
+
+        const query = {
+            ...Object.fromEntries(new URLSearchParams(window.location.search)),
+            [props.pageParam]: pagination.value.pageIndex + 1,
+            [props.perPageParam]: pagination.value.pageSize,
+            search: search.value,
+        };
+
+        router.get(route(props.routeName, props.routeParams), query, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     },
 
     state: {
@@ -141,19 +145,11 @@ watch(
     () => pagination.value.pageIndex,
     (newPage) => {
         const query = {
-            page: newPage + 1,
-            per_page: pagination.value.pageSize,
+            ...Object.fromEntries(new URLSearchParams(window.location.search)),
+            [props.pageParam]: newPage + 1,
+            [props.perPageParam]: pagination.value.pageSize,
             search: search.value,
         };
-
-        if (props.dateFilterStart) {
-            query.start = new URLSearchParams(window.location.search).get(
-                "start",
-            );
-        }
-        if (props.dateFilterEnd) {
-            query.end = new URLSearchParams(window.location.search).get("end");
-        }
 
         router.get(route(props.routeName, props.routeParams), query, {
             preserveScroll: true,
@@ -163,7 +159,7 @@ watch(
     },
 );
 
-const search = ref("");
+const search = ref(new URLSearchParams(window.location.search).get("search") || "");
 
 watchDebounced(
     search,
@@ -171,19 +167,11 @@ watchDebounced(
         pagination.value.pageIndex = 0;
 
         const query = {
-            page: 1,
-            per_page: pagination.value.pageSize,
+            ...Object.fromEntries(new URLSearchParams(window.location.search)),
+            [props.pageParam]: 1,
+            [props.perPageParam]: pagination.value.pageSize,
             search: newSearch,
         };
-
-        if (props.dateFilterStart) {
-            query.start = new URLSearchParams(window.location.search).get(
-                "start",
-            );
-        }
-        if (props.dateFilterEnd) {
-            query.end = new URLSearchParams(window.location.search).get("end");
-        }
 
         router.get(route(props.routeName, props.routeParams), query, {
             preserveScroll: true,
@@ -196,169 +184,174 @@ watchDebounced(
 </script>
 
 <template>
-    <div class="w-full">
-        <div class="relative w-full max-w-sm items-center mb-4">
-            <Input
-                id="search"
-                v-model="search"
-                type="text"
-                placeholder="Search..."
-                autocomplete="off"
-                class="pl-10 shadow-md focus:ring-0 focus:ring-offset-0"
-            />
-            <span
-                class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-2"
-            >
-                <Search class="w-5 h-5 text-muted-foreground" />
-            </span>
-        </div>
-
-        <div class="rounded-md border">
-            <Table>
-                <TableHeader>
-                    <TableRow
-                        v-for="headerGroup in table.getHeaderGroups()"
-                        :key="headerGroup.id"
-                        class="hover:bg-transparent"
-                    >
-                        <TableHead
-                            v-for="header in headerGroup.headers"
-                            :key="header.id"
-                            class="border-b"
-                        >
-                            <FlexRender
-                                v-if="!header.isPlaceholder"
-                                :render="header.column.columnDef.header"
-                                :props="header.getContext()"
-                            />
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody class="divide-y">
-                    <template v-if="table.getRowModel().rows?.length">
-                        <template
-                            v-for="row in table.getRowModel().rows"
-                            :key="row.id"
-                        >
-                            <TableRow
-                                :data-state="row.getIsSelected() && 'selected'"
-                                class="hover:bg-transparent"
-                            >
-                                <TableCell
-                                    v-for="cell in row.getVisibleCells()"
-                                    :key="cell.id"
-                                    class="border-b"
-                                >
-                                    <FlexRender
-                                        :render="cell.column.columnDef.cell"
-                                        :props="cell.getContext()"
-                                    />
-                                </TableCell>
-                            </TableRow>
-                            <TableRow v-if="row.getIsExpanded()">
-                                <TableCell :colspan="row.getAllCells().length">
-                                    {{ JSON.stringify(row.original) }}
-                                </TableCell>
-                            </TableRow>
-                        </template>
-                    </template>
-
-                    <TableRow v-else>
-                        <TableCell
-                            :colspan="columns.length"
-                            class="h-24 text-center"
-                        >
-                            No results.
-                        </TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
-        </div>
-        <div class="flex items-center justify-end space-x-2 py-4 sm:space-x-6">
-            <div class="flex items-center space-x-2">
-                <p class="text-sm font-medium">Rows per page</p>
-                <Select
-                    :model-value="`${table.getState().pagination.pageSize}`"
-                    @update:model-value="table.setPageSize(Number($event))"
-                >
-                    <SelectTrigger class="h-8 w-17.5">
-                        <SelectValue
-                            :placeholder="`${
-                                table.getState().pagination.pageSize
-                            }`"
-                        />
-                    </SelectTrigger>
-                    <SelectContent side="top">
-                        <SelectItem
-                            v-for="pageSize in [10, 20, 30, 40, 50]"
-                            :key="pageSize"
-                            class="cursor-pointer"
-                            :value="`${pageSize}`"
-                        >
-                            {{ pageSize }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-            <div class="overflow-auto sm:overflow-visible max-w-full">
-                <div class="flex items-center space-x-2">
-                    <Pagination
-                        v-slot="{ page }"
-                        v-model:page="currentPage"
-                        :items-per-page="props.pagination.per_page"
-                        :total="props.pagination.total"
-                    >
-                        <PaginationContent v-slot="{ items }" class="flex">
-                            <Button
-                                variant="outline"
-                                class="hidden w-8 h-8 p-0 lg:flex"
-                                :disabled="!table.getCanPreviousPage()"
-                                @click="goToFirstPage"
-                            >
-                                <span class="sr-only">Go to first page</span>
-                                <DoubleArrowLeftIcon class="w-4 h-4" />
-                            </Button>
-
-                            <PaginationPrevious
-                                class="border"
-                                :disabled="!table.getCanPreviousPage()"
-                                @click="table.previousPage()"
-                            />
-
-                            <template
-                                v-for="(item, index) in items"
-                                :key="index"
-                            >
-                                <PaginationItem
-                                    v-if="item.type === 'page'"
-                                    class="border disabled:opacity-50 disabled:cursor-not-allowed"
-                                    :value="item.value"
-                                    :is-active="item.value === page"
-                                    :disabled="item.value === page"
-                                    @click="table.setPageIndex(item.value - 1)"
-                                >
-                                    {{ item.value }}
-                                </PaginationItem>
-                            </template>
-
-                            <PaginationNext
-                                class="border"
-                                :disabled="isLastPage"
-                                @click="goToNextPage"
-                            />
-                            <Button
-                                variant="outline"
-                                class="hidden w-8 h-8 p-0 lg:flex"
-                                :disabled="isLastPage"
-                                @click="goToLastPage"
-                            >
-                                <span class="sr-only">Go to last page</span>
-                                <DoubleArrowRightIcon class="w-4 h-4" />
-                            </Button>
-                        </PaginationContent>
-                    </Pagination>
-                </div>
-            </div>
-        </div>
+  <div class="w-full">
+    <div class="relative w-full max-w-sm items-center mb-4">
+      <Input
+        id="search"
+        v-model="search"
+        type="text"
+        placeholder="Search..."
+        autocomplete="off"
+        class="pl-10 shadow-md focus:ring-0 focus:ring-offset-0"
+      />
+      <span
+        class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-2"
+      >
+        <Search class="w-5 h-5 text-muted-foreground" />
+      </span>
     </div>
+
+    <div class="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow
+            v-for="headerGroup in table.getHeaderGroups()"
+            :key="headerGroup.id"
+            class="hover:bg-transparent"
+          >
+            <TableHead
+              v-for="header in headerGroup.headers"
+              :key="header.id"
+              class="border-b"
+            >
+              <FlexRender
+                v-if="!header.isPlaceholder"
+                :render="header.column.columnDef.header"
+                :props="header.getContext()"
+              />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody class="divide-y">
+          <template v-if="table.getRowModel().rows?.length">
+            <template
+              v-for="row in table.getRowModel().rows"
+              :key="row.id"
+            >
+              <TableRow
+                :data-state="row.getIsSelected() && 'selected'"
+                class="hover:bg-transparent"
+              >
+                <TableCell
+                  v-for="cell in row.getVisibleCells()"
+                  :key="cell.id"
+                  class="border-b"
+                >
+                  <FlexRender
+                    :render="cell.column.columnDef.cell"
+                    :props="cell.getContext()"
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow v-if="row.getIsExpanded()">
+                <TableCell :colspan="row.getAllCells().length">
+                  {{ JSON.stringify(row.original) }}
+                </TableCell>
+              </TableRow>
+            </template>
+          </template>
+
+          <TableRow v-else>
+            <TableCell
+              :colspan="columns.length"
+              class="h-24 text-center"
+            >
+              No results.
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
+    <div class="flex items-center justify-end space-x-2 py-4 sm:space-x-6">
+      <div class="flex items-center space-x-2">
+        <p class="text-sm font-medium">
+          Rows per page
+        </p>
+        <Select
+          :model-value="`${table.getState().pagination.pageSize}`"
+          @update:model-value="table.setPageSize(Number($event))"
+        >
+          <SelectTrigger class="h-8 w-17.5">
+            <SelectValue
+              :placeholder="`${
+                table.getState().pagination.pageSize
+              }`"
+            />
+          </SelectTrigger>
+          <SelectContent side="top">
+            <SelectItem
+              v-for="pageSize in [5, 10, 20, 30, 40, 50]"
+              :key="pageSize"
+              class="cursor-pointer"
+              :value="`${pageSize}`"
+            >
+              {{ pageSize }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div class="overflow-auto sm:overflow-visible max-w-full">
+        <div class="flex items-center space-x-2">
+          <Pagination
+            v-slot="{ page }"
+            v-model:page="currentPage"
+            :items-per-page="props.pagination.per_page"
+            :total="props.pagination.total"
+          >
+            <PaginationContent
+              v-slot="{ items }"
+              class="flex"
+            >
+              <Button
+                variant="outline"
+                class="hidden w-8 h-8 p-0 lg:flex"
+                :disabled="!table.getCanPreviousPage()"
+                @click="goToFirstPage"
+              >
+                <span class="sr-only">Go to first page</span>
+                <DoubleArrowLeftIcon class="w-4 h-4" />
+              </Button>
+
+              <PaginationPrevious
+                class="border"
+                :disabled="!table.getCanPreviousPage()"
+                @click="table.previousPage()"
+              />
+
+              <template
+                v-for="(item, index) in items"
+                :key="index"
+              >
+                <PaginationItem
+                  v-if="item.type === 'page'"
+                  class="border disabled:opacity-50 disabled:cursor-not-allowed"
+                  :value="item.value"
+                  :is-active="item.value === page"
+                  :disabled="item.value === page"
+                  @click="table.setPageIndex(item.value - 1)"
+                >
+                  {{ item.value }}
+                </PaginationItem>
+              </template>
+
+              <PaginationNext
+                class="border"
+                :disabled="isLastPage"
+                @click="goToNextPage"
+              />
+              <Button
+                variant="outline"
+                class="hidden w-8 h-8 p-0 lg:flex"
+                :disabled="isLastPage"
+                @click="goToLastPage"
+              >
+                <span class="sr-only">Go to last page</span>
+                <DoubleArrowRightIcon class="w-4 h-4" />
+              </Button>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
