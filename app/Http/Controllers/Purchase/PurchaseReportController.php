@@ -5,14 +5,13 @@ namespace App\Http\Controllers\Purchase;
 use App\Exports\PurchaseExportExcel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Report\PurchaseReportExportRequest;
-use App\Models\Purchase;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Services\Purchase\PurchaseReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,6 +20,13 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PurchaseReportController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     */
+    public function __construct(
+        protected PurchaseReportService $reportService
+    ) {}
+
     /**
      * Handles purchase report filtering and rendering.
      *
@@ -33,55 +39,13 @@ class PurchaseReportController extends Controller
      */
     public function index(Request $request)
     {
-
-        $filters = [
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'supplier' => $request->supplier,
-            'user' => $request->user,
-        ];
+        $filters = $request->only(['start_date', 'end_date', 'supplier', 'user']);
 
         $filteredPurchases = [];
 
-        $query = collect();
-
-        if ($filters['start_date'] || $filters['end_date'] || $filters['supplier'] || $filters['user']) {
-
-            $query = $this->getFilterQuery($filters);
-
-            $sumTotalPurchase = $query->sum('total');
-            $totalItemsPurchased = $query->flatMap->purchaseItems->sum('qty');
-            $totalTransaction = $query->count();
-
-            Carbon::setLocale('id');
-
-            $purchaseTrends = $query->groupBy(function ($item) {
-                return Carbon::parse($item->created_at)->translatedFormat('M');
-            })->map(function ($item) {
-                return $item->sum('total');
-            });
-
-            $purchaseTrends = [
-                'labels' => $purchaseTrends->keys()->values(),
-                'data' => $purchaseTrends->values(),
-            ];
-
-            $topSupplier = $query->groupBy('supplier_id')->map(function ($items) {
-                return [
-                    'supplier_name' => $items->first()->supplier->name,
-                    'total_purchase' => $items->sum('total'),
-                    'transaction_count' => $items->count(),
-                ];
-            })->sortByDesc('total_purchase')->take(5)->values();
-
-            $filteredPurchases = [
-                'filters' => $query->toArray(),
-                'sumTotalPurchase' => $sumTotalPurchase,
-                'totalItemsPurchased' => $totalItemsPurchased,
-                'totalTransaction' => $totalTransaction,
-                'purchaseTrends' => $purchaseTrends,
-                'topSupplier' => $topSupplier,
-            ];
+        if (array_filter($filters)) {
+            $purchases = $this->reportService->getFilteredPurchases($filters);
+            $filteredPurchases = $this->reportService->getIndexReportData($purchases);
         }
 
         return Inertia::render('Reports/Purchase/Index', [
@@ -144,9 +108,11 @@ class PurchaseReportController extends Controller
 
             $user = User::where(function ($q) use ($request) {
                 $q->where('name', 'like', "%{$request->search}%")
-                    ->orWhere('id', 'like', "%{$request->search}%")
-                    ->whereIn('role', ['warehouse', 'admin']);
-            })->select('id as value', 'name as label')->get();
+                    ->orWhere('id', 'like', "%{$request->search}%");
+            })
+                ->whereIn('role', ['warehouse', 'admin'])
+                ->select('id as value', 'name as label')
+                ->get();
 
             if ($user->isEmpty()) {
                 return response()->json([
@@ -171,38 +137,8 @@ class PurchaseReportController extends Controller
     public function exportToPdf(PurchaseReportExportRequest $request)
     {
         $filters = $request->validated();
-
-        $query = $this->getFilterQuery($filters);
-
-        $sumTotalPurchase = $query->sum('total');
-        $totalItemsPurchased = $query->flatMap->purchaseItems->sum('qty');
-        $totalTransaction = $query->count();
-
-        $purchaseProducts = $query->flatMap->purchaseItems
-            ->groupBy('product_id')->map(function ($items) {
-                return (object) [
-                    'date' => $items->first()->purchase->created_at,
-                    'product_name' => $items->first()->product->name,
-                    'product_price' => $items->first()->price,
-                    'total_purchase' => $items->first()->price * $items->first()->qty,
-                    'qty' => $items->first()->qty,
-                ];
-            })
-            ->values();
-
-        $user = $filters['user'] === 'semua-user' ? 'semua-user' : User::find($filters['user'])->name;
-        $supplier = $filters['supplier'] === 'semua-supplier' ? 'semua-supplier' : Supplier::find($filters['supplier'])->name;
-
-        $data = [
-            'startDate' => Carbon::parse($filters['start_date'])->translatedFormat('d F Y'),
-            'endDate' => Carbon::parse($filters['end_date'])->translatedFormat('d F Y'),
-            'purchases' => $purchaseProducts,
-            'sumTotalPurchase' => $sumTotalPurchase,
-            'totalItemsPurchased' => $totalItemsPurchased,
-            'totalTransaction' => $totalTransaction,
-            'user' => $user,
-            'supplier' => $supplier,
-        ];
+        $purchases = $this->reportService->getFilteredPurchases($filters);
+        $data = $this->reportService->getPdfReportData($purchases, $filters);
 
         $pdf = Pdf::loadView('exports.purchase-report.export-pdf', $data);
 
@@ -228,48 +164,9 @@ class PurchaseReportController extends Controller
     public function exportToExcel(PurchaseReportExportRequest $request)
     {
         $filters = $request->validated();
-
-        $query = $this->getFilterQuery($filters);
-
-        $user = $filters['user'] === 'semua-user' ? 'Semua User' : User::find($filters['user'])->name;
-        $supplier = $filters['supplier'] === 'semua-supplier' ? 'Semua Supplier' : Supplier::find($filters['supplier'])->name;
-
-        $sumTotalPurchase = $query->sum('total');
-        $totalItemsPurchased = $query->flatMap->purchaseItems->sum('qty');
-        $totalTransaction = $query->count();
-
-        $suppliers = $query
-            ->map(function ($item) {
-                return (object) [
-                    'id' => $item->supplier->id,
-                    'name' => $item->supplier->name,
-                    'total' => $item->total,
-                    'qty' => $item->purchaseItems->sum('qty'),
-                ];
-            })
-            ->groupBy('id')
-            ->map(function ($items) {
-                return (object) [
-                    'name' => $items->first()->name,
-                    'total' => $items->sum('total'),
-                    'qty' => $items->sum('qty'),
-                ];
-            })
-            ->values();
-
-        $filters = [
-            'start_date' => $filters['start_date'],
-            'end_date' => $filters['end_date'],
-            'supplier' => $supplier,
-            'user' => $user,
-        ];
-
-        $summary = [
-            'sumTotalPurchase' => $sumTotalPurchase,
-            'totalItemsPurchased' => $totalItemsPurchased,
-            'totalTransaction' => $totalTransaction,
-            'suppliers' => $suppliers,
-        ];
+        $purchases = $this->reportService->getFilteredPurchases($filters);
+        $summary = $this->reportService->getExcelReportSummary($purchases);
+        $preparedFilters = $this->reportService->prepareExcelFilters($filters);
 
         $fileName = 'Laporan Pembelian '
             .Carbon::parse($filters['start_date'])->translatedFormat('d F Y').' - '
@@ -280,33 +177,8 @@ class PurchaseReportController extends Controller
             .Carbon::now('Asia/Shanghai')->translatedFormat('F').'/'
             .$fileName;
 
-        Excel::store(new PurchaseExportExcel($query, $filters, $summary), $filePath, 'local');
+        Excel::store(new PurchaseExportExcel($purchases, $preparedFilters, $summary), $filePath, 'local');
 
-        return Excel::download(new PurchaseExportExcel($query, $filters, $summary), $fileName);
-    }
-
-    /**
-     * Generate a query based on the given filters.
-     *
-     * @return Collection
-     */
-    private function getFilterQuery(array $filters)
-    {
-        $query = Purchase::with('supplier', 'user', 'purchaseItems', 'purchaseItems.product')
-            ->when($filters['start_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '>=', $filters['start_date']);
-            })
-            ->when($filters['end_date'], function ($query) use ($filters) {
-                return $query->whereDate('created_at', '<=', $filters['end_date']);
-            })
-            ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
-                return $query->where('supplier_id', $filters['supplier']);
-            })
-            ->when($filters['user'] && $filters['user'] !== 'semua-user', function ($query) use ($filters) {
-                return $query->where('user_id', $filters['user']);
-            })
-            ->get();
-
-        return $query;
+        return Excel::download(new PurchaseExportExcel($purchases, $preparedFilters, $summary), $fileName);
     }
 }

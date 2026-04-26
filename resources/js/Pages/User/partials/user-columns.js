@@ -1,40 +1,45 @@
-import { DataTableColumnHeader } from "@/Components/ui/data-table";
-import { h } from "vue";
-import UserActionRow from "./UserActionRow.vue";
-import UserRoleRow from "./UserRoleRow.vue";
+import { DataTableColumnHeader } from '@/Components/ui/data-table';
+import { h } from 'vue';
+import UserActionRow from './UserActionRow.vue';
+import UserRoleRow from './UserRoleRow.vue';
 
 export const userColumns = [
     {
-        accessorKey: "name",
+        accessorKey: 'name',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Nama",
+                title: 'Nama',
             }),
     },
     {
-        accessorKey: "email",
+        accessorKey: 'email',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Email",
+                title: 'Email',
             }),
     },
     {
-        accessorKey: "role",
+        accessorKey: 'role',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Role",
+                title: 'Role',
+                class: 'justify-center',
             }),
         cell: ({ row }) =>
-            h(UserRoleRow, {
-                row: row.original,
-            }),
+            h(
+                'div',
+                { class: 'flex justify-center' },
+                h(UserRoleRow, {
+                    row: row.original,
+                }),
+            ),
     },
     {
-        accessorKey: "action",
-        header: "Aksi",
+        accessorKey: 'action',
+        header: () => h('div', { class: 'text-center w-full' }, 'Aksi'),
         cell: ({ row }) =>
             h(UserActionRow, {
                 row: row.original,

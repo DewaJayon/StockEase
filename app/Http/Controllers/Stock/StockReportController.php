@@ -6,8 +6,8 @@ use App\Exports\StockExportExcel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Report\StockReportExportRequest;
 use App\Models\Category;
-use App\Models\Product;
 use App\Models\Supplier;
+use App\Services\Stock\StockReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -21,58 +21,25 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class StockReportController extends Controller
 {
     /**
+     * Create a new controller instance.
+     */
+    public function __construct(
+        protected StockReportService $reportService
+    ) {}
+
+    /**
      * Handle stock report filtering and rendering.
      *
      * @return Response
      */
     public function index(Request $request)
     {
-        $filters = [
-            'category' => $request->category,
-            'supplier' => $request->supplier,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-        ];
+        $filters = $request->only(['category', 'supplier', 'start_date', 'end_date']);
 
         $filteredStocks = [];
 
-        if ($filters['category'] || $filters['supplier'] || $filters['start_date'] || $filters['end_date']) {
-            $query = Product::with(['category', 'purchaseItems.purchase.supplier'])
-                ->whereHas('purchaseItems')
-                ->when($filters['category'] && $filters['category'] !== 'semua-kategori', function ($query) use ($filters) {
-                    return $query->where('category_id', $filters['category']);
-                })
-                ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
-                    return $query->whereHas('purchaseItems.purchase.supplier', function ($q) use ($filters) {
-                        $q->where('id', $filters['supplier']);
-                    });
-                })
-                ->when($filters['start_date'], function ($query) use ($filters) {
-                    return $query->whereHas('purchaseItems.purchase', function ($q) use ($filters) {
-                        $q->whereDate('date', '>=', $filters['start_date']);
-                    });
-                })
-                ->when($filters['end_date'], function ($query) use ($filters) {
-                    return $query->whereHas('purchaseItems.purchase', function ($q) use ($filters) {
-                        $q->whereDate('date', '<=', $filters['end_date']);
-                    });
-                })
-                ->paginate(10)
-                ->withQueryString();
-
-            $filteredStocks = $query->through(function ($product) {
-                $firstPurchase = $product->purchaseItems->first();
-                $supplierName = $firstPurchase ? $firstPurchase->purchase->supplier->name : '-';
-
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'category' => $product->category->name,
-                    'stock' => $product->stock,
-                    'alert_stock' => $product->alert_stock,
-                    'supplier' => $supplierName,
-                ];
-            });
+        if (array_filter($filters)) {
+            $filteredStocks = $this->reportService->getPaginatedFilteredStocks($filters);
         }
 
         return Inertia::render('Reports/Stock/Index', [
@@ -150,50 +117,11 @@ class StockReportController extends Controller
     public function exportToPdf(StockReportExportRequest $request)
     {
         $filters = $request->validated();
-
-        $query = Product::with(['category', 'purchaseItems.purchase.supplier'])
-            ->whereHas('purchaseItems')
-            ->when($filters['category'] && $filters['category'] !== 'semua-kategori', function ($query) use ($filters) {
-                return $query->where('category_id', $filters['category']);
-            })
-            ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
-                return $query->whereHas('purchaseItems.purchase.supplier', function ($q) use ($filters) {
-                    $q->where('id', $filters['supplier']);
-                });
-            })
-            ->when($filters['start_date'], function ($query) use ($filters) {
-                return $query->whereHas('purchaseItems.purchase', function ($q) use ($filters) {
-                    $q->whereDate('date', '>=', $filters['start_date']);
-                });
-            })
-            ->when($filters['end_date'], function ($query) use ($filters) {
-                return $query->whereHas('purchaseItems.purchase', function ($q) use ($filters) {
-                    $q->whereDate('date', '<=', $filters['end_date']);
-                });
-            })
-            ->get();
-
-        $filteredStocks = $query->map(function ($product) {
-            $firstPurchase = $product->purchaseItems->first();
-            $supplierName = $firstPurchase ? $firstPurchase->purchase->supplier->name : '-';
-
-            return (object) [
-                'id' => $product->id,
-                'name' => $product->name,
-                'category' => $product->category->name,
-                'stock' => $product->stock,
-                'alert_stock' => $product->alert_stock,
-                'supplier' => $supplierName,
-            ];
-        });
-
-        $filters = array_merge($filters, [
-            'category' => $filters['category'] === 'semua-kategori' ? 'Semua Kategori' : Category::find($filters['category'])->name,
-            'supplier' => $filters['supplier'] === 'semua-supplier' ? 'Semua Supplier' : Supplier::find($filters['supplier'])->name,
-        ]);
+        $filteredStocks = $this->reportService->getFilteredStocksForExport($filters);
+        $preparedFilters = $this->reportService->prepareExportFilters($filters);
 
         $pdf = Pdf::loadView('exports.stock-report.export-pdf', [
-            'filters' => $filters,
+            'filters' => $preparedFilters,
             'filteredStocks' => $filteredStocks,
         ]);
 
@@ -219,47 +147,8 @@ class StockReportController extends Controller
     public function exportToExcel(StockReportExportRequest $request)
     {
         $filters = $request->validated();
-
-        $query = Product::with(['category', 'purchaseItems.purchase.supplier'])
-            ->whereHas('purchaseItems')
-            ->when($filters['category'] && $filters['category'] !== 'semua-kategori', function ($query) use ($filters) {
-                return $query->where('category_id', $filters['category']);
-            })
-            ->when($filters['supplier'] && $filters['supplier'] !== 'semua-supplier', function ($query) use ($filters) {
-                return $query->whereHas('purchaseItems.purchase.supplier', function ($q) use ($filters) {
-                    $q->where('id', $filters['supplier']);
-                });
-            })
-            ->when($filters['start_date'], function ($query) use ($filters) {
-                return $query->whereHas('purchaseItems.purchase', function ($q) use ($filters) {
-                    $q->whereDate('date', '>=', $filters['start_date']);
-                });
-            })
-            ->when($filters['end_date'], function ($query) use ($filters) {
-                return $query->whereHas('purchaseItems.purchase', function ($q) use ($filters) {
-                    $q->whereDate('date', '<=', $filters['end_date']);
-                });
-            })
-            ->get();
-
-        $filteredStocks = $query->map(function ($product) {
-            $firstPurchase = $product->purchaseItems->first();
-            $supplierName = $firstPurchase ? $firstPurchase->purchase->supplier->name : '-';
-
-            return (object) [
-                'id' => $product->id,
-                'name' => $product->name,
-                'category' => $product->category->name,
-                'stock' => $product->stock,
-                'alert_stock' => $product->alert_stock,
-                'supplier' => $supplierName,
-            ];
-        });
-
-        $filters = array_merge($filters, [
-            'category' => $filters['category'] === 'semua-kategori' ? 'Semua Kategori' : Category::find($filters['category'])->name,
-            'supplier' => $filters['supplier'] === 'semua-supplier' ? 'Semua Supplier' : Supplier::find($filters['supplier'])->name,
-        ]);
+        $filteredStocks = $this->reportService->getFilteredStocksForExport($filters);
+        $preparedFilters = $this->reportService->prepareExportFilters($filters);
 
         $fileName = 'Laporan Stock '
             .Carbon::parse($filters['start_date'])->translatedFormat('d F Y').' - '
@@ -270,8 +159,8 @@ class StockReportController extends Controller
             .Carbon::now('Asia/Shanghai')->translatedFormat('F').'/'
             .$fileName;
 
-        Excel::store(new StockExportExcel($filters, $filteredStocks), $filePath, 'local');
+        Excel::store(new StockExportExcel($preparedFilters, $filteredStocks), $filePath, 'local');
 
-        return Excel::download(new StockExportExcel($filters, $filteredStocks), $fileName);
+        return Excel::download(new StockExportExcel($preparedFilters, $filteredStocks), $fileName);
     }
 }

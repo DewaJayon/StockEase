@@ -41,7 +41,15 @@ export default {
                 <Button
                     variant="ghost"
                     size="sm"
-                    class="-ml-3 h-8 data-[state=open]:bg-accent"
+                    :class="
+                        cn(
+                            'h-8 data-[state=open]:bg-accent',
+                            !(
+                                $attrs.class &&
+                                $attrs.class.includes('justify-center')
+                            ) && '-ml-3',
+                        )
+                    "
                 >
                     <span>{{ title }}</span>
                     <ArrowDownIcon

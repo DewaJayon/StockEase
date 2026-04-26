@@ -1,66 +1,81 @@
-import { DataTableColumnHeader } from "@/Components/ui/data-table";
-import { h } from "vue";
-import StockRow from "./StockRow.vue";
+import { DataTableColumnHeader } from '@/Components/ui/data-table';
+import { h } from 'vue';
+import StockRow from './StockRow.vue';
 
-const centerClass = "capitalize flex items-center justify-center";
+const centerClass =
+    'capitalize flex items-center justify-center text-center w-full';
 
 export const filteredStockColumns = [
     {
-        accessorKey: "#",
+        accessorKey: '#',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "#",
+                title: '#',
+                class: 'justify-center',
             }),
-        cell: ({ row }) => h("span", row.index + 1),
+        cell: ({ row }) =>
+            h('div', { class: 'text-center w-full' }, row.index + 1),
     },
     {
-        accessorKey: "name",
+        accessorKey: 'name',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Nama Produk",
-            }),
-    },
-    {
-        accessorKey: "supplier",
-        header: ({ column }) =>
-            h(DataTableColumnHeader, {
-                column: column,
-                title: "Nama Supplier",
+                title: 'Nama Produk',
             }),
     },
     {
-        accessorKey: "category",
+        accessorKey: 'supplier',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Kategori",
+                title: 'Nama Supplier',
             }),
     },
     {
-        accessorKey: "stock",
+        accessorKey: 'category',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Stock",
+                title: 'Kategori',
             }),
     },
     {
-        accessorKey: "alert_stock",
+        accessorKey: 'stock',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Stock Minimal",
+                title: 'Stock',
+                class: 'justify-center',
             }),
+        cell: ({ row }) =>
+            h('div', { class: 'text-center w-full' }, row.original.stock),
     },
     {
-        accessorKey: "status",
+        accessorKey: 'alert_stock',
         header: ({ column }) =>
             h(DataTableColumnHeader, {
                 column: column,
-                title: "Status",
+                title: 'Stock Minimal',
+                class: 'justify-center',
             }),
-        cell: ({ row }) => h(StockRow, { row: row.original }),
+        cell: ({ row }) =>
+            h('div', { class: 'text-center w-full' }, row.original.alert_stock),
+    },
+    {
+        accessorKey: 'status',
+        header: ({ column }) =>
+            h(DataTableColumnHeader, {
+                column: column,
+                title: 'Status',
+                class: 'justify-center',
+            }),
+        cell: ({ row }) =>
+            h(
+                'div',
+                { class: 'flex justify-center' },
+                h(StockRow, { row: row.original }),
+            ),
     },
 ];

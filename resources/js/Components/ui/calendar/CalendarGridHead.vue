@@ -9,7 +9,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <CalendarGridHead v-bind="props">
-        <slot />
-    </CalendarGridHead>
+  <CalendarGridHead v-bind="props">
+    <slot />
+  </CalendarGridHead>
 </template>

@@ -8,7 +8,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <DialogClose v-bind="props">
-        <slot />
-    </DialogClose>
+  <DialogClose v-bind="props">
+    <slot />
+  </DialogClose>
 </template>

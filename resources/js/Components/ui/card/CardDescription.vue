@@ -2,12 +2,19 @@
 import { cn } from "@/lib/utils";
 
 const props = defineProps({
-    class: { type: null, required: false },
+  class: {
+    type: [Boolean, null, String, Object, Array],
+    required: false,
+    skipCheck: true,
+  },
 });
 </script>
 
 <template>
-    <p :class="cn('text-sm text-muted-foreground', props.class)">
-        <slot />
-    </p>
+  <p
+    data-slot="card-description"
+    :class="cn('text-muted-foreground text-sm', props.class)"
+  >
+    <slot />
+  </p>
 </template>

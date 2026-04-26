@@ -11,8 +11,12 @@ use App\Models\SaleItem;
 use App\Models\Supplier;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 beforeEach(function () {
+    Storage::fake('local');
+    /** @var TestCase&object{admin: User, supplier: Supplier, category: Category, product: Product} $this */
     $this->admin = User::factory()->create(['role' => 'admin']);
     $this->supplier = Supplier::factory()->create();
     $this->category = Category::factory()->create();
@@ -51,6 +55,7 @@ beforeEach(function () {
 
 describe('Report Exports Validation', function () {
     it('validates stock report export request', function () {
+        /** @var TestCase&object{admin: User, supplier: Supplier, category: Category, product: Product} $this */
         $response = $this->actingAs($this->admin)
             ->get(route('reports.stock.export-to-pdf', [
                 'start_date' => '',
@@ -63,18 +68,20 @@ describe('Report Exports Validation', function () {
     });
 
     it('validates sale report export request', function () {
+        /** @var TestCase&object{admin: User, supplier: Supplier, category: Category, product: Product} $this */
         $response = $this->actingAs($this->admin)
             ->get(route('reports.sale.export-to-pdf', [
-                'start_date' => '',
-                'end_date' => '',
+                'start' => '',
+                'end' => '',
                 'cashier' => '',
                 'payment' => '',
             ]));
 
-        $response->assertSessionHasErrors(['start_date', 'end_date', 'cashier', 'payment']);
+        $response->assertSessionHasErrors(['start', 'end', 'cashier', 'payment']);
     });
 
     it('validates purchase report export request', function () {
+        /** @var TestCase&object{admin: User, supplier: Supplier, category: Category, product: Product} $this */
         $response = $this->actingAs($this->admin)
             ->get(route('reports.purchase.export-to-pdf', [
                 'start_date' => '',
@@ -89,6 +96,7 @@ describe('Report Exports Validation', function () {
 
 describe('Report Exports Success', function () {
     it('can export stock report to pdf', function () {
+        /** @var TestCase&object{admin: User, supplier: Supplier, category: Category, product: Product} $this */
         $response = $this->actingAs($this->admin)
             ->get(route('reports.stock.export-to-pdf', [
                 'start_date' => Carbon::now()->subDay()->format('Y-m-d'),
@@ -102,10 +110,11 @@ describe('Report Exports Success', function () {
     });
 
     it('can export sale report to pdf', function () {
+        /** @var TestCase&object{admin: User, supplier: Supplier, category: Category, product: Product} $this */
         $response = $this->actingAs($this->admin)
             ->get(route('reports.sale.export-to-pdf', [
-                'start_date' => Carbon::now()->subDay()->format('Y-m-d'),
-                'end_date' => Carbon::now()->format('Y-m-d'),
+                'start' => Carbon::now()->subDay()->format('Y-m-d'),
+                'end' => Carbon::now()->format('Y-m-d'),
                 'cashier' => 'semua-cashier',
                 'payment' => 'semua-metode',
             ]));
@@ -115,6 +124,7 @@ describe('Report Exports Success', function () {
     });
 
     it('can export purchase report to pdf', function () {
+        /** @var TestCase&object{admin: User, supplier: Supplier, category: Category, product: Product} $this */
         $response = $this->actingAs($this->admin)
             ->get(route('reports.purchase.export-to-pdf', [
                 'start_date' => Carbon::now()->subDay()->format('Y-m-d'),

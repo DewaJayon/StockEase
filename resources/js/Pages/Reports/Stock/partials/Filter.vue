@@ -1,22 +1,22 @@
 <script setup>
-import DatePicker from "@/Components/DatePicker.vue";
-import { Button } from "@/Components/ui/button";
-import { Label } from "@/Components/ui/label";
-import { ref, watch } from "vue";
-import { router } from "@inertiajs/vue3";
-import { cn } from "@/lib/utils";
-import { watchDebounced } from "@vueuse/core";
-import axios from "axios";
-import { toast } from "vue-sonner";
+import DatePicker from '@/Components/DatePicker.vue';
+import { Button } from '@/Components/ui/button';
+import { Label } from '@/Components/ui/label';
+import { ref, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { cn } from '@/lib/utils';
+import { watchDebounced } from '@vueuse/core';
+import axios from 'axios';
+import { toast } from 'vue-sonner';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
     Check,
     FileSpreadsheet,
     Loader2,
     Printer,
     Search,
-} from "lucide-vue-next";
+} from 'lucide-vue-next';
 
 import {
     Combobox,
@@ -27,15 +27,15 @@ import {
     ComboboxItem,
     ComboboxItemIndicator,
     ComboboxList,
-} from "@/Components/ui/combobox";
-import { Checkbox } from "@/Components/ui/checkbox";
+} from '@/Components/ui/combobox';
+import { Checkbox } from '@/Components/ui/checkbox';
 
 const formatDate = (date) => {
     if (!date) return null;
     const d = new Date(date);
     const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
 
@@ -47,15 +47,15 @@ const getDateParam = (key) => {
 const urlParams = new URLSearchParams(window.location.search);
 
 const allCategoryParam =
-    urlParams.get("category") === "semua-kategori" ? true : false;
+    urlParams.get('category') === 'semua-kategori' ? true : false;
 const allSupplierParam =
-    urlParams.get("supplier") === "semua-supplier" ? true : false;
+    urlParams.get('supplier') === 'semua-supplier' ? true : false;
 
-const selectedCategoryParam = urlParams.get("category") || null;
-const selectedSupplierParam = urlParams.get("supplier") || null;
+const selectedCategoryParam = urlParams.get('category') || null;
+const selectedSupplierParam = urlParams.get('supplier') || null;
 
-const startDate = ref(getDateParam("start_date") || null);
-const endDate = ref(getDateParam("end_date") || null);
+const startDate = ref(getDateParam('start_date') || null);
+const endDate = ref(getDateParam('end_date') || null);
 const selectedCategory = ref(selectedCategoryParam);
 const selectedSupplier = ref(selectedSupplierParam);
 const allCategory = ref(allCategoryParam);
@@ -64,7 +64,7 @@ const allSupplier = ref(allSupplierParam);
 if (selectedCategoryParam) {
     axios
         .get(
-            route("reports.stock.searchCategory", {
+            route('reports.stock.searchCategory', {
                 search: selectedCategoryParam,
             }),
         )
@@ -90,7 +90,7 @@ if (selectedCategoryParam) {
 if (selectedSupplierParam) {
     axios
         .get(
-            route("reports.stock.searchSupplier", {
+            route('reports.stock.searchSupplier', {
                 search: selectedSupplierParam,
             }),
         )
@@ -135,14 +135,14 @@ watch(allSupplier, (newVal) => {
 });
 
 const categories = ref([]);
-const searchCategory = ref("");
+const searchCategory = ref('');
 
 watchDebounced(
     searchCategory,
     (newSearchCategory) => {
         axios
             .get(
-                route("reports.stock.searchCategory", {
+                route('reports.stock.searchCategory', {
                     search: newSearchCategory,
                 }),
             )
@@ -161,7 +161,7 @@ watchDebounced(
     { debounce: 500 },
 );
 
-const searchSupplier = ref("");
+const searchSupplier = ref('');
 const suppliers = ref([]);
 
 watchDebounced(
@@ -169,7 +169,7 @@ watchDebounced(
     (newSearchSupplier) => {
         axios
             .get(
-                route("reports.stock.searchSupplier", {
+                route('reports.stock.searchSupplier', {
                     search: newSearchSupplier,
                 }),
             )
@@ -190,17 +190,17 @@ watchDebounced(
 
 const checkFilter = () => {
     if (!startDate.value || !endDate.value) {
-        toast.error("Tanggal mulai dan tanggal selesai wajib diisi!");
+        toast.error('Tanggal mulai dan tanggal selesai wajib diisi!');
         return false;
     }
 
     if (!allSupplier.value && !selectedSupplier.value) {
-        toast.error("Silahkan pilih supplier atau centang Semua Supplier!");
+        toast.error('Silahkan pilih supplier atau centang Semua Supplier!');
         return false;
     }
 
     if (!allCategory.value && !selectedCategory.value) {
-        toast.error("Silahkan pilih kategori atau centang Semua Kategori!");
+        toast.error('Silahkan pilih kategori atau centang Semua Kategori!');
         return false;
     }
 
@@ -218,22 +218,28 @@ const handleFilter = () => {
     let categoryParam = null;
 
     allSupplier.value == true
-        ? (supplierParam = "semua-supplier")
+        ? (supplierParam = 'semua-supplier')
         : (supplierParam = selectedSupplier.value.value);
     allCategory.value == true
-        ? (categoryParam = "semua-kategori")
+        ? (categoryParam = 'semua-kategori')
         : (categoryParam = selectedCategory.value.value);
 
-    router
-        .get(route("reports.stock.index"), {
+    router.get(
+        route('reports.stock.index'),
+        {
+            ...Object.fromEntries(new URLSearchParams(window.location.search)),
             start_date: formatDate(startDate.value),
             end_date: formatDate(endDate.value),
             supplier: supplierParam,
             category: categoryParam,
-        })
-        .then(() => {
-            isFilterLoading.value = false;
-        });
+            page: 1,
+        },
+        {
+            onFinish: () => {
+                isFilterLoading.value = false;
+            },
+        },
+    );
 };
 
 const handleExportPdf = () => {
@@ -243,20 +249,20 @@ const handleExportPdf = () => {
     let categoryParam = null;
 
     allSupplier.value == true
-        ? (supplierParam = "semua-supplier")
+        ? (supplierParam = 'semua-supplier')
         : (supplierParam = selectedSupplier.value.value);
     allCategory.value == true
-        ? (categoryParam = "semua-kategori")
+        ? (categoryParam = 'semua-kategori')
         : (categoryParam = selectedCategory.value.value);
 
     window.open(
-        route("reports.stock.export-to-pdf", {
+        route('reports.stock.export-to-pdf', {
             start_date: formatDate(startDate.value),
             end_date: formatDate(endDate.value),
             supplier: supplierParam,
             category: categoryParam,
         }),
-        "_blank",
+        '_blank',
     );
 };
 
@@ -267,194 +273,205 @@ const handleExportExcel = () => {
     let categoryParam = null;
 
     allSupplier.value == true
-        ? (supplierParam = "semua-supplier")
+        ? (supplierParam = 'semua-supplier')
         : (supplierParam = selectedSupplier.value.value);
     allCategory.value == true
-        ? (categoryParam = "semua-kategori")
+        ? (categoryParam = 'semua-kategori')
         : (categoryParam = selectedCategory.value.value);
 
     window.open(
-        route("reports.stock.export-to-excel", {
+        route('reports.stock.export-to-excel', {
             start_date: formatDate(startDate.value),
             end_date: formatDate(endDate.value),
             supplier: supplierParam,
             category: categoryParam,
         }),
-        "_blank",
+        '_blank',
     );
 };
 </script>
 
 <template>
-    <Card>
-        <CardHeader>
-            <CardTitle>
-                <h1 class="text-2xl font-bold">Laporan Stock</h1>
-            </CardTitle>
-        </CardHeader>
-        <CardContent class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="space-y-1">
-                <Label html-for="startDate">Tanggal Mulai</Label>
-                <DatePicker
-                    id="startDate"
-                    v-model="startDate"
-                    label="Tanggal"
-                    class="w-full"
-                />
+  <Card>
+    <CardHeader>
+      <CardTitle>
+        <h1 class="text-2xl font-bold">
+          Laporan Stock
+        </h1>
+      </CardTitle>
+    </CardHeader>
+    <CardContent class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="space-y-1">
+        <Label html-for="startDate">Tanggal Mulai</Label>
+        <DatePicker
+          id="startDate"
+          v-model="startDate"
+          label="Tanggal"
+          class="w-full"
+        />
+      </div>
+      <div class="space-y-1">
+        <Label html-for="endDate">Tanggal Selesai</Label>
+        <DatePicker
+          id="endDate"
+          v-model="endDate"
+          label="Tanggal"
+          class="w-full"
+        />
+      </div>
+      <div class="space-y-1">
+        <Label html-for="category">Kategori</Label>
+        <Combobox
+          v-model="selectedCategory"
+          by="label"
+          html-id="category"
+        >
+          <ComboboxAnchor class="w-full">
+            <div class="relative w-full max-w-sm items-center">
+              <ComboboxInput
+                v-model="searchCategory"
+                class="pl-9"
+                :display-value="(val) => val?.label ?? ''"
+                placeholder="Cari Kategori..."
+              />
+              <span
+                class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
+              >
+                <Search class="size-4 text-muted-foreground" />
+              </span>
             </div>
-            <div class="space-y-1">
-                <Label html-for="endDate">Tanggal Selesai</Label>
-                <DatePicker
-                    id="endDate"
-                    v-model="endDate"
-                    label="Tanggal"
-                    class="w-full"
-                />
+          </ComboboxAnchor>
+
+          <ComboboxList>
+            <ComboboxEmpty>
+              Tidak ada Kategori ditemukan.
+            </ComboboxEmpty>
+
+            <ComboboxGroup>
+              <ComboboxItem
+                v-for="category in categories"
+                :key="category.value"
+                :value="category"
+                class="cursor-pointer"
+              >
+                {{ category.label }}
+
+                <ComboboxItemIndicator>
+                  <Check :class="cn('ml-auto h-4 w-4')" />
+                </ComboboxItemIndicator>
+              </ComboboxItem>
+            </ComboboxGroup>
+          </ComboboxList>
+        </Combobox>
+        <div class="items-top flex gap-x-2 pt-2">
+          <Checkbox
+            id="all-category"
+            v-model="allCategory"
+          />
+          <div class="grid gap-1.5 leading-none">
+            <label
+              for="all-category"
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Semua Kategori
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-1">
+        <Label html-for="supplier">Supplier</Label>
+        <Combobox
+          v-model="selectedSupplier"
+          by="label"
+          html-id="supplier"
+        >
+          <ComboboxAnchor class="w-full">
+            <div class="relative w-full max-w-sm items-center">
+              <ComboboxInput
+                v-model="searchSupplier"
+                class="pl-9"
+                :display-value="(val) => val?.label ?? ''"
+                placeholder="Cari Supplier..."
+              />
+              <span
+                class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
+              >
+                <Search class="size-4 text-muted-foreground" />
+              </span>
             </div>
-            <div class="space-y-1">
-                <Label html-for="category">Kategori</Label>
-                <Combobox
-                    v-model="selectedCategory"
-                    by="label"
-                    html-id="category"
-                >
-                    <ComboboxAnchor class="w-full">
-                        <div class="relative w-full max-w-sm items-center">
-                            <ComboboxInput
-                                v-model="searchCategory"
-                                class="pl-9"
-                                :display-value="(val) => val?.label ?? ''"
-                                placeholder="Cari Kategori..."
-                            />
-                            <span
-                                class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
-                            >
-                                <Search class="size-4 text-muted-foreground" />
-                            </span>
-                        </div>
-                    </ComboboxAnchor>
+          </ComboboxAnchor>
 
-                    <ComboboxList>
-                        <ComboboxEmpty>
-                            Tidak ada Kategori ditemukan.
-                        </ComboboxEmpty>
+          <ComboboxList>
+            <ComboboxEmpty>
+              Tidak ada Supplier ditemukan.
+            </ComboboxEmpty>
 
-                        <ComboboxGroup>
-                            <ComboboxItem
-                                v-for="category in categories"
-                                :key="category.value"
-                                :value="category"
-                                class="cursor-pointer"
-                            >
-                                {{ category.label }}
+            <ComboboxGroup>
+              <ComboboxItem
+                v-for="supplier in suppliers"
+                :key="supplier.value"
+                :value="supplier"
+                class="cursor-pointer"
+              >
+                {{ supplier.label }}
 
-                                <ComboboxItemIndicator>
-                                    <Check :class="cn('ml-auto h-4 w-4')" />
-                                </ComboboxItemIndicator>
-                            </ComboboxItem>
-                        </ComboboxGroup>
-                    </ComboboxList>
-                </Combobox>
-                <div class="items-top flex gap-x-2 pt-2">
-                    <Checkbox id="all-category" v-model="allCategory" />
-                    <div class="grid gap-1.5 leading-none">
-                        <label
-                            for="all-category"
-                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                            Semua Kategori
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="space-y-1">
-                <Label html-for="supplier">Supplier</Label>
-                <Combobox
-                    v-model="selectedSupplier"
-                    by="label"
-                    html-id="supplier"
-                >
-                    <ComboboxAnchor class="w-full">
-                        <div class="relative w-full max-w-sm items-center">
-                            <ComboboxInput
-                                v-model="searchSupplier"
-                                class="pl-9"
-                                :display-value="(val) => val?.label ?? ''"
-                                placeholder="Cari Supplier..."
-                            />
-                            <span
-                                class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
-                            >
-                                <Search class="size-4 text-muted-foreground" />
-                            </span>
-                        </div>
-                    </ComboboxAnchor>
+                <ComboboxItemIndicator>
+                  <Check :class="cn('ml-auto h-4 w-4')" />
+                </ComboboxItemIndicator>
+              </ComboboxItem>
+            </ComboboxGroup>
+          </ComboboxList>
+        </Combobox>
+        <div class="items-top flex gap-x-2 pt-2">
+          <Checkbox
+            id="all-supplier"
+            v-model="allSupplier"
+          />
+          <div class="grid gap-1.5 leading-none">
+            <label
+              for="all-supplier"
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Semua Supplier
+            </label>
+          </div>
+        </div>
+      </div>
 
-                    <ComboboxList>
-                        <ComboboxEmpty>
-                            Tidak ada Supplier ditemukan.
-                        </ComboboxEmpty>
+      <div class="flex space-x-2">
+        <Button
+          :disabled="isFilterLoading || !checkFilter()"
+          class="disabled:cursor-not-allowed disabled:opacity-50"
+          @click="handleFilter"
+        >
+          <Loader2
+            v-if="isFilterLoading"
+            class="w-4 h-4 animate-spin"
+          />
 
-                        <ComboboxGroup>
-                            <ComboboxItem
-                                v-for="supplier in suppliers"
-                                :key="supplier.value"
-                                :value="supplier"
-                                class="cursor-pointer"
-                            >
-                                {{ supplier.label }}
-
-                                <ComboboxItemIndicator>
-                                    <Check :class="cn('ml-auto h-4 w-4')" />
-                                </ComboboxItemIndicator>
-                            </ComboboxItem>
-                        </ComboboxGroup>
-                    </ComboboxList>
-                </Combobox>
-                <div class="items-top flex gap-x-2 pt-2">
-                    <Checkbox id="all-supplier" v-model="allSupplier" />
-                    <div class="grid gap-1.5 leading-none">
-                        <label
-                            for="all-supplier"
-                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                            Semua Supplier
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex space-x-2">
-                <Button
-                    :disabled="isFilterLoading || !checkFilter()"
-                    class="disabled:cursor-not-allowed disabled:opacity-50"
-                    @click="handleFilter"
-                >
-                    <Loader2
-                        v-if="isFilterLoading"
-                        class="w-4 h-4 animate-spin"
-                    />
-
-                    <Search v-else class="h-4 w-4" />
-                    <span>Lihat Laporan</span>
-                </Button>
-                <Button
-                    :disabled="!checkFilter()"
-                    class="disabled:cursor-not-allowed disabled:opacity-50"
-                    @click="handleExportPdf()"
-                >
-                    <Printer class="h-4 w-4" />
-                    <span>Export PDF</span>
-                </Button>
-                <Button
-                    :disabled="!checkFilter()"
-                    class="disabled:cursor-not-allowed disabled:opacity-50"
-                    @click="handleExportExcel()"
-                >
-                    <FileSpreadsheet class="h-4 w-4" />
-                    <span>Export Excel</span>
-                </Button>
-            </div>
-        </CardContent>
-    </Card>
+          <Search
+            v-else
+            class="h-4 w-4"
+          />
+          <span>Lihat Laporan</span>
+        </Button>
+        <Button
+          :disabled="!checkFilter()"
+          class="disabled:cursor-not-allowed disabled:opacity-50"
+          @click="handleExportPdf()"
+        >
+          <Printer class="h-4 w-4" />
+          <span>Export PDF</span>
+        </Button>
+        <Button
+          :disabled="!checkFilter()"
+          class="disabled:cursor-not-allowed disabled:opacity-50"
+          @click="handleExportExcel()"
+        >
+          <FileSpreadsheet class="h-4 w-4" />
+          <span>Export Excel</span>
+        </Button>
+      </div>
+    </CardContent>
+  </Card>
 </template>

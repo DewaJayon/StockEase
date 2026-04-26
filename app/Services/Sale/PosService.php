@@ -3,6 +3,7 @@
 namespace App\Services\Sale;
 
 use App\Actions\Product\ReduceProductStock;
+use App\Actions\Sale\RecalculateSaleTotal;
 use App\Models\Category;
 use App\Models\PaymentTransaction;
 use App\Models\Product;
@@ -124,7 +125,7 @@ class PosService
             ]);
         }
 
-        $cart->calculateTotal();
+        resolve(RecalculateSaleTotal::class)->execute($cart);
 
         return ['cart' => $cart, 'total' => $cart->total];
     }
@@ -151,7 +152,7 @@ class PosService
             }
         }
 
-        $cart->calculateTotal();
+        resolve(RecalculateSaleTotal::class)->execute($cart);
 
         return ['cart' => $cart, 'total' => $cart->total];
     }
@@ -165,7 +166,7 @@ class PosService
         $cart->saleItems()->where('product_id', $productId)->delete();
         $cart->setRelation('saleItems', $cart->saleItems->reject(fn ($item) => $item->product_id === $productId)->values());
 
-        $cart->calculateTotal();
+        resolve(RecalculateSaleTotal::class)->execute($cart);
 
         return ['cart' => $cart, 'total' => $cart->total];
     }
@@ -179,7 +180,7 @@ class PosService
         $cart->saleItems()->delete();
         $cart->setRelation('saleItems', collect());
 
-        $cart->calculateTotal();
+        resolve(RecalculateSaleTotal::class)->execute($cart);
 
         return ['cart' => $cart, 'total' => $cart->total];
     }

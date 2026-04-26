@@ -3,10 +3,16 @@
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\assertAuthenticated;
+use function Pest\Laravel\assertGuest;
+use function Pest\Laravel\get;
+use function Pest\Laravel\post;
+
 uses(RefreshDatabase::class);
 
 test('login screen can be rendered', function () {
-    $response = $this->get('/login');
+    $response = get('/login');
 
     $response->assertStatus(200);
 });
@@ -14,31 +20,32 @@ test('login screen can be rendered', function () {
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
-    $response = $this->post('/login', [
+    $response = post('/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);
 
-    $this->assertAuthenticated();
+    assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
-    $this->post('/login', [
+    post('/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
 
-    $this->assertGuest();
+    assertGuest();
 });
 
 test('users can logout', function () {
+    /** @var User $user */
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->post('/logout');
+    $response = actingAs($user)->post('/logout');
 
-    $this->assertGuest();
+    assertGuest();
     $response->assertRedirect('/');
 });

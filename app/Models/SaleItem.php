@@ -15,6 +15,7 @@ class SaleItem extends Model
         'product_id',
         'qty',
         'price',
+        'cost_price',
     ];
 
     /**
@@ -26,6 +27,7 @@ class SaleItem extends Model
     {
         return [
             'price' => 'decimal:4',
+            'cost_price' => 'decimal:4',
         ];
     }
 

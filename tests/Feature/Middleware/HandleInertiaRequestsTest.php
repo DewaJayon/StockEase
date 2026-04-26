@@ -8,10 +8,12 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
 
 uses(RefreshDatabase::class);
 
 it('loads notifications without N+1 queries when accessing inertia pages', function () {
+    /** @var User $user */
     $user = User::factory()->create();
 
     // Create multiple notifications for different products without product_slug
@@ -47,7 +49,7 @@ it('loads notifications without N+1 queries when accessing inertia pages', funct
     // Track queries
     DB::enableQueryLog();
 
-    $response = $this->get('/'); // assuming dashboard route uses inertia
+    $response = get('/'); // assuming dashboard route uses inertia
 
     $response->assertSuccessful();
 

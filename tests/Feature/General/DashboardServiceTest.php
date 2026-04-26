@@ -8,10 +8,12 @@ use App\Models\User;
 use App\Services\General\DashboardService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    /** @var TestCase&object{admin: User, service: DashboardService} $this */
     $this->service = new DashboardService;
     $this->admin = User::factory()->create(['role' => 'admin']);
 });
@@ -19,13 +21,14 @@ beforeEach(function () {
 it('includes price history in activity history', function () {
     $product = Product::factory()->create(['name' => 'Product A']);
 
+    /** @var TestCase&object{admin: User, service: DashboardService} $this */
     PriceHistory::factory()->create([
         'product_id' => $product->id,
         'user_id' => $this->admin->id,
         'created_at' => Carbon::now(),
     ]);
 
-    $activities = $this->service->getActivityHistory();
+    $activities = collect($this->service->getPaginatedActivityHistory()->items());
 
     expect($activities->where('type', 'price')->first()['desc'])
         ->toContain('Harga Product A diperbarui');
@@ -46,6 +49,7 @@ it('provides price update chart data for the last 7 days', function () {
         'created_at' => Carbon::now()->subDay(),
     ]);
 
+    /** @var TestCase&object{admin: User, service: DashboardService} $this */
     $chartData = $this->service->getPriceUpdateChartData();
 
     expect($chartData['categories'])->toHaveCount(7);
@@ -58,6 +62,7 @@ it('provides price update chart data for the last 7 days', function () {
 });
 
 it('returns full admin dashboard data including price chart', function () {
+    /** @var TestCase&object{admin: User, service: DashboardService} $this */
     $data = $this->service->getDashboardData('admin');
 
     expect($data)->toHaveKeys([

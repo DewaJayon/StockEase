@@ -4,6 +4,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
@@ -53,11 +54,12 @@ it('provides a new cart with loaded relations on first visit', function () {
 
     $response->assertSuccessful();
 
-    $response->assertInertia(fn ($page) => $page
-        ->component('Pos/Index')
-        ->has('cart')
-        ->has('cart.sale_items')
-        ->where('cart.sale_items', [])
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('Pos/Index')
+            ->has('cart')
+            ->has('cart.sale_items')
+            ->where('cart.sale_items', [])
     );
 });
 
@@ -398,6 +400,7 @@ it('can complete a full end-to-end POS cash transaction workflow', function () {
     $productA = Product::factory()->create(['stock' => 50, 'selling_price' => 10000, 'barcode' => '111111']);
     $productB = Product::factory()->create(['stock' => 20, 'selling_price' => 50000]);
 
+    /** @var TestCase&object{cashier: User} $this */
     // 1. User visits POS page
     $this->actingAs($cashier)->get(route('pos.index'))->assertSuccessful();
 

@@ -39,6 +39,7 @@ class Unit extends Model
         return [
             'slug' => [
                 'source' => 'name',
+                'onUpdate' => true,
             ],
         ];
     }

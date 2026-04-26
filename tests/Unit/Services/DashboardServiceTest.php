@@ -18,7 +18,7 @@ it('can get admin dashboard data', function () {
 
     expect($data)->toHaveKeys(['salesSummary', 'lowStock', 'activities', 'weeklySalesChart']);
     expect((int) $data['salesSummary']['today'])->toBe(1000);
-    expect($data['lowStock'])->toHaveCount(1);
+    expect($data['lowStock']->items())->toHaveCount(1);
 });
 
 it('can get cashier dashboard data', function () {
@@ -48,10 +48,10 @@ it('unifies activity history from multiple sources', function () {
     StockLog::factory()->create(['type' => 'in']);
     $dashboardService = new DashboardService;
 
-    $activities = $dashboardService->getActivityHistory();
+    $activities = $dashboardService->getPaginatedActivityHistory();
 
-    expect($activities->count())->toBeGreaterThanOrEqual(2);
-    expect($activities->first())->toHaveKeys(['type', 'desc', 'time']);
+    expect($activities->total())->toBeGreaterThanOrEqual(2);
+    expect($activities->items()[0])->toHaveKeys(['type', 'desc', 'time']);
 });
 
 it('generates weekly sales chart data', function () {

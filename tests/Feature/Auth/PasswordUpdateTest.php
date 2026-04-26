@@ -4,13 +4,15 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
+use function Pest\Laravel\actingAs;
+
 uses(RefreshDatabase::class);
 
 test('password can be updated', function () {
+    /** @var User $user */
     $user = User::factory()->create();
 
-    $response = $this
-        ->actingAs($user)
+    $response = actingAs($user)
         ->from('/profile')
         ->put('/password', [
             'current_password' => 'password',
@@ -26,10 +28,10 @@ test('password can be updated', function () {
 });
 
 test('correct password must be provided to update password', function () {
+    /** @var User $user */
     $user = User::factory()->create();
 
-    $response = $this
-        ->actingAs($user)
+    $response = actingAs($user)
         ->from('/profile')
         ->put('/password', [
             'current_password' => 'wrong-password',

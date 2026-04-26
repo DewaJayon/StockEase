@@ -4,6 +4,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Unit;
 use App\Models\User;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -30,6 +31,7 @@ it('allows admin and warehouse to view products', function ($role) {
 })->with(['admin', 'warehouse']);
 
 it('allows admin to create a product with image', function () {
+    /** @var FilesystemAdapter $storage */
     $storage = Storage::fake('public');
     /** @var User $admin */
     $admin = User::factory()->create(['role' => 'admin']);
@@ -59,7 +61,7 @@ it('allows admin to create a product with image', function () {
     ]);
 
     $product = Product::where('name', 'New Product')->first();
-    Storage::disk('public')->assertExists(str_replace('storage/', '', $product->image_path));
+    $storage->assertExists(str_replace('storage/', '', $product->image_path));
 });
 
 it('allows admin to update a product', function () {

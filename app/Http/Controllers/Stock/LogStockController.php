@@ -3,14 +3,20 @@
 namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
-use App\Models\StockLog;
-use Carbon\Carbon;
+use App\Services\Stock\StockLogService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class LogStockController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     */
+    public function __construct(
+        protected StockLogService $stockLogService
+    ) {}
+
     /**
      * Handle log stock filtering and rendering.
      *
@@ -23,35 +29,15 @@ class LogStockController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->integer('per_page', 10);
 
         $filters = [
+            'search' => $request->search,
             'end_date' => $request->end,
             'start_date' => $request->start,
         ];
 
-        $logStocks = StockLog::query()
-            ->with('product')
-            ->when($request->search, function ($query, $search) {
-                $query->whereHas('product', function ($q) use ($search) {
-                    $q->where('name', 'like', '%'.$search.'%')
-                        ->orWhere('sku', 'like', '%'.$search.'%')
-                        ->orWhere('barcode', 'like', '%'.$search.'%');
-                })
-                    ->orWhere('type', 'like', "%{$search}%")
-                    ->orWhere('reference_type', 'like', "%{$search}%")
-                    ->orWhere('reference_id', 'like', "%{$search}%")
-                    ->orWhere('note', 'like', "%{$search}%");
-            })
-            ->when($filters['start_date'] && $filters['end_date'], function ($query) use ($filters) {
-                $query->whereBetween('created_at', [
-                    Carbon::parse($filters['start_date'])->startOfDay(),
-                    Carbon::parse($filters['end_date'])->endOfDay(),
-                ]);
-            })
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
+        $logStocks = $this->stockLogService->getPaginatedStockLogs($filters, $perPage);
 
         return Inertia::render('LogStock/Index', [
             'logStocks' => $logStocks,

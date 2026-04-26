@@ -42,7 +42,7 @@ class SaleService
                 });
             })
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('updated_at', [
+                $query->whereBetween('date', [
                     Carbon::parse($startDate)->startOfDay(),
                     Carbon::parse($endDate)->endOfDay(),
                 ]);

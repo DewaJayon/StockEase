@@ -8,7 +8,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <PopoverTrigger v-bind="props">
-        <slot />
-    </PopoverTrigger>
+  <PopoverTrigger v-bind="props">
+    <slot />
+  </PopoverTrigger>
 </template>
