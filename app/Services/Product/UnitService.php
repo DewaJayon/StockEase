@@ -3,7 +3,6 @@
 namespace App\Services\Product;
 
 use App\Models\Unit;
-use Cviebrock\EloquentSluggable\Services\SlugService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class UnitService
@@ -32,10 +31,7 @@ class UnitService
      */
     public function storeUnit(array $data): Unit
     {
-        $slug = SlugService::createSlug(Unit::class, 'slug', $data['name']);
-
         return Unit::create([
-            'slug' => $slug,
             'name' => $data['name'],
             'short_name' => $data['short_name'],
         ]);
@@ -48,16 +44,10 @@ class UnitService
      */
     public function updateUnit(Unit $unit, array $data): bool
     {
-        $payload = [
+        return $unit->update([
             'name' => $data['name'],
             'short_name' => $data['short_name'],
-        ];
-
-        if ($unit->name !== $data['name']) {
-            $payload['slug'] = SlugService::createSlug(Unit::class, 'slug', $data['name']);
-        }
-
-        return $unit->update($payload);
+        ]);
     }
 
     /**

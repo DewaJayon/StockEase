@@ -3,47 +3,105 @@
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
+use function Pest\Laravel\get;
 
 uses(RefreshDatabase::class);
+
+// -- AUTHORIZATION --
+
+it('denies unauthenticated users to access categories', function () {
+    get(route('category.index'))->assertRedirect(route('login'));
+});
+
+it('denies non-admin users to access categories', function (string $role) {
+    /** @var User $user */
+    $user = User::factory()->create(['role' => $role]);
+
+    actingAs($user)->get(route('category.index'))->assertForbidden();
+})->with(['cashier', 'warehouse']);
+
+// -- INDEX --
 
 it('allows admin to view categories', function () {
     /** @var User $admin */
     $admin = User::factory()->create(['role' => 'admin']);
     Category::factory()->count(3)->create();
 
-    $response = actingAs($admin)->get(route('category.index'));
-
-    $response->assertSuccessful();
-    $response->assertInertia(
-        fn ($page) => $page
-            ->component('Category/Index')
-            ->has('categories.data', 3)
-    );
+    actingAs($admin)
+        ->get(route('category.index'))
+        ->assertSuccessful()
+        ->assertInertia(
+            fn (Assert $page) => $page
+                ->component('Category/Index')
+                ->has('categories.data', 3)
+        );
 });
 
-it('denies cashier to view categories', function () {
-    /** @var User $cashier */
-    $cashier = User::factory()->create(['role' => 'cashier']);
+it('can filter categories by search term', function () {
+    /** @var User $admin */
+    $admin = User::factory()->create(['role' => 'admin']);
+    Category::factory()->create(['name' => 'Apple']);
+    Category::factory()->create(['name' => 'Banana']);
 
-    $response = actingAs($cashier)->get(route('category.index'));
-
-    $response->assertForbidden();
+    actingAs($admin)
+        ->get(route('category.index', ['search' => 'Apple']))
+        ->assertSuccessful()
+        ->assertInertia(
+            fn (Assert $page) => $page
+                ->component('Category/Index')
+                ->has('categories.data', 1)
+                ->where('categories.data.0.name', 'Apple')
+        );
 });
+
+it('can paginate categories', function () {
+    /** @var User $admin */
+    $admin = User::factory()->create(['role' => 'admin']);
+    Category::factory()->count(15)->create();
+
+    actingAs($admin)
+        ->get(route('category.index', ['per_page' => 5]))
+        ->assertSuccessful()
+        ->assertInertia(
+            fn (Assert $page) => $page
+                ->component('Category/Index')
+                ->has('categories.data', 5)
+                ->where('categories.per_page', 5)
+        );
+});
+
+// -- DISABLED ROUTES --
+
+it('aborts on create, show, and edit routes', function () {
+    /** @var User $admin */
+    $admin = User::factory()->create(['role' => 'admin']);
+    $category = Category::factory()->create();
+
+    actingAs($admin);
+
+    get(route('category.create'))->assertNotFound();
+    get(route('category.show', $category))->assertNotFound();
+    get(route('category.edit', $category))->assertNotFound();
+});
+
+// -- STORE --
 
 it('allows admin to create a category', function () {
     /** @var User $admin */
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = actingAs($admin)
+    actingAs($admin)
         ->post(route('category.store'), [
             'name' => 'New Category',
-        ]);
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Kategory berhasil ditambahkan');
 
-    $response->assertRedirect();
     assertDatabaseHas('categories', [
         'name' => 'New Category',
         'slug' => 'new-category',
@@ -54,26 +112,28 @@ it('validates category creation', function ($data, $errors) {
     /** @var User $admin */
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = actingAs($admin)
-        ->post(route('category.store'), $data);
-
-    $response->assertSessionHasErrors($errors);
+    actingAs($admin)
+        ->post(route('category.store'), $data)
+        ->assertSessionHasErrors($errors);
 })->with([
     'empty name' => [['name' => ''], ['name']],
     'name too long' => [['name' => str_repeat('a', 256)], ['name']],
 ]);
 
-it('allows admin to update a category', function () {
+// -- UPDATE --
+
+it('allows admin to update a category name and slug', function () {
     /** @var User $admin */
     $admin = User::factory()->create(['role' => 'admin']);
-    $category = Category::factory()->create(['name' => 'Old Name']);
+    $category = Category::factory()->create(['name' => 'Old Name', 'slug' => 'old-name']);
 
-    $response = actingAs($admin)
+    actingAs($admin)
         ->put(route('category.update', $category), [
             'name' => 'Updated Name',
-        ]);
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Kategory berhasil diupdate');
 
-    $response->assertRedirect();
     assertDatabaseHas('categories', [
         'id' => $category->id,
         'name' => 'Updated Name',
@@ -81,14 +141,49 @@ it('allows admin to update a category', function () {
     ]);
 });
 
+it('does not change slug if category name is not changed on update', function () {
+    /** @var User $admin */
+    $admin = User::factory()->create(['role' => 'admin']);
+    $category = Category::factory()->create(['name' => 'Same Name', 'slug' => 'same-name-123']);
+
+    actingAs($admin)
+        ->put(route('category.update', $category), [
+            'name' => 'Same Name',
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Kategory berhasil diupdate');
+
+    assertDatabaseHas('categories', [
+        'id' => $category->id,
+        'name' => 'Same Name',
+        'slug' => 'same-name-123',
+    ]);
+});
+
+it('validates category update', function ($data, $errors) {
+    /** @var User $admin */
+    $admin = User::factory()->create(['role' => 'admin']);
+    $category = Category::factory()->create();
+
+    actingAs($admin)
+        ->put(route('category.update', $category), $data)
+        ->assertSessionHasErrors($errors);
+})->with([
+    'empty name' => [['name' => ''], ['name']],
+    'name too long' => [['name' => str_repeat('a', 256)], ['name']],
+]);
+
+// -- DESTROY --
+
 it('allows admin to delete a category', function () {
     /** @var User $admin */
     $admin = User::factory()->create(['role' => 'admin']);
     $category = Category::factory()->create();
 
-    $response = actingAs($admin)
-        ->delete(route('category.destroy', $category));
+    actingAs($admin)
+        ->delete(route('category.destroy', $category))
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Kategory berhasil dihapus');
 
-    $response->assertRedirect();
     assertDatabaseMissing('categories', ['id' => $category->id]);
 });

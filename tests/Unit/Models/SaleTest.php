@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Sale\RecalculateSaleTotal;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -27,7 +28,7 @@ it('calculates total from sale items', function () {
         'price' => 500,
     ]);
 
-    $total = $sale->calculateTotal();
+    $total = resolve(RecalculateSaleTotal::class)->execute($sale);
 
     expect((int) $total)->toBe((2 * 1000) + (3 * 500));
     expect((int) $sale->fresh()->total)->toBe((2 * 1000) + (3 * 500));

@@ -10,7 +10,8 @@ use App\Models\SaleItem;
 use App\Models\StockLog;
 use App\Models\Supplier;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\DB;
 
 class DashboardService
@@ -33,26 +34,35 @@ class DashboardService
      */
     private function adminData(): array
     {
-        $todaySales = Sale::where('status', 'completed')
+        $todaySales = (float) Sale::where('status', 'completed')
             ->whereDate('created_at', Carbon::today())
             ->sum('total');
 
-        $monthSales = Sale::where('status', 'completed')
+        $monthSales = (float) Sale::where('status', 'completed')
             ->whereYear('created_at', Carbon::now()->year)
             ->whereMonth('created_at', Carbon::now()->month)
             ->sum('total');
 
+        $activeProducts = Product::count();
+
+        $monthPurchases = (float) Purchase::whereYear('created_at', Carbon::now()->year)
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->sum('total');
+
         $lowStock = Product::whereColumn('stock', '<=', 'alert_stock')
-            ->select('name', 'stock')
-            ->get();
+            ->select('id', 'name', 'sku', 'stock')
+            ->paginate(5, ['*'], 'low_stock_page')
+            ->withQueryString();
 
         return [
             'salesSummary' => [
                 'today' => $todaySales,
                 'month' => $monthSales,
+                'activeProducts' => $activeProducts,
+                'monthPurchases' => $monthPurchases,
             ],
             'lowStock' => $lowStock,
-            'activities' => $this->getActivityHistory(),
+            'activities' => $this->getPaginatedActivityHistory(),
             'weeklySalesChart' => $this->getWeeklySalesChart(),
             'priceUpdateChart' => $this->getPriceUpdateChartData(),
         ];
@@ -69,7 +79,7 @@ class DashboardService
                 Carbon::now()->endOfWeek(),
             ])->count();
 
-        $todaysIncome = Sale::where('status', 'completed')
+        $todaysIncome = (float) Sale::where('status', 'completed')
             ->whereDate('created_at', Carbon::today())
             ->sum('total');
 
@@ -88,6 +98,7 @@ class DashboardService
         $averagePerCustomer = Sale::where('status', 'completed')
             ->whereDate('created_at', Carbon::today())
             ->avg('total');
+        $averagePerCustomer = $averagePerCustomer !== null ? (float) $averagePerCustomer : null;
 
         $recentTransaction = Sale::where('status', 'completed')
             ->latest()
@@ -95,7 +106,7 @@ class DashboardService
             ->get()
             ->map(fn ($sale) => [
                 'customer' => $sale->customer_name ?? 'Umum',
-                'total' => $sale->total,
+                'total' => (float) $sale->total,
                 'payment_method' => $sale->payment_method,
                 'date' => $sale->created_at->format('d M Y'),
             ]);
@@ -149,21 +160,22 @@ class DashboardService
     }
 
     /**
-     * Get unified activity history.
+     * Get unified activity history paginated.
      */
-    public function getActivityHistory(): Collection
+    public function getPaginatedActivityHistory(): LengthAwarePaginator
     {
         Carbon::setLocale('id');
 
         $latestSales = Sale::where('status', 'completed')
             ->with('saleItems.product')
             ->latest()
-            ->take(5)
+            ->take(50)
             ->get()
             ->map(function ($sale) {
                 $items = $sale->saleItems->map(fn ($item) => "{$item->qty} {$item->product->name}")->join(', ');
 
                 return [
+                    'id' => 'sale_'.$sale->id,
                     'type' => 'sale',
                     'desc' => "Penjualan {$items} sebesar Rp ".number_format($sale->total, 0, ',', '.'),
                     'time' => $sale->created_at->diffForHumans(),
@@ -173,12 +185,13 @@ class DashboardService
 
         $latestPurchases = Purchase::latest()
             ->with('purchaseItems.product')
-            ->take(5)
+            ->take(50)
             ->get()
             ->map(function ($purchase) {
                 $items = $purchase->purchaseItems->map(fn ($item) => "{$item->qty} {$item->product->name}")->join(', ');
 
                 return [
+                    'id' => 'purchase_'.$purchase->id,
                     'type' => 'purchase',
                     'desc' => "Pembelian menambahkan {$items} produk sebesar Rp ".number_format($purchase->total, 0, ',', '.'),
                     'time' => $purchase->created_at->diffForHumans(),
@@ -188,7 +201,7 @@ class DashboardService
 
         $latestStockLogs = StockLog::with('product')
             ->latest()
-            ->take(5)
+            ->take(50)
             ->get()
             ->map(function ($log) {
                 $isIncreasing = $log->type === 'in' || ($log->type === 'adjust' && $log->qty > 0);
@@ -196,6 +209,7 @@ class DashboardService
                 $absQty = abs($log->qty);
 
                 return [
+                    'id' => 'stock_'.$log->id,
                     'type' => 'stock',
                     'desc' => "Stok {$log->product->name} {$action} sebanyak {$absQty}",
                     'time' => $log->created_at->diffForHumans(),
@@ -205,10 +219,11 @@ class DashboardService
 
         $latestPriceUpdates = PriceHistory::with('product')
             ->latest()
-            ->take(5)
+            ->take(50)
             ->get()
             ->map(function ($history) {
                 return [
+                    'id' => 'price_'.$history->id,
                     'type' => 'price',
                     'desc' => "Harga {$history->product->name} diperbarui oleh {$history->user->name}",
                     'time' => $history->created_at->diffForHumans(),
@@ -216,15 +231,24 @@ class DashboardService
                 ];
             });
 
-        return collect()
+        $allActivities = collect()
             ->merge($latestSales)
             ->merge($latestPurchases)
             ->merge($latestStockLogs)
             ->merge($latestPriceUpdates)
             ->sortByDesc('created_at')
-            ->take(10)
             ->values()
             ->map(fn ($a) => collect($a)->except('created_at'));
+
+        $page = Paginator::resolveCurrentPage('activities_page');
+        $perPage = 5;
+        $items = $allActivities->slice(($page - 1) * $perPage, $perPage)->values();
+
+        return new LengthAwarePaginator($items, $allActivities->count(), $perPage, $page, [
+            'path' => Paginator::resolveCurrentPath(),
+            'query' => request()->query(),
+            'pageName' => 'activities_page',
+        ]);
     }
 
     /**
@@ -252,7 +276,7 @@ class DashboardService
 
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
             $chartCategories[] = $date->isoFormat('ddd');
-            $chartData[] = $weeklySales[$date->toDateString()] ?? 0;
+            $chartData[] = (float) ($weeklySales[$date->toDateString()] ?? 0);
         }
 
         return [

@@ -32,12 +32,14 @@ it('renders admin dashboard with correct data', function () {
             ->has(
                 'data.salesSummary',
                 fn ($json) => $json
-                    ->where('today', '1000.0000')
-                    ->where('month', '1000.0000')
+                    ->where('today', 1000)
+                    ->where('month', 1000)
+                    ->has('activeProducts')
+                    ->has('monthPurchases')
             )
-            ->has('data.lowStock', 1)
-            ->where('data.lowStock.0.name', 'Low Stock Item')
-            ->has('data.activities')
+            ->has('data.lowStock.data', 1)
+            ->where('data.lowStock.data.0.name', 'Low Stock Item')
+            ->has('data.activities.data')
     );
 });
 
@@ -58,7 +60,7 @@ it('renders cashier dashboard with correct data', function () {
             ->has(
                 'data.cashierSalesSummary',
                 fn ($json) => $json
-                    ->where('todaysIncome', '5000.0000')
+                    ->where('todaysIncome', 5000)
                     ->where('bestSellingProduct', 'Best Seller')
                     ->etc()
             )

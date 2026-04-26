@@ -10,6 +10,7 @@ use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\Purchase\PurchaseController;
 use App\Http\Controllers\Purchase\PurchaseReportController;
 use App\Http\Controllers\Purchase\SupplierController;
+use App\Http\Controllers\Report\ProfitLossReportController;
 use App\Http\Controllers\Sale\PosController;
 use App\Http\Controllers\Sale\SaleHistoryController;
 use App\Http\Controllers\Sale\SaleReportController;
@@ -118,6 +119,11 @@ Route::prefix('reports')->group(function () {
         Route::get('/stock/searchSupplier', [StockReportController::class, 'searchSupplier'])->name('reports.stock.searchSupplier');
         Route::get('/stock/export-to-pdf', [StockReportController::class, 'exportToPdf'])->name('reports.stock.export-to-pdf');
         Route::get('/stock/export-to-excel', [StockReportController::class, 'exportToExcel'])->name('reports.stock.export-to-excel');
+    });
+
+    // Laporan Laba/Rugi Route
+    Route::middleware('auth', 'role:admin')->group(function () {
+        Route::get('/profit-loss', [ProfitLossReportController::class, 'index'])->name('reports.profit-loss');
     });
 });
 

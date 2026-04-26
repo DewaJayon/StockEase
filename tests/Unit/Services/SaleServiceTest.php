@@ -36,8 +36,8 @@ it('can filter sales by search query', function () {
 });
 
 it('can filter sales by date range', function () {
-    $sale1 = Sale::factory()->create(['updated_at' => now()->subDays(5), 'payment_method' => 'cash', 'status' => 'completed']);
-    $sale2 = Sale::factory()->create(['updated_at' => now(), 'payment_method' => 'cash', 'status' => 'completed']);
+    $sale1 = Sale::factory()->create(['date' => now()->subDays(5), 'payment_method' => 'cash', 'status' => 'completed']);
+    $sale2 = Sale::factory()->create(['date' => now(), 'payment_method' => 'cash', 'status' => 'completed']);
 
     $filters = [
         'start' => now()->subDays(1)->toDateString(),

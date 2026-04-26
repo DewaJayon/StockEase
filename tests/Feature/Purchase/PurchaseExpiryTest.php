@@ -6,10 +6,12 @@ use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\TestCase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    /** @var TestCase&object{admin: User, supplier: Supplier, product: Product} $this */
     $this->admin = User::factory()->create(['role' => 'admin']);
     $this->supplier = Supplier::factory()->create();
     $this->product = Product::factory()->create();
@@ -17,7 +19,7 @@ beforeEach(function () {
 
 it('can store purchase with expiry date', function () {
     $expiryDate = now()->addYear()->toDateString();
-
+    /** @var TestCase&object{admin: User, supplier: Supplier, product: Product} $this */
     $response = $this->actingAs($this->admin)->post(route('purchase.store'), [
         'supplier_id' => $this->supplier->id,
         'date' => now()->toDateString(),
@@ -40,6 +42,7 @@ it('can store purchase with expiry date', function () {
 });
 
 it('can view expiry report', function () {
+    /** @var TestCase&object{admin: User, supplier: Supplier, product: Product} $this */
     PurchaseItem::factory()->create([
         'product_id' => $this->product->id,
         'expiry_date' => now()->addDays(10)->toDateString(),
@@ -48,13 +51,15 @@ it('can view expiry report', function () {
     $response = $this->actingAs($this->admin)->get(route('reports.expiry.index'));
 
     $response->assertSuccessful();
-    $response->assertInertia(fn (Assert $page) => $page
-        ->component('Reports/Expiry/Index')
-        ->has('expiryData.data', 1)
+    $response->assertInertia(
+        fn (Assert $page) => $page
+            ->component('Reports/Expiry/Index')
+            ->has('expiryData.data', 1)
     );
 });
 
 it('can filter expiry report by status', function () {
+    /** @var TestCase&object{admin: User, supplier: Supplier, product: Product} $this */
     // Expired
     PurchaseItem::factory()->create([
         'product_id' => $this->product->id,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Sale\RecalculateSaleTotal;
 use App\Models\PaymentTransaction;
 use App\Models\Product;
 use App\Models\Sale;
@@ -73,7 +74,7 @@ it('successfully completes cash checkout and reduces stock', function () {
         'price' => 50000,
     ]);
 
-    $sale->calculateTotal(); // total 100,000
+    resolve(RecalculateSaleTotal::class)->execute($sale); // total 100,000
 
     $response = putJson(route('pos.checkout'), [
         'payment_method' => 'cash',
