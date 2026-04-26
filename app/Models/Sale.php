@@ -19,6 +19,7 @@ class Sale extends Model
         'payment_method',
         'paid',
         'change',
+        'total_cost',
         'date',
         'status',
     ];
@@ -34,6 +35,7 @@ class Sale extends Model
             'total' => 'decimal:4',
             'paid' => 'decimal:4',
             'change' => 'decimal:4',
+            'total_cost' => 'decimal:4',
         ];
     }
 
@@ -65,30 +67,5 @@ class Sale extends Model
     public function paymentTransaction()
     {
         return $this->hasOne(PaymentTransaction::class);
-    }
-
-    /**
-     * Calculate the total of a sale by summing up all sale items prices
-     * and updating the sale record.
-     *
-     * @return float The total of the sale
-     */
-    public function calculateTotal()
-    {
-        $total = 0;
-
-        if (! $this->relationLoaded('saleItems')) {
-            $this->load('saleItems.product');
-        }
-
-        foreach ($this->saleItems as $item) {
-            $total += $item->price * $item->qty;
-        }
-
-        $this->update([
-            'total' => $total,
-        ]);
-
-        return $total;
     }
 }
