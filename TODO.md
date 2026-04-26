@@ -42,9 +42,36 @@
 - buat action class untuk reduceStockFromSaleItems dan updateExpiryDate supaya tidak di taruh di model product (Done)
 - di update product experied itu di disable aja kan udah ada di purcase itu biar disana nambahin product baru (Done)
 
+<!-- TODO: 26/04/2026 -->
+
+- update depedency js (Done)
+- Laporan Laba/Rugi (Profit & Loss) (Done)
+- refactor app sidebar (Done)
+- untuk calculateTotal di model sale dipindah buat action class (Done)
+- di laporan laba rugi itu date filternya pakai date rage dari shadcn vue (Done)
+- fix tabel biar rapi dan sejajar (Done)
+- refactor isikan pagination di profit loss bagian Rincian Per Produk Analisis margin dan profitabilitas setiap produk (Done)
+- penambahan test case di dashboard test (Done)
+- penambahan test case di unit test (Done)
+- penambahan test case di category controller test (Done)
+- fix bug di profit loss filter datatable bentrok dengan filter date di page (Done)
+- refactor SaleReportController buatin service class dan sempurnakan testnya (Done)
+- refactor PurchaseReportController buatin service class dan sempurnakan testnya (Done)
+- refactor StockReportController buatin service class dan sempurnakan testnya (Done)
+- refactor ExpiryReportController buatin service class dan buatkan unit test (Done)
+- refactor ProfitLossReportController buatin service class dan sempurnakan testnya (Done)
+- refactor LogStockController buatin service class dan buatkan unit test (Done)
+- fix bug di expiry page itu filternya bentrok dengan filter di datatabel (Done)
+
 <!-- TODO: -->
 
-- update depedency js
-- Multi-Gudang (Multi-Warehouse)
+- fix n+1 query, query duplikat, dan jangan pakai datatable limit aja 5 atau 10 data di dashboard
+- Analisis Produk (Fast & Slow Moving)
+    - **Masalah:** Penumpukan stok pada produk yang tidak laku.
+    - **Fitur:** Grafik analisis produk yang paling cepat terjual vs yang paling lama mengendap di gudang.
+    - **Teknis:** Agregasi data dari `sale_items` dan `stock_logs`.
+
+- tambahin lagi beberapa laporan atau fitur di laporan penjualan
+- tambahkan test case untuk semua logic
 - fix github CD ke cpanel
 - bikin API untuk mobile app

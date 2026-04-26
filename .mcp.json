@@ -4,7 +4,7 @@
             "command": "php",
             "args": ["artisan", "boost:mcp"]
         },
-        "shadcn": {
+        "shadcnVue": {
             "command": "npx",
             "args": ["shadcn-vue@latest", "mcp"]
         }
