@@ -5,9 +5,16 @@ use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\User;
 use Carbon\Carbon;
+use Inertia\Testing\AssertableInertia as Assert;
+use Tests\TestCase;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+
+beforeEach(function () {
+    /** @var TestCase&object{admin: User} $this */
+    $this->admin = User::factory()->create(['role' => 'admin']);
+});
 
 /**
  * Helper — get or create users to avoid Intelephense warnings with $this
@@ -594,10 +601,10 @@ describe('Chart data', function () {
         ]);
 
         actingAs(admin())
-            ->get(route('reports.profit-loss'), [
+            ->get(route('reports.profit-loss', [
                 'start' => Carbon::yesterday()->toDateString(),
                 'end' => Carbon::today()->toDateString(),
-            ])
+            ]))
             ->assertInertia(
                 fn ($page) => $page
                     ->has('chartData', 2)
@@ -632,4 +639,111 @@ describe('Chart data', function () {
             ]))
             ->assertInertia(fn ($page) => $page->has('chartData', 0));
     });
+});
+
+test('profit loss report correctly handles pagination while preserving date filters', function () {
+    /** @var TestCase&object{admin: User} $this */
+
+    // Create a sale in March (1000)
+    Sale::factory()->create([
+        'date' => '2026-03-15',
+        'status' => 'completed',
+        'total' => 1000,
+        'total_cost' => 500,
+        'user_id' => $this->admin->id,
+    ]);
+
+    // Create sales in April (15 * 2000 = 30000)
+    $products = Product::factory()->count(15)->create(['purchase_price' => 1000]);
+    foreach ($products as $product) {
+        $sale = Sale::factory()->create([
+            'status' => 'completed',
+            'date' => '2026-04-15',
+            'total' => 2000,
+            'total_cost' => 1000,
+            'user_id' => $this->admin->id,
+            'payment_method' => 'cash',
+        ]);
+        SaleItem::factory()->create([
+            'sale_id' => $sale->id,
+            'product_id' => $product->id,
+            'qty' => 1,
+            'price' => 2000,
+            'cost_price' => 1000,
+        ]);
+    }
+
+    // Initial request for April
+    $response = $this->actingAs($this->admin)
+        ->get(route('reports.profit-loss', [
+            'start' => '2026-04-01',
+            'end' => '2026-04-30',
+            'per_page' => 10,
+        ]));
+
+    $response->assertStatus(200);
+
+    // Verify initial data (only April sales)
+    $response->assertInertia(
+        fn (Assert $page) => $page
+            ->where('summary.total_revenue', 30000)
+            ->has('productBreakdown.data', 10)
+            ->where('productBreakdown.total', 15)
+    );
+
+    // Request for March
+    $responseMarch = $this->actingAs($this->admin)
+        ->get(route('reports.profit-loss', [
+            'start' => '2026-03-01',
+            'end' => '2026-03-31',
+        ]));
+
+    $responseMarch->assertInertia(
+        fn (Assert $page) => $page
+            ->where('summary.total_revenue', 1000)
+    );
+
+    // Create a sale in February (5000)
+    $oldProduct = Product::factory()->create(['purchase_price' => 1000]);
+    $oldSale = Sale::factory()->create([
+        'status' => 'completed',
+        'date' => '2026-02-15',
+        'total' => 5000,
+        'total_cost' => 2000,
+        'user_id' => $this->admin->id,
+    ]);
+    SaleItem::factory()->create([
+        'sale_id' => $oldSale->id,
+        'product_id' => $oldProduct->id,
+        'qty' => 1,
+        'price' => 5000,
+        'cost_price' => 2000,
+    ]);
+
+    // Request for February
+    $responseFeb = $this->actingAs($this->admin)
+        ->get(route('reports.profit-loss', [
+            'start' => '2026-02-01',
+            'end' => '2026-02-28',
+        ]));
+
+    $responseFeb->assertInertia(
+        fn (Assert $page) => $page
+            ->where('summary.total_revenue', 5000)
+    );
+
+    // Simulate FIXED DataTable search or pagination where date filters are PRESERVED
+    $responseFixed = $this->actingAs($this->admin)
+        ->get(route('reports.profit-loss', [
+            'page' => 1,
+            'search' => '',
+            'start' => '2026-02-01',
+            'end' => '2026-02-28',
+        ]));
+
+    // It should STILL show the data from February (5000)
+    $responseFixed->assertInertia(
+        fn (Assert $page) => $page
+            ->where('summary.total_revenue', 5000)
+    );
 });

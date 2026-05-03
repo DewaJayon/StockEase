@@ -36,6 +36,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    active_promotions: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const cart = ref(props.cart);
@@ -72,97 +76,93 @@ const handleScanResult = async (barcode) => {
 </script>
 
 <template>
-  <AuthenticatedLayout>
-    <Head>
-      <title>POS</title>
-    </Head>
-    <template #breadcrumb>
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <Link :href="route('dashboard')">
-              <BreadcrumbLink> Dashboard </BreadcrumbLink>
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage> POS </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </template>
-    <div class="flex flex-1 flex-col gap-4 p-4">
-      <div class="rounded-xl bg-muted/50 h-full p-4">
-        <div class="flex justify-between items-center">
-          <h1 class="font-semibold">
-            POS
-          </h1>
-          <Button
-            variant="outline"
-            class="flex items-center gap-2"
-            @click="showScanner = true"
-          >
-            <ScanBarcode class="w-4 h-4" />
-            Scan Barcode
-          </Button>
-        </div>
-
-        <Separator class="my-4" />
-
-        <div class="mt-4">
-          <div class="flex flex-col lg:flex-row gap-6">
-            <div
-              class="lg:w-2/3 rounded-lg shadow p-4 border dark:border-white/30"
-            >
-              <ProductFilter
-                :categories="categories"
-                :products="products"
-              />
-
-              <div
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto"
-                style="max-height: 70vh"
-              >
-                <template
-                  v-if="
-                    products &&
-                      products.data &&
-                      products.data.length > 0
-                  "
-                >
-                  <ProductCard
-                    v-for="product in products.data"
-                    :key="product.id"
-                    :product="product"
-                    @cart-updated="fetchCart()"
-                  />
-                </template>
-                <div
-                  v-else
-                  class="col-span-4 text-center text-muted-foreground"
-                >
-                  Produk tidak ditemukan.
+    <AuthenticatedLayout>
+        <Head>
+            <title>POS</title>
+        </Head>
+        <template #breadcrumb>
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <Link :href="route('dashboard')">
+                            <BreadcrumbLink> Dashboard </BreadcrumbLink>
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage> POS </BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        </template>
+        <div class="flex flex-1 flex-col gap-4 p-4">
+            <div class="rounded-xl bg-muted/50 h-full p-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="font-semibold">POS</h1>
+                    <Button
+                        variant="outline"
+                        class="flex items-center gap-2"
+                        @click="showScanner = true"
+                    >
+                        <ScanBarcode class="w-4 h-4" />
+                        Scan Barcode
+                    </Button>
                 </div>
-              </div>
 
-              <div class="w-full flex justify-center pt-4">
-                <ProductPagination :products="products" />
-              </div>
+                <Separator class="my-4" />
+
+                <div class="mt-4">
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <div
+                            class="lg:w-2/3 rounded-lg shadow p-4 border dark:border-white/30"
+                        >
+                            <ProductFilter
+                                :categories="categories"
+                                :products="products"
+                            />
+
+                            <div
+                                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto"
+                                style="max-height: 70vh"
+                            >
+                                <template
+                                    v-if="
+                                        products &&
+                                        products.data &&
+                                        products.data.length > 0
+                                    "
+                                >
+                                    <ProductCard
+                                        v-for="product in products.data"
+                                        :key="product.id"
+                                        :product="product"
+                                        :active-promotions="active_promotions"
+                                        @cart-updated="fetchCart()"
+                                    />
+                                </template>
+                                <div
+                                    v-else
+                                    class="col-span-4 text-center text-muted-foreground"
+                                >
+                                    Produk tidak ditemukan.
+                                </div>
+                            </div>
+
+                            <div class="w-full flex justify-center pt-4">
+                                <ProductPagination :products="products" />
+                            </div>
+                        </div>
+
+                        <Cart
+                            v-if="cart"
+                            :cart="cart"
+                            @checkout-success="reloadPage"
+                        />
+                    </div>
+                </div>
             </div>
-
-            <Cart
-              v-if="cart"
-              :cart="cart"
-              @checkout-success="reloadPage"
-            />
-          </div>
         </div>
-      </div>
-    </div>
 
-    <BarcodeScanner
-      v-model:show="showScanner"
-      @result="handleScanResult"
-    />
-  </AuthenticatedLayout>
+        <BarcodeScanner v-model:show="showScanner" @result="handleScanResult" />
+    </AuthenticatedLayout>
 </template>

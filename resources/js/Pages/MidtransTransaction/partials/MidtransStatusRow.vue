@@ -26,13 +26,9 @@ const borderColor = computed(() => {
 </script>
 
 <template>
-  <div class="capitalize flex items-center justify-start">
-    <Badge
-      variant="outline"
-      class="border"
-      :class="borderColor"
-    >
-      {{ props.row }}
-    </Badge>
-  </div>
+    <div class="capitalize flex items-center justify-start">
+        <Badge variant="outline" class="border" :class="borderColor">
+            {{ props.row }}
+        </Badge>
+    </div>
 </template>

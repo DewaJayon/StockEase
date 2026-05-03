@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\General;
 
+use App\Http\Controllers\Controller;
 use App\Services\General\DashboardService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;

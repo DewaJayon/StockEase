@@ -7,6 +7,7 @@ import { toast } from 'vue-sonner';
 import { Download, EllipsisVertical, Loader2, Trash2 } from 'lucide-vue-next';
 import { Card, CardContent } from '@/Components/ui/card';
 import { ref } from 'vue';
+import { Button } from '@/Components/ui/button';
 
 import {
     DropdownMenu,
@@ -51,7 +52,6 @@ const handleDownload = (filePath) => {
 
 const handleDelete = async (filePath) => {
     isLoading.value = true;
-    isDialogOpen.value = true;
 
     await axios
         .delete(route('file-manager.destroy'), {
@@ -60,7 +60,6 @@ const handleDelete = async (filePath) => {
         .then((response) => {
             emit('delete');
             toast.success(response.data.message);
-            isLoading.value = false;
             isDialogOpen.value = false;
         })
         .catch((error) => {
@@ -69,127 +68,130 @@ const handleDelete = async (filePath) => {
         })
         .finally(() => {
             isLoading.value = false;
-            isDialogOpen.value = false;
         });
 };
 </script>
 
 <template>
-  <Card>
-    <CardContent class="p-0">
-      <div
-        className="group relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm transition hover:shadow-md"
-      >
-        <div className="flex items-start gap-3">
-          <div
-            className="shrink-0 rounded-lg p-2 ring-1 ring-gray-100 dark:ring-gray-800"
-          >
-            <FileExcelIcon
-              v-if="file.file_extension == 'xlsx'"
-              class="w-6 h-6"
-            />
-
-            <FilePdfIcon
-              v-if="file.file_extension == 'pdf'"
-              class="w-6 h-6"
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div
-              className="flex items-center justify-between gap-2"
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <h3
-                      class="truncate text-sm font-semibold block max-w-full"
+    <Card
+        class="group overflow-hidden transition-all hover:shadow-md hover:border-primary/50 relative bg-card h-full"
+    >
+        <!-- Opsi Menu Pojok Kanan Atas -->
+        <div class="absolute top-2 right-2 z-10">
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/80 focus-visible:ring-0 focus-visible:ring-offset-0"
                     >
-                      {{ file.name }}
-                    </h3>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{{ file.name }}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <div class="flex items-center gap-2">
-                <Badge class="uppercase">
-                  {{ file.file_extension }}
-                </Badge>
-                <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <EllipsisVertical class="w-4 h-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
+                        <EllipsisVertical class="w-4 h-4" />
+                        <span class="sr-only">Open menu</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" class="w-40">
                     <DropdownMenuItem
-                      class="cursor-pointer"
-                      @click="handleDownload(file.path)"
+                        class="cursor-pointer"
+                        @click="handleDownload(file.path)"
                     >
-                      <Download class="w-4 h-4 mr-2" />
-                      Download
+                        <Download class="w-4 h-4 mr-2" />
+                        Download
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
-                      class="cursor-pointer text-red-500"
-                      @click="isDialogOpen = true"
+                        class="cursor-pointer text-destructive focus:bg-destructive focus:text-destructive-foreground"
+                        @click="isDialogOpen = true"
                     >
-                      <Trash2 class="w-4 h-4 mr-2" />
-                      Hapus
+                        <Trash2 class="w-4 h-4 mr-2" />
+                        Hapus
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <AlertDialog v-model:open="isDialogOpen">
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Apakah anda yakin ingin
-                        menghapus?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Data yang telah dihapus tidak
-                        dapat dikembalikan! Tindakan ini
-                        tidak dapat dibatalkan!
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>
-                        Batal
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        class="bg-red-500 hover:bg-red-600 text-white"
-                        @click="handleDelete(file.path)"
-                      >
-                        <Loader2
-                          v-if="isLoading"
-                          class="w-4 h-4 animate-spin"
-                        />
-                        {{
-                          isLoading
-                            ? 'Loading...'
-                            : 'Hapus'
-                        }}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-            <div
-              className="mt-1 flex flex-wrap items-center gap-2 text-xs "
-            >
-              <span> {{ file.size }} </span>
-              <span
-                className="h-1 w-1 rounded-full bg-gray-300"
-                aria-hidden
-              />
-
-              <span> Dibuat {{ file.last_modified }} </span>
-            </div>
-          </div>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
-      </div>
-    </CardContent>
-  </Card>
+
+        <CardContent
+            class="p-4 flex flex-col items-center justify-start h-full text-center pt-8 gap-3"
+        >
+            <!-- Icon Besar di Tengah -->
+            <div
+                class="shrink-0 rounded-2xl p-4 bg-muted/30 group-hover:bg-primary/5 transition-colors flex items-center justify-center"
+            >
+                <FileExcelIcon
+                    v-if="file.file_extension == 'xlsx'"
+                    class="w-16 h-16"
+                />
+                <FilePdfIcon
+                    v-if="file.file_extension == 'pdf'"
+                    class="w-16 h-16"
+                />
+            </div>
+
+            <!-- Detail File (Nama, Ekstensi, Ukuran, Tanggal) -->
+            <div class="flex flex-col items-center w-full min-w-0">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger as-child>
+                            <h3
+                                class="truncate w-full text-sm font-medium leading-snug group-hover:text-primary transition-colors cursor-default px-1"
+                            >
+                                {{ file.name }}
+                            </h3>
+                        </TooltipTrigger>
+                        <TooltipContent
+                            side="bottom"
+                            class="max-w-[300px] break-words text-center"
+                        >
+                            <p>{{ file.name }}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
+                <div
+                    class="flex flex-col items-center justify-center text-[11px] text-muted-foreground font-medium w-full mt-2 gap-0.5"
+                >
+                    <Badge
+                        variant="outline"
+                        class="uppercase text-[9px] font-bold px-2 py-0 mb-1 border-muted-foreground/30"
+                    >
+                        {{ file.file_extension }}
+                    </Badge>
+                    <span>{{ file.size }}</span>
+                    <span>{{ file.last_modified }}</span>
+                </div>
+            </div>
+        </CardContent>
+
+        <!-- Alert Dialog (Ditaruh di luar layout flex) -->
+        <AlertDialog :open="isDialogOpen" @update:open="isDialogOpen = $event">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle> Hapus file ini? </AlertDialogTitle>
+                    <AlertDialogDescription>
+                        File
+                        <span class="font-semibold text-foreground"
+                            >"{{ file.name }}"</span
+                        >
+                        akan dihapus secara permanen. Tindakan ini tidak dapat
+                        dibatalkan.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel :disabled="isLoading">
+                        Batal
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                        class="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                        :disabled="isLoading"
+                        @click.prevent="handleDelete(file.path)"
+                    >
+                        <Loader2
+                            v-if="isLoading"
+                            class="w-4 h-4 animate-spin mr-2"
+                        />
+                        Hapus
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    </Card>
 </template>

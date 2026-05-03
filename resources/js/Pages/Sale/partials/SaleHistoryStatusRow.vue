@@ -10,12 +10,9 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="capitalize flex items-center justify-start">
-    <Badge
-      variant="outline"
-      class="border border-green-500"
-    >
-      {{ props.row }}
-    </Badge>
-  </div>
+    <div class="capitalize flex items-center justify-start">
+        <Badge variant="outline" class="border border-green-500">
+            {{ props.row }}
+        </Badge>
+    </div>
 </template>

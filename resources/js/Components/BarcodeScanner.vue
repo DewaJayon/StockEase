@@ -61,18 +61,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Dialog
-    :open="show"
-    @update:open="$emit('update:show', $event)"
-  >
-    <DialogContent class="sm:max-w-106.25">
-      <DialogHeader>
-        <DialogTitle>Scan Barcode</DialogTitle>
-      </DialogHeader>
-      <div
-        id="reader"
-        width="600px"
-      />
-    </DialogContent>
-  </Dialog>
+    <Dialog :open="show" @update:open="$emit('update:show', $event)">
+        <DialogContent class="sm:max-w-106.25">
+            <DialogHeader>
+                <DialogTitle>Scan Barcode</DialogTitle>
+            </DialogHeader>
+            <div id="reader" width="600px" />
+        </DialogContent>
+    </Dialog>
 </template>

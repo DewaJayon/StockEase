@@ -4,18 +4,6 @@ Rencana ini merinci fitur-fitur tambahan yang direkomendasikan untuk meningkatka
 
 ## 1. Modul Gudang & Inventaris (Warehouse)
 
-### A. Stock Opname (Penyesuaian Stok) (Done)
-
-- **Masalah:** Selisih antara stok di sistem dan stok fisik di gudang.
-- **Fitur:** Form input hasil audit fisik, perhitungan otomatis selisih, dan otorisasi oleh admin.
-- **Teknis:** Table `stock_adjustments` dan integrasi ke `stock_logs`.
-
-### B. Pelacakan Tanggal Kedaluwarsa (Expiry Date) (Done)
-
-- **Masalah:** Kerugian akibat produk yang kedaluwarsa tanpa terdeteksi.
-- **Fitur:** Input tanggal kadaluwarsa saat pembelian (`Purchase`), notifikasi otomatis 30/60/90 hari sebelum kadaluwarsa.
-- **Teknis:** Update tabel `purchase_items` dan cron job untuk pengecekan harian.
-
 ### C. Multi-Gudang (Multi-Warehouse)
 
 - **Masalah:** Pengelolaan stok di beberapa lokasi fisik (misal: Toko A, Toko B, Gudang Pusat).
@@ -30,31 +18,11 @@ Rencana ini merinci fitur-fitur tambahan yang direkomendasikan untuk meningkatka
 - **Fitur:** Buka shift (input modal awal), tutup shift (input uang fisik), laporan selisih kas per shift.
 - **Teknis:** Tabel `shifts` dengan relasi ke `users` dan `sales`.
 
-### B. Manajemen Diskon & Promo
-
-- **Masalah:** Sistem diskon masih manual atau belum fleksibel.
-- **Fitur:** Diskon persentase/nominal, promo beli X gratis Y, diskon khusus kategori tertentu atau periode waktu (Flash Sale).
-- **Teknis:** Tabel `promotions` dan integrasi logika di `PosService`.
-
 ### C. Retur Penjualan (Sales Returns)
 
 - **Masalah:** Penanganan barang yang dikembalikan oleh pelanggan.
 - **Fitur:** Form retur berdasarkan ID Transaksi, opsi pengembalian uang atau tukar barang, otomatisasi penyesuaian stok.
 - **Teknis:** Tabel `sales_returns`.
-
-## 3. Laporan & Analisis (Finance)
-
-### A. Laporan Laba/Rugi (Profit & Loss) (Done)
-
-- **Masalah:** Sistem saat ini hanya mencatat omzet, bukan keuntungan bersih.
-- **Fitur:** Perhitungan HPP (Harga Pokok Penjualan) secara otomatis menggunakan metode FIFO atau Average, laporan margin profit per produk.
-- **Teknis:** Integrasi harga beli di tabel `sale_items`.
-
-### B. Analisis Produk (Fast & Slow Moving)
-
-- **Masalah:** Penumpukan stok pada produk yang tidak laku.
-- **Fitur:** Grafik analisis produk yang paling cepat terjual vs yang paling lama mengendap di gudang.
-- **Teknis:** Agregasi data dari `sale_items` dan `stock_logs`.
 
 ## 4. Pengalaman Pengguna & Integrasi (Technical)
 

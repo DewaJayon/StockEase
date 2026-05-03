@@ -14,29 +14,29 @@ const user = usePage().props.auth.user;
 </script>
 
 <template>
-  <Sidebar>
-    <SidebarHeader>
-      <div class="flex items-center gap-2 justify-center mt-2">
-        <img
-          class="h-8 w-8"
-          src="/img/StockEase-Logo.png"
-          alt="Stock Ease"
-        >
-        <span class="font-bold dark:text-white">Stock Ease</span>
-      </div>
-    </SidebarHeader>
+    <Sidebar>
+        <SidebarHeader>
+            <div class="flex items-center gap-2 justify-center mt-2">
+                <img
+                    class="h-8 w-8"
+                    src="/img/StockEase-Logo.png"
+                    alt="Stock Ease"
+                />
+                <span class="font-bold dark:text-white">Stock Ease</span>
+            </div>
+        </SidebarHeader>
 
-    <SidebarContent>
-      <SidebarGroupMenu
-        v-for="section in menuSections"
-        :key="section.label"
-        :title="section.label"
-        :items="section.items"
-        :user-role="user.role"
-        :collapsible="section.collapsible"
-      />
-    </SidebarContent>
+        <SidebarContent>
+            <SidebarGroupMenu
+                v-for="section in menuSections"
+                :key="section.label"
+                :title="section.label"
+                :items="section.items"
+                :user-role="user.role"
+                :collapsible="section.collapsible"
+            />
+        </SidebarContent>
 
-    <SidebarFooter />
-  </Sidebar>
+        <SidebarFooter />
+    </Sidebar>
 </template>

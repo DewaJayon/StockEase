@@ -263,189 +263,176 @@ const checkout = () => {
 </script>
 
 <template>
-  <div class="lg:w-1/3 rounded-lg shadow p-4 border dark:border-white/30">
-    <h2 class="text-xl font-bold mb-4">
-      Keranjang Belanja
-    </h2>
+    <div class="lg:w-1/3 rounded-lg shadow p-4 border dark:border-white/30">
+        <h2 class="text-xl font-bold mb-4">Keranjang Belanja</h2>
 
-    <div
-      class="space-y-3 mb-4"
-      style="max-height: 50vh; overflow-y: auto"
-    >
-      <div v-if="cartItems && cartItems.length > 0">
-        <div
-          v-for="cartItem in cartItems"
-          :key="cartItem.id"
-          class="flex justify-between items-center border-b pb-2"
-        >
-          <div>
-            <h4 class="font-medium">
-              {{ cartItem.product.name }}
-            </h4>
-            <p class="text-gray-500 text-sm">
-              {{ formatPrice(cartItem.price) }} x
-              {{ qtyRefs[cartItem.product_id] }}
-            </p>
-          </div>
-          <div class="flex items-center">
-            <NumberField
-              :model-value="qtyRefs[cartItem.product_id]"
-              :min="0"
-            >
-              <NumberFieldContent>
-                <NumberFieldDecrement
-                  @click="
-                    qtyRefs[cartItem.product_id]--;
-                    changeQty(
-                      cartItem.product_id,
-                      qtyRefs[cartItem.product_id],
-                    );
-                  "
+        <div class="space-y-3 mb-4" style="max-height: 50vh; overflow-y: auto">
+            <div v-if="cartItems && cartItems.length > 0">
+                <div
+                    v-for="cartItem in cartItems"
+                    :key="cartItem.id"
+                    class="flex justify-between items-center border-b pb-2"
+                >
+                    <div>
+                        <h4 class="font-medium">
+                            {{ cartItem.product.name }}
+                        </h4>
+                        <p class="text-gray-500 text-sm">
+                            {{ formatPrice(cartItem.price) }} x
+                            {{ qtyRefs[cartItem.product_id] }}
+                        </p>
+                        <p
+                            v-if="cartItem.discount_amount > 0"
+                            class="text-green-600 text-xs font-medium"
+                        >
+                            Diskon: -{{ formatPrice(cartItem.discount_amount) }}
+                        </p>
+                    </div>
+                    <div class="flex items-center">
+                        <NumberField
+                            :model-value="qtyRefs[cartItem.product_id]"
+                            :min="0"
+                        >
+                            <NumberFieldContent>
+                                <NumberFieldDecrement
+                                    @click="
+                                        qtyRefs[cartItem.product_id]--;
+                                        changeQty(
+                                            cartItem.product_id,
+                                            qtyRefs[cartItem.product_id],
+                                        );
+                                    "
+                                />
+                                <NumberFieldInput
+                                    class="w-24 border rounded"
+                                    readonly
+                                />
+                                <NumberFieldIncrement
+                                    @click="
+                                        qtyRefs[cartItem.product_id]++;
+                                        changeQty(
+                                            cartItem.product_id,
+                                            qtyRefs[cartItem.product_id],
+                                        );
+                                    "
+                                />
+                            </NumberFieldContent>
+                        </NumberField>
+                        <Button
+                            variant="destructive"
+                            size="icon"
+                            class="ml-2 disabled:cursor-not-allowed"
+                            :disabled="loadingItemId === cartItem.product_id"
+                            @click="removeItemFromCart(cartItem.product_id)"
+                        >
+                            <Loader2
+                                v-if="loadingItemId === cartItem.product_id"
+                                class="w-4 h-4 animate-spin"
+                            />
+                            <Trash2 v-else class="w-4 h-4" />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else>
+                <p class="text-center">Keranjang belanja kosong</p>
+            </div>
+        </div>
+
+        <div class="space-y-2 border-t pt-3">
+            <div class="flex justify-between text-lg font-bold mt-2">
+                <span>TOTAL:</span>
+                <span>{{ formatPrice(totalCart) }}</span>
+            </div>
+
+            <div>
+                <span>Metode Pembayaran:</span>
+                <div class="flex items-center space-x-2 mt-2">
+                    <RadioGroup v-model="paymentMethod">
+                        <div class="flex items-center space-x-2">
+                            <RadioGroupItem id="cash" value="cash" />
+                            <Label for="cash">Cash</Label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <RadioGroupItem id="qris" value="qris" />
+                            <Label for="qris">Qris</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+            </div>
+
+            <div v-if="paymentMethod === 'cash'" class="flex flex-col mt-2">
+                <Input
+                    id="cashPayment"
+                    v-model="displayCashPayment"
+                    name="cashPayment"
+                    type="text"
+                    class="w-full mt-2"
+                    placeholder="Uang Pembayaran"
+                    autocomplete="off"
                 />
-                <NumberFieldInput
-                  class="w-24 border rounded"
-                  readonly
+            </div>
+
+            <div class="flex mt-2">
+                <Input
+                    id="customer_name"
+                    v-model="customerName"
+                    name="customer_name"
+                    type="text"
+                    class="w-full mt-2 [&::-webkit-inner-spin-button]:appearance-none"
+                    placeholder="Nama Pelanggan (Opsional)"
+                    autocomplete="off"
                 />
-                <NumberFieldIncrement
-                  @click="
-                    qtyRefs[cartItem.product_id]++;
-                    changeQty(
-                      cartItem.product_id,
-                      qtyRefs[cartItem.product_id],
-                    );
-                  "
-                />
-              </NumberFieldContent>
-            </NumberField>
+            </div>
+
+            <div class="flex justify-between text-lg font-bold mt-2">
+                <span class="text-muted-foreground">Kembalian:</span>
+                <span>{{ formatPrice(change) }}</span>
+            </div>
+
             <Button
-              variant="destructive"
-              size="icon"
-              class="ml-2 disabled:cursor-not-allowed"
-              :disabled="loadingItemId === cartItem.product_id"
-              @click="removeItemFromCart(cartItem.product_id)"
-            >
-              <Loader2
-                v-if="loadingItemId === cartItem.product_id"
-                class="w-4 h-4 animate-spin"
-              />
-              <Trash2
-                v-else
-                class="w-4 h-4"
-              />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div v-else>
-        <p class="text-center">
-          Keranjang belanja kosong
-        </p>
-      </div>
-    </div>
-
-    <div class="space-y-2 border-t pt-3">
-      <div class="flex justify-between text-lg font-bold mt-2">
-        <span>TOTAL:</span>
-        <span>{{ formatPrice(totalCart) }}</span>
-      </div>
-
-      <div>
-        <span>Metode Pembayaran:</span>
-        <div class="flex items-center space-x-2 mt-2">
-          <RadioGroup v-model="paymentMethod">
-            <div class="flex items-center space-x-2">
-              <RadioGroupItem
-                id="cash"
-                value="cash"
-              />
-              <Label for="cash">Cash</Label>
-            </div>
-            <div class="flex items-center space-x-2">
-              <RadioGroupItem
-                id="qris"
-                value="qris"
-              />
-              <Label for="qris">Qris</Label>
-            </div>
-          </RadioGroup>
-        </div>
-      </div>
-
-      <div
-        v-if="paymentMethod === 'cash'"
-        class="flex flex-col mt-2"
-      >
-        <Input
-          id="cashPayment"
-          v-model="displayCashPayment"
-          name="cashPayment"
-          type="text"
-          class="w-full mt-2"
-          placeholder="Uang Pembayaran"
-          autocomplete="off"
-        />
-      </div>
-
-      <div class="flex mt-2">
-        <Input
-          id="customer_name"
-          v-model="customerName"
-          name="customer_name"
-          type="text"
-          class="w-full mt-2 [&::-webkit-inner-spin-button]:appearance-none"
-          placeholder="Nama Pelanggan (Opsional)"
-          autocomplete="off"
-        />
-      </div>
-
-      <div class="flex justify-between text-lg font-bold mt-2">
-        <span class="text-muted-foreground">Kembalian:</span>
-        <span>{{ formatPrice(change) }}</span>
-      </div>
-
-      <Button
-        class="w-full disabled:cursor-not-allowed"
-        :disabled="
-          !paymentMethod ||
-            (cartItems?.length ?? 0) === 0 ||
-            isCheckoutLoading
-        "
-        @click="checkout"
-      >
-        <Loader2
-          v-if="isCheckoutLoading"
-          class="w-4 h-4 animate-spin"
-        />
-        {{ isCheckoutLoading ? 'Loading...' : 'Proses Pembayaran' }}
-      </Button>
-
-      <div class="grid grid-cols-3 gap-2 mt-3">
-        <TooltipProvider :delay-duration="0">
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                size="icon"
-                class="w-full"
+                class="w-full disabled:cursor-not-allowed"
                 :disabled="
-                  (cartItems?.length ?? 0) === 0 ||
-                    isClearCartLoading
+                    !paymentMethod ||
+                    (cartItems?.length ?? 0) === 0 ||
+                    isCheckoutLoading
                 "
-                @click="clearCart"
-              >
+                @click="checkout"
+            >
                 <Loader2
-                  v-if="isClearCartLoading"
-                  class="w-4 h-4 animate-spin"
+                    v-if="isCheckoutLoading"
+                    class="w-4 h-4 animate-spin"
                 />
-                <Trash2 v-else />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Hapus Semua</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+                {{ isCheckoutLoading ? 'Loading...' : 'Proses Pembayaran' }}
+            </Button>
+
+            <div class="grid grid-cols-3 gap-2 mt-3">
+                <TooltipProvider :delay-duration="0">
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button
+                                size="icon"
+                                class="w-full"
+                                :disabled="
+                                    (cartItems?.length ?? 0) === 0 ||
+                                    isClearCartLoading
+                                "
+                                @click="clearCart"
+                            >
+                                <Loader2
+                                    v-if="isClearCartLoading"
+                                    class="w-4 h-4 animate-spin"
+                                />
+                                <Trash2 v-else />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                            <p>Hapus Semua</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            </div>
+        </div>
     </div>
-  </div>
 </template>

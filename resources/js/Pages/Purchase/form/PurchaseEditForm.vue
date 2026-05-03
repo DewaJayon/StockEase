@@ -152,161 +152,140 @@ const submit = () => {
 </script>
 
 <template>
-  <Dialog v-model:open="isDialogOpen">
-    <DialogTrigger as-child>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="group"
-      >
-        <Eye
-          class="w-4 h-4 text-green-500 dark:group-hover:text-white"
-        />
-      </Button>
-    </DialogTrigger>
-    <DialogContent
-      class="max-w-[95vw] lg:max-w-6xl max-h-[90vh] overflow-y-auto"
-    >
-      <DialogHeader>
-        <DialogTitle>Form edit pembelian produk</DialogTitle>
-        <DialogDescription>
-          Silahkan isi form dibawah ini untuk memperbarui pembelian
-          produk.
-          <br>
-          Jika harga produk dan harga jual produk berubah makan akan
-          mengubah harga jual produk dan harga beli produk.
-        </DialogDescription>
-      </DialogHeader>
-      <form
-        id="form"
-        @submit.prevent="submit"
-      >
-        <div class="flex items-center space-x-2">
-          <div class="grid flex-1 gap-2">
-            <Label for="supplier"> Supplier </Label>
-            <Combobox
-              v-model="selectedSupplier"
-              by="label"
-              html-id="supplier"
-            >
-              <ComboboxAnchor class="w-full">
-                <div
-                  class="relative w-full max-w-sm items-center"
-                >
-                  <ComboboxInput
-                    v-model="searchSupplier"
-                    class="pl-9"
-                    :display-value="
-                      (val) => val?.label ?? ''
-                    "
-                    placeholder="Cari Supplier..."
-                  />
-                  <span
-                    class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
-                  >
-                    <Search
-                      class="size-4 text-muted-foreground"
-                    />
-                  </span>
-                </div>
-              </ComboboxAnchor>
-
-              <ComboboxList class="w-full">
-                <ComboboxEmpty>
-                  Tidak ada supplier ditemukan.
-                </ComboboxEmpty>
-
-                <ComboboxGroup>
-                  <ComboboxItem
-                    v-for="supplier in suppliers"
-                    :key="supplier.value"
-                    :value="supplier"
-                    class="cursor-pointer"
-                  >
-                    {{ supplier.label }}
-
-                    <ComboboxItemIndicator>
-                      <Check
-                        :class="cn('ml-auto h-4 w-4')"
-                      />
-                    </ComboboxItemIndicator>
-                  </ComboboxItem>
-                </ComboboxGroup>
-              </ComboboxList>
-            </Combobox>
-            <InputError :message="form.errors.supplier_id" />
-          </div>
-          <div class="grid flex-1 gap-2">
-            <Label for="date"> Tanggal </Label>
-            <Popover>
-              <PopoverTrigger as-child>
-                <Button
-                  variant="outline"
-                  :class="
-                    cn(
-                      'w-full justify-start text-left font-normal',
-                      !date && 'text-muted-foreground',
-                    )
-                  "
-                >
-                  <CalendarIcon class="mr-2 h-4 w-4" />
-                  {{
-                    date
-                      ? df.format(
-                        date.toDate(
-                          getLocalTimeZone(),
-                        ),
-                      )
-                      : 'Pilih tanggal'
-                  }}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                class="w-auto p-0"
-                align="start"
-              >
-                <Calendar
-                  v-model="date"
-                  initial-focus
+    <Dialog v-model:open="isDialogOpen">
+        <DialogTrigger as-child>
+            <Button variant="ghost" size="icon" class="group">
+                <Eye
+                    class="w-4 h-4 text-green-500 dark:group-hover:text-white"
                 />
-              </PopoverContent>
-            </Popover>
-            <InputError :message="form.errors.date" />
-          </div>
-        </div>
-        <div class="mt-6">
-          <Label> Produk </Label>
-          <InputError :message="form.errors.product_items" />
-          <ProductTable
-            v-model="form.product_items"
-            :form="form"
-          />
-        </div>
-      </form>
-      <DialogFooter class="flex justify-between">
-        <DialogClose as-child>
-          <Button
-            type="button"
-            variant="secondary"
-          >
-            Batal
-          </Button>
-        </DialogClose>
-
-        <Button
-          type="submit"
-          form="form"
-          :class="{ 'opacity-25 ': form.processing }"
-          :disabled="form.processing"
-          class="disabled:cursor-not-allowed"
+            </Button>
+        </DialogTrigger>
+        <DialogContent
+            class="max-w-[95vw] lg:max-w-6xl max-h-[90vh] overflow-y-auto"
         >
-          <Loader2
-            v-if="form.processing"
-            class="w-4 h-4 animate-spin"
-          />
-          {{ form.processing ? 'Loading...' : 'Update' }}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+            <DialogHeader>
+                <DialogTitle>Form edit pembelian produk</DialogTitle>
+                <DialogDescription>
+                    Silahkan isi form dibawah ini untuk memperbarui pembelian
+                    produk.
+                    <br />
+                    Jika harga produk dan harga jual produk berubah makan akan
+                    mengubah harga jual produk dan harga beli produk.
+                </DialogDescription>
+            </DialogHeader>
+            <form id="form" @submit.prevent="submit">
+                <div class="flex items-center space-x-2">
+                    <div class="grid flex-1 gap-2">
+                        <Label for="supplier"> Supplier </Label>
+                        <Combobox
+                            v-model="selectedSupplier"
+                            by="label"
+                            html-id="supplier"
+                        >
+                            <ComboboxAnchor class="w-full">
+                                <div
+                                    class="relative w-full max-w-sm items-center"
+                                >
+                                    <ComboboxInput
+                                        v-model="searchSupplier"
+                                        class="pl-9"
+                                        :display-value="
+                                            (val) => val?.label ?? ''
+                                        "
+                                        placeholder="Cari Supplier..."
+                                    />
+                                    <span
+                                        class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
+                                    >
+                                        <Search
+                                            class="size-4 text-muted-foreground"
+                                        />
+                                    </span>
+                                </div>
+                            </ComboboxAnchor>
+
+                            <ComboboxList class="w-full">
+                                <ComboboxEmpty>
+                                    Tidak ada supplier ditemukan.
+                                </ComboboxEmpty>
+
+                                <ComboboxGroup>
+                                    <ComboboxItem
+                                        v-for="supplier in suppliers"
+                                        :key="supplier.value"
+                                        :value="supplier"
+                                        class="cursor-pointer"
+                                    >
+                                        {{ supplier.label }}
+
+                                        <ComboboxItemIndicator>
+                                            <Check
+                                                :class="cn('ml-auto h-4 w-4')"
+                                            />
+                                        </ComboboxItemIndicator>
+                                    </ComboboxItem>
+                                </ComboboxGroup>
+                            </ComboboxList>
+                        </Combobox>
+                        <InputError :message="form.errors.supplier_id" />
+                    </div>
+                    <div class="grid flex-1 gap-2">
+                        <Label for="date"> Tanggal </Label>
+                        <Popover>
+                            <PopoverTrigger as-child>
+                                <Button
+                                    variant="outline"
+                                    :class="
+                                        cn(
+                                            'w-full justify-start text-left font-normal',
+                                            !date && 'text-muted-foreground',
+                                        )
+                                    "
+                                >
+                                    <CalendarIcon class="mr-2 h-4 w-4" />
+                                    {{
+                                        date
+                                            ? df.format(
+                                                  date.toDate(
+                                                      getLocalTimeZone(),
+                                                  ),
+                                              )
+                                            : 'Pilih tanggal'
+                                    }}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent class="w-auto p-0" align="start">
+                                <Calendar v-model="date" initial-focus />
+                            </PopoverContent>
+                        </Popover>
+                        <InputError :message="form.errors.date" />
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <Label> Produk </Label>
+                    <InputError :message="form.errors.product_items" />
+                    <ProductTable v-model="form.product_items" :form="form" />
+                </div>
+            </form>
+            <DialogFooter class="flex justify-between">
+                <DialogClose as-child>
+                    <Button type="button" variant="secondary"> Batal </Button>
+                </DialogClose>
+
+                <Button
+                    type="submit"
+                    form="form"
+                    :class="{ 'opacity-25 ': form.processing }"
+                    :disabled="form.processing"
+                    class="disabled:cursor-not-allowed"
+                >
+                    <Loader2
+                        v-if="form.processing"
+                        class="w-4 h-4 animate-spin"
+                    />
+                    {{ form.processing ? 'Loading...' : 'Update' }}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>

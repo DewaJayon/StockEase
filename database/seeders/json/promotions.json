@@ -1,0 +1,158 @@
+[
+    {
+        "name": "Flash Sale Mingguan",
+        "type": "percentage",
+        "discount_value": 15,
+        "category_slug": "elektronik",
+        "product_slug": null,
+        "start_date_offset": -2,
+        "end_date_offset": 5,
+        "is_active": true
+    },
+    {
+        "name": "Diskon 10% Alat Tulis & Kerajinan",
+        "type": "percentage",
+        "discount_value": 10,
+        "category_slug": "alat-tulis",
+        "product_slug": null,
+        "start_date_offset": 0,
+        "end_date_offset": 14,
+        "is_active": true
+    },
+    {
+        "name": "Diskon Rp5.000 Minuman & Snack",
+        "type": "nominal",
+        "discount_value": 5000,
+        "category_slug": "minuman",
+        "product_slug": null,
+        "start_date_offset": -5,
+        "end_date_offset": 10,
+        "is_active": true
+    },
+    {
+        "name": "Buy 2 Get 1 Makanan Beku",
+        "type": "bogo",
+        "discount_value": null,
+        "buy_qty": 2,
+        "get_qty": 1,
+        "category_slug": "makanan-beku",
+        "product_slug": null,
+        "start_date_offset": 1,
+        "end_date_offset": 21,
+        "is_active": true
+    },
+    {
+        "name": "Diskon 20% Produk Pembersih",
+        "type": "percentage",
+        "discount_value": 20,
+        "category_slug": "produk-pembersih",
+        "product_slug": null,
+        "start_date_offset": 3,
+        "end_date_offset": 17,
+        "is_active": true
+    },
+    {
+        "name": "Diskon Rp10.000 Elektronik",
+        "type": "nominal",
+        "discount_value": 10000,
+        "category_slug": "elektronik",
+        "product_slug": null,
+        "start_date_offset": -7,
+        "end_date_offset": 7,
+        "is_active": true
+    },
+    {
+        "name": "Promo Akhir Bulan Susu & Kebutuhan Bayi",
+        "type": "percentage",
+        "discount_value": 12,
+        "category_slug": "susu",
+        "product_slug": null,
+        "start_date_offset": -3,
+        "end_date_offset": 3,
+        "is_active": true
+    },
+    {
+        "name": "Buy 3 Get 1 Roti & Kue Segar",
+        "type": "bogo",
+        "discount_value": null,
+        "buy_qty": 3,
+        "get_qty": 1,
+        "category_slug": "roti-dan-kue",
+        "product_slug": null,
+        "start_date_offset": -1,
+        "end_date_offset": 6,
+        "is_active": true
+    },
+    {
+        "name": "Diskon 25% Kecantikan & Perawatan",
+        "type": "percentage",
+        "discount_value": 25,
+        "category_slug": "kecantikan",
+        "product_slug": null,
+        "start_date_offset": 7,
+        "end_date_offset": 28,
+        "is_active": true
+    },
+    {
+        "name": "Diskon Rp15.000 Alat Rumah Tangga",
+        "type": "nominal",
+        "discount_value": 15000,
+        "category_slug": "alat-rumah-tangga",
+        "product_slug": null,
+        "start_date_offset": -10,
+        "end_date_offset": 4,
+        "is_active": true
+    },
+    {
+        "name": "Flash Sale Elektronik 30%",
+        "type": "percentage",
+        "discount_value": 30,
+        "category_slug": "elektronik",
+        "product_slug": null,
+        "start_date_offset": -14,
+        "end_date_offset": -7,
+        "is_active": false
+    },
+    {
+        "name": "Promo Kemerdekaan 50% Off",
+        "type": "percentage",
+        "discount_value": 50,
+        "category_slug": "lainnya",
+        "product_slug": null,
+        "start_date_offset": -60,
+        "end_date_offset": -45,
+        "is_active": false
+    },
+    {
+        "name": "Diskon 5% Semua Kategori",
+        "type": "percentage",
+        "discount_value": 5,
+        "category_slug": null,
+        "product_slug": null,
+        "start_date_offset": 14,
+        "end_date_offset": 30,
+        "is_active": true
+    },
+    {
+        "name": "Buy 1 Get 1 Free Obat-Obatan",
+        "type": "bogo",
+        "discount_value": null,
+        "buy_qty": 1,
+        "get_qty": 1,
+        "category_slug": "obat-obatan",
+        "product_slug": null,
+        "start_date_offset": -20,
+        "end_date_offset": -10,
+        "is_active": false
+    },
+    {
+        "name": "Diskon Rp3.000 Bumbu Dapur",
+        "type": "nominal",
+        "discount_value": 3000,
+        "category_slug": "bumbu-dapur",
+        "product_slug": null,
+        "start_date_offset": 0,
+        "end_date_offset": 12,
+        "is_active": true
+    }
+]

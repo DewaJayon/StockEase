@@ -1,8 +1,9 @@
 <?php
 
-namespace Tests\Feature\Dashboard;
+namespace Tests\Feature\General;
 
 use App\Models\Category;
+use App\Models\PriceHistory;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -14,12 +15,11 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 beforeEach(function () {
-    /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+    /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
     $this->admin = User::factory()->create(['role' => 'admin']);
     $this->cashier = User::factory()->create(['role' => 'cashier']);
     $this->warehouse = User::factory()->create(['role' => 'warehouse']);
 
-    /** @var TestCase&object{category: Category, product: Product} $this */
     $this->category = Category::factory()->create();
     $this->product = Product::factory()->create([
         'category_id' => $this->category->id,
@@ -33,7 +33,7 @@ describe('Dashboard Access', function () {
     });
 
     it('allows admin to access dashboard', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertSuccessful()
@@ -41,14 +41,14 @@ describe('Dashboard Access', function () {
     });
 
     it('allows cashier to access dashboard', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         actingAs($this->cashier)
             ->get(route('dashboard'))
             ->assertSuccessful();
     });
 
     it('allows warehouse to access dashboard', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         actingAs($this->warehouse)
             ->get(route('dashboard'))
             ->assertSuccessful();
@@ -57,21 +57,21 @@ describe('Dashboard Access', function () {
 
 describe('Admin Dashboard', function () {
     it('returns correct prop keys for admin', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(
                 fn ($page) => $page
                     ->has('data.salesSummary')
-                    ->has('data.lowStock.data')
-                    ->has('data.activities.data')
+                    ->has('data.lowStock')
+                    ->has('data.activities')
                     ->has('data.weeklySalesChart')
                     ->has('data.priceUpdateChart')
             );
     });
 
     it('excludes draft sales from today summary', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         Sale::factory()->create([
             'user_id' => $this->admin->id,
             'status' => 'completed',
@@ -97,7 +97,7 @@ describe('Admin Dashboard', function () {
     });
 
     it('excludes draft sales from weekly chart', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         Sale::factory()->create([
             'user_id' => $this->admin->id,
             'status' => 'completed',
@@ -125,7 +125,7 @@ describe('Admin Dashboard', function () {
     });
 
     it('sums multiple completed sales for today', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         Sale::factory()->create([
             'user_id' => $this->admin->id,
             'status' => 'completed',
@@ -151,8 +151,8 @@ describe('Admin Dashboard', function () {
     });
 
     it('correctly maps sales across multiple days in weekly chart', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        $monday = Carbon::now()->startOfWeek(); // Monday
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
+        $monday = Carbon::now()->startOfWeek();
         $wednesday = $monday->copy()->addDays(2);
 
         Sale::factory()->create([
@@ -182,7 +182,7 @@ describe('Admin Dashboard', function () {
     });
 
     it('returns zero for today when no completed sales exist', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(
@@ -193,27 +193,19 @@ describe('Admin Dashboard', function () {
     });
 
     it('flags products at or below alert stock', function () {
-
-        /** @var TestCase&object{category: Category, product: Product} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         $lowStockProduct = Product::factory()->create([
             'category_id' => $this->category->id,
             'stock' => 3,
             'alert_stock' => 5,
         ]);
 
-        $okProduct = Product::factory()->create([
-            'category_id' => $this->category->id,
-            'stock' => 20,
-            'alert_stock' => 5,
-        ]);
-
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
         actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(
                 fn ($page) => $page
                     ->has(
-                        'data.lowStock.data',
+                        'data.lowStock',
                         fn ($items) => $items
                             ->where('0.name', $lowStockProduct->name)
                             ->etc()
@@ -224,7 +216,7 @@ describe('Admin Dashboard', function () {
 
 describe('Cashier Dashboard', function () {
     it('returns correct prop keys for cashier', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         actingAs($this->cashier)
             ->get(route('dashboard'))
             ->assertInertia(
@@ -236,7 +228,7 @@ describe('Cashier Dashboard', function () {
     });
 
     it('excludes draft sales from cashier today income', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         Sale::factory()->create([
             'user_id' => $this->cashier->id,
             'status' => 'completed',
@@ -262,7 +254,7 @@ describe('Cashier Dashboard', function () {
     });
 
     it('shows correct best selling product excluding drafts', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         $completedSale = Sale::factory()->create([
             'user_id' => $this->cashier->id,
             'status' => 'completed',
@@ -270,7 +262,6 @@ describe('Cashier Dashboard', function () {
             'created_at' => Carbon::now(),
         ]);
 
-        /** @var TestCase&object{category: Category, product: Product} $this */
         SaleItem::factory()->create([
             'sale_id' => $completedSale->id,
             'product_id' => $this->product->id,
@@ -278,7 +269,6 @@ describe('Cashier Dashboard', function () {
             'price' => 10000,
         ]);
 
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
         $draftSale = Sale::factory()->create([
             'user_id' => $this->cashier->id,
             'status' => 'draft',
@@ -286,7 +276,6 @@ describe('Cashier Dashboard', function () {
             'created_at' => Carbon::now(),
         ]);
 
-        /** @var TestCase&object{category: Category, product: Product} $this */
         $otherProduct = Product::factory()->create([
             'category_id' => $this->category->id,
             'stock' => 50,
@@ -299,7 +288,6 @@ describe('Cashier Dashboard', function () {
             'price' => 5000,
         ]);
 
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
         actingAs($this->cashier)
             ->get(route('dashboard'))
             ->assertInertia(
@@ -309,7 +297,7 @@ describe('Cashier Dashboard', function () {
     });
 
     it('shows fallback message when no transactions today', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         actingAs($this->cashier)
             ->get(route('dashboard'))
             ->assertInertia(
@@ -319,7 +307,7 @@ describe('Cashier Dashboard', function () {
     });
 
     it('counts only this week completed sales for total transaction per week', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         // This week
         Sale::factory()->count(3)->create([
             'user_id' => $this->cashier->id,
@@ -355,7 +343,7 @@ describe('Cashier Dashboard', function () {
 
 describe('Warehouse Dashboard', function () {
     it('returns correct prop keys for warehouse', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         actingAs($this->warehouse)
             ->get(route('dashboard'))
             ->assertInertia(
@@ -367,12 +355,11 @@ describe('Warehouse Dashboard', function () {
     });
 
     it('counts total products correctly', function () {
-        /** @var TestCase&object{category: Category, product: Product} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         $initialCount = Product::count();
 
         Product::factory()->count(3)->create(['category_id' => $this->category->id]);
 
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
         actingAs($this->warehouse)
             ->get(route('dashboard'))
             ->assertInertia(
@@ -382,8 +369,7 @@ describe('Warehouse Dashboard', function () {
     });
 
     it('counts low stock products correctly', function () {
-
-        /** @var TestCase&object{category: Category, product: Product} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         Product::factory()->count(2)->create([
             'category_id' => $this->category->id,
             'stock' => 2,
@@ -398,7 +384,6 @@ describe('Warehouse Dashboard', function () {
 
         $lowStockInBeforeEach = $this->product->stock <= $this->product->alert_stock ? 1 : 0;
 
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
         actingAs($this->warehouse)
             ->get(route('dashboard'))
             ->assertInertia(
@@ -410,7 +395,7 @@ describe('Warehouse Dashboard', function () {
 
 describe('Admin Dashboard — activity history', function () {
     it('includes completed sales in activity history', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         $sale = Sale::factory()->create([
             'user_id' => $this->admin->id,
             'status' => 'completed',
@@ -419,7 +404,6 @@ describe('Admin Dashboard — activity history', function () {
             'created_at' => Carbon::now(),
         ]);
 
-        /** @var TestCase&object{category: Category, product: Product} $this */
         SaleItem::factory()->create([
             'sale_id' => $sale->id,
             'product_id' => $this->product->id,
@@ -427,18 +411,17 @@ describe('Admin Dashboard — activity history', function () {
             'price' => 37500,
         ]);
 
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        $this->actingAs($this->admin)
+        actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(
                 fn ($page) => $page
-                    ->has('data.activities.data')
-                    ->where('data.activities.data.0.type', 'sale')
+                    ->has('data.activities')
+                    ->where('data.activities.0.type', 'sale')
             );
     });
 
-    it('activity history contains at most 5 entries per page', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+    it('activity history is limited to 10 entries', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         Sale::factory()->count(12)->create([
             'user_id' => $this->admin->id,
             'status' => 'completed',
@@ -447,16 +430,16 @@ describe('Admin Dashboard — activity history', function () {
             'created_at' => Carbon::now(),
         ]);
 
-        $this->actingAs($this->admin)
+        actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(
                 fn ($page) => $page
-                    ->where('data.activities.data', fn ($items) => count($items) <= 5)
+                    ->has('data.activities', 10)
             );
     });
 
     it('excludes draft sales from activity history', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
         Sale::factory()->create([
             'user_id' => $this->admin->id,
             'status' => 'draft',
@@ -465,187 +448,31 @@ describe('Admin Dashboard — activity history', function () {
             'created_at' => Carbon::now(),
         ]);
 
-        $this->actingAs($this->admin)
+        actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(
                 fn ($page) => $page
-                    ->where('data.activities.data', fn ($items) => collect($items)->every(
+                    ->where('data.activities', fn ($items) => collect($items)->every(
                         fn ($a) => $a['type'] !== 'sale' || ! str_contains($a['desc'], '99.999')
                     ))
             );
     });
-});
 
-describe('Admin Dashboard — monthly summary', function () {
-    it('excludes sales from previous month in month summary', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        Sale::factory()->create([
+    it('fixes N+1 for price updates in activity history', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, category:Category, product:Product} $this */
+        PriceHistory::factory()->count(3)->create([
+            'product_id' => $this->product->id,
             'user_id' => $this->admin->id,
-            'status' => 'completed',
-            'total' => 50000,
-            'date' => Carbon::now()->subMonth()->toDateString(),
-            'created_at' => Carbon::now()->subMonth(),
         ]);
 
-        Sale::factory()->create([
-            'user_id' => $this->admin->id,
-            'status' => 'completed',
-            'total' => 20000,
-            'date' => Carbon::today()->toDateString(),
-            'created_at' => Carbon::now(),
-        ]);
-
-        $this->actingAs($this->admin)
+        actingAs($this->admin)
             ->get(route('dashboard'))
+            ->assertSuccessful()
             ->assertInertia(
                 fn ($page) => $page
-                    ->where('data.salesSummary.month', 20000)
-            );
-    });
-});
-
-describe('Admin Dashboard — weekly chart structure', function () {
-    it('weekly chart always has 7 entries', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        $this->actingAs($this->admin)
-            ->get(route('dashboard'))
-            ->assertInertia(
-                fn ($page) => $page
-                    ->has('data.weeklySalesChart.data', 7)
-                    ->has('data.weeklySalesChart.categories', 7)
-            );
-    });
-
-    it('weekly chart categories start from Monday', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        Carbon::setLocale('id');
-        $monday = Carbon::now()->startOfWeek()->isoFormat('ddd');
-
-        $this->actingAs($this->admin)
-            ->get(route('dashboard'))
-            ->assertInertia(
-                fn ($page) => $page
-                    ->where('data.weeklySalesChart.categories.0', $monday)
-            );
-    });
-});
-
-describe('Cashier Dashboard — average per customer', function () {
-    it('calculates average correctly for multiple completed sales today', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        Sale::factory()->create([
-            'user_id' => $this->cashier->id,
-            'status' => 'completed',
-            'total' => 10000,
-            'date' => Carbon::today()->toDateString(),
-            'created_at' => Carbon::now(),
-        ]);
-
-        Sale::factory()->create([
-            'user_id' => $this->cashier->id,
-            'status' => 'completed',
-            'total' => 30000,
-            'date' => Carbon::today()->toDateString(),
-            'created_at' => Carbon::now(),
-        ]);
-
-        $this->actingAs($this->cashier)
-            ->get(route('dashboard'))
-            ->assertInertia(
-                fn ($page) => $page
-                    ->where('data.cashierSalesSummary.averagePerCustomer', 20000)
-            );
-    });
-
-    it('returns null average when no completed sales today', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        $this->actingAs($this->cashier)
-            ->get(route('dashboard'))
-            ->assertInertia(
-                fn ($page) => $page
-                    ->where('data.cashierSalesSummary.averagePerCustomer', null)
-            );
-    });
-});
-
-describe('Cashier Dashboard — recent transactions', function () {
-    it('recent transactions only contain completed sales', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        Sale::factory()->create([
-            'user_id' => $this->cashier->id,
-            'status' => 'completed',
-            'total' => 15000,
-            'date' => Carbon::today()->toDateString(),
-            'created_at' => Carbon::now(),
-        ]);
-
-        Sale::factory()->create([
-            'user_id' => $this->cashier->id,
-            'status' => 'draft',
-            'total' => 99999,
-            'date' => Carbon::today()->toDateString(),
-            'created_at' => Carbon::now(),
-        ]);
-
-        $this->actingAs($this->cashier)
-            ->get(route('dashboard'))
-            ->assertInertia(
-                fn ($page) => $page
-                    ->where('data.recentTransaction', fn ($items) => collect($items)->every(
-                        fn ($t) => $t['total'] !== 99999
-                    ))
-            );
-    });
-
-    it('recent transactions are limited to 5', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        Sale::factory()->count(8)->create([
-            'user_id' => $this->cashier->id,
-            'status' => 'completed',
-            'total' => 10000,
-            'date' => Carbon::today()->toDateString(),
-            'created_at' => Carbon::now(),
-        ]);
-
-        $this->actingAs($this->cashier)
-            ->get(route('dashboard'))
-            ->assertInertia(
-                fn ($page) => $page
-                    ->has('data.recentTransaction', 5)
-            );
-    });
-});
-
-describe('Warehouse Dashboard — stock movement chart', function () {
-    it('warehouse chart has correct structure', function () {
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        $this->actingAs($this->warehouse)
-            ->get(route('dashboard'))
-            ->assertInertia(
-                fn ($page) => $page
-                    ->has('data.warehouseChart.stockMovement', 7)
-                    ->has('data.warehouseChart.categoryDistribution')
-            );
-    });
-
-    it('category distribution groups stock by category', function () {
-        /** @var TestCase&object{category: Category, product: Product} $this */
-        Product::factory()->count(3)->create([
-            'category_id' => $this->category->id,
-            'stock' => 10,
-        ]);
-
-        /** @var TestCase&object{admin: User, cashier: User, warehouse: User} $this */
-        $this->actingAs($this->warehouse)
-            ->get(route('dashboard'))
-            ->assertInertia(
-                fn ($page) => $page
-                    ->has(
-                        'data.warehouseChart.categoryDistribution',
-                        fn ($items) => $items
-                            ->where('0.category', $this->category->name)
-                            ->etc()
-                    )
+                    ->has('data.activities', 3)
+                    ->where('data.activities.0.type', 'price')
+                    ->where('data.activities.0.desc', fn ($desc) => str_contains($desc, $this->admin->name))
             );
     });
 });

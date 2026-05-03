@@ -93,30 +93,30 @@ const productSaleOptions = computed(() => ({
 </script>
 
 <template>
-  <template v-if="salesSeries[0].data.length > 0">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Card class="shadow-md">
-        <CardContent class="pb-0 pt-3">
-          <apexchart
-            type="line"
-            height="350"
-            :options="chartOptions"
-            :series="salesSeries"
-          />
-        </CardContent>
-      </Card>
-      <Card class="shadow-md">
-        <CardContent
-          class="flex justify-center items-center h-full w-full"
-        >
-          <apexchart
-            type="pie"
-            width="470"
-            :options="productSaleOptions"
-            :series="productSaleSeries"
-          />
-        </CardContent>
-      </Card>
-    </div>
-  </template>
+    <template v-if="salesSeries[0].data.length > 0">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card class="shadow-md">
+                <CardContent class="pb-0 pt-3">
+                    <apexchart
+                        type="line"
+                        height="350"
+                        :options="chartOptions"
+                        :series="salesSeries"
+                    />
+                </CardContent>
+            </Card>
+            <Card class="shadow-md">
+                <CardContent
+                    class="flex justify-center items-center h-full w-full"
+                >
+                    <apexchart
+                        type="pie"
+                        width="470"
+                        :options="productSaleOptions"
+                        :series="productSaleSeries"
+                    />
+                </CardContent>
+            </Card>
+        </div>
+    </template>
 </template>

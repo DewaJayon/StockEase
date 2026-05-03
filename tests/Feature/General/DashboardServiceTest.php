@@ -18,22 +18,6 @@ beforeEach(function () {
     $this->admin = User::factory()->create(['role' => 'admin']);
 });
 
-it('includes price history in activity history', function () {
-    $product = Product::factory()->create(['name' => 'Product A']);
-
-    /** @var TestCase&object{admin: User, service: DashboardService} $this */
-    PriceHistory::factory()->create([
-        'product_id' => $product->id,
-        'user_id' => $this->admin->id,
-        'created_at' => Carbon::now(),
-    ]);
-
-    $activities = collect($this->service->getPaginatedActivityHistory()->items());
-
-    expect($activities->where('type', 'price')->first()['desc'])
-        ->toContain('Harga Product A diperbarui');
-});
-
 it('provides price update chart data for the last 7 days', function () {
     $product = Product::factory()->create();
 

@@ -37,14 +37,6 @@ class CategoryController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        abort(404);
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreCategoryRequest $request)
@@ -52,22 +44,6 @@ class CategoryController extends Controller
         $this->categoryService->storeCategory($request->validated());
 
         return redirect()->back()->with('success', 'Kategory berhasil ditambahkan');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        abort(404);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        abort(404);
     }
 
     /**

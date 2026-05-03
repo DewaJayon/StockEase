@@ -16,11 +16,14 @@ class ProfitLossReportService
      */
     public function getProfitLossSummary(string $startDate, string $endDate): array
     {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+
         $query = Sale::query()
             ->where('status', 'completed')
             ->whereBetween('date', [
-                Carbon::parse($startDate)->startOfDay(),
-                Carbon::parse($endDate)->endOfDay(),
+                $start->toDateString(),
+                $end->toDateString(),
             ]);
 
         $totalRevenue = (float) $query->sum('total');
@@ -40,13 +43,16 @@ class ProfitLossReportService
      */
     public function getProductBreakdown(string $startDate, string $endDate, int $perPage = 10): LengthAwarePaginator
     {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+
         return SaleItem::query()
             ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
             ->join('products', 'sale_items.product_id', '=', 'products.id')
             ->where('sales.status', 'completed')
             ->whereBetween('sales.date', [
-                Carbon::parse($startDate)->startOfDay(),
-                Carbon::parse($endDate)->endOfDay(),
+                $start->toDateString(),
+                $end->toDateString(),
             ])
             ->select(
                 'products.name as product_name',
@@ -67,11 +73,14 @@ class ProfitLossReportService
      */
     public function getChartData(string $startDate, string $endDate): Collection
     {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+
         return Sale::query()
             ->where('status', 'completed')
             ->whereBetween('date', [
-                Carbon::parse($startDate)->startOfDay(),
-                Carbon::parse($endDate)->endOfDay(),
+                $start->toDateString(),
+                $end->toDateString(),
             ])
             ->select(
                 DB::raw('DATE(date) as day'),

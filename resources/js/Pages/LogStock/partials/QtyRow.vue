@@ -16,7 +16,7 @@ const formatQty = (row) => {
 </script>
 
 <template>
-  <span class="flex items-center justify-start">
-    {{ formatQty(props.row) }}
-  </span>
+    <span class="flex items-center justify-start">
+        {{ formatQty(props.row) }}
+    </span>
 </template>

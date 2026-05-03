@@ -41,28 +41,25 @@ if (user.value) {
 </script>
 
 <template>
-  <div
-    class="w-20 h-20 overflow-hidden border rounded-full border-gray-800 flex items-center justify-center"
-  >
-    <Avatar class="h-full w-full">
-      <AvatarImage
-        v-if="user.avatar"
-        :src="user.avatar"
-      />
-      <AvatarFallback
-        :class="[
-          avatarColor,
-          'text-white font-bold w-full h-full flex items-center justify-center rounded-full',
-        ]"
-      >
-        {{
-          user.name
-            .split(' ')
-            .map((n) => n[0])
-            .join('')
-            .toUpperCase()
-        }}
-      </AvatarFallback>
-    </Avatar>
-  </div>
+    <div
+        class="w-20 h-20 overflow-hidden border rounded-full border-gray-800 flex items-center justify-center"
+    >
+        <Avatar class="h-full w-full">
+            <AvatarImage v-if="user.avatar" :src="user.avatar" />
+            <AvatarFallback
+                :class="[
+                    avatarColor,
+                    'text-white font-bold w-full h-full flex items-center justify-center rounded-full',
+                ]"
+            >
+                {{
+                    user.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .toUpperCase()
+                }}
+            </AvatarFallback>
+        </Avatar>
+    </div>
 </template>

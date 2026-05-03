@@ -4,6 +4,7 @@ namespace App\Services\Purchase;
 
 use App\Models\Supplier;
 use Cviebrock\EloquentSluggable\Services\SlugService;
+use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class SupplierService
@@ -57,6 +58,10 @@ class SupplierService
      */
     public function deleteSupplier(Supplier $supplier): bool
     {
+        if ($supplier->purchases()->exists()) {
+            throw new DomainException('Supplier has purchases.');
+        }
+
         return $supplier->delete();
     }
 }

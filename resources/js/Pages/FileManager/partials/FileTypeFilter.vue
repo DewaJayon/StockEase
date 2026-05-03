@@ -40,32 +40,23 @@ watch(fileTypeFilter, (newValue) => {
 </script>
 
 <template>
-  <Select v-model="fileTypeFilter">
-    <SelectTrigger>
-      <SelectValue placeholder="File Type" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectGroup>
-        <SelectLabel>Filter</SelectLabel>
-        <SelectItem
-          value="all"
-          class="cursor-pointer"
-        >
-          Semua
-        </SelectItem>
-        <SelectItem
-          value="pdf"
-          class="cursor-pointer"
-        >
-          PDF
-        </SelectItem>
-        <SelectItem
-          value="xlsx"
-          class="cursor-pointer"
-        >
-          Excel
-        </SelectItem>
-      </SelectGroup>
-    </SelectContent>
-  </Select>
+    <Select v-model="fileTypeFilter">
+        <SelectTrigger>
+            <SelectValue placeholder="File Type" />
+        </SelectTrigger>
+        <SelectContent>
+            <SelectGroup>
+                <SelectLabel>Filter</SelectLabel>
+                <SelectItem value="all" class="cursor-pointer">
+                    Semua
+                </SelectItem>
+                <SelectItem value="pdf" class="cursor-pointer">
+                    PDF
+                </SelectItem>
+                <SelectItem value="xlsx" class="cursor-pointer">
+                    Excel
+                </SelectItem>
+            </SelectGroup>
+        </SelectContent>
+    </Select>
 </template>

@@ -54,7 +54,7 @@ class PurchaseReportService
 
         $topSupplier = $purchases->groupBy('supplier_id')->map(function ($items) {
             return [
-                'supplier_name' => $items->first()->supplier->name,
+                'supplier_name' => $items->first()->supplier->name ?? 'Unknown',
                 'total_purchase' => $items->sum('total'),
                 'transaction_count' => $items->count(),
             ];
@@ -86,10 +86,12 @@ class PurchaseReportService
             ->groupBy('product_id')->map(function ($items) {
                 return (object) [
                     'date' => $items->first()->purchase->created_at,
-                    'product_name' => $items->first()->product->name,
+                    'product_name' => $items->first()->product->name ?? 'Unknown',
                     'product_price' => $items->first()->price,
-                    'total_purchase' => $items->first()->price * $items->first()->qty,
-                    'qty' => $items->first()->qty,
+                    'total_purchase' => $items->sum(function ($i) {
+                        return $i->qty * $i->price;
+                    }),
+                    'qty' => $items->sum('qty'),
                 ];
             })
             ->values();
@@ -127,7 +129,7 @@ class PurchaseReportService
             ->map(function ($item) {
                 return (object) [
                     'id' => $item->supplier->id,
-                    'name' => $item->supplier->name,
+                    'name' => $item->supplier->name ?? 'Unknown',
                     'total' => $item->total,
                     'qty' => $item->purchaseItems->sum('qty'),
                 ];

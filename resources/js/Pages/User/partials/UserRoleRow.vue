@@ -19,11 +19,7 @@ const borderColor = computed(() => {
 </script>
 
 <template>
-  <Badge
-    class="capitalize"
-    :class="borderColor"
-    variant="outline"
-  >
-    {{ props.row.role }}
-  </Badge>
+    <Badge class="capitalize" :class="borderColor" variant="outline">
+        {{ props.row.role }}
+    </Badge>
 </template>

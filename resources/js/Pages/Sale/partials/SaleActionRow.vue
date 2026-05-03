@@ -16,25 +16,22 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="flex items-center justify-start">
-    <TooltipProvider :delay-duration="0">
-      <Tooltip>
-        <TooltipTrigger>
-          <Link :href="route('sale.show', props.row.id)">
-            <Button
-              variant="ghost"
-              size="icon"
-            >
-              <Eye
-                class="w-4 h-4 text-blue-500 dark:group-hover:text-white"
-              />
-            </Button>
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Detail</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  </div>
+    <div class="flex items-center justify-start">
+        <TooltipProvider :delay-duration="0">
+            <Tooltip>
+                <TooltipTrigger>
+                    <Link :href="route('sale.show', props.row.id)">
+                        <Button variant="ghost" size="icon">
+                            <Eye
+                                class="w-4 h-4 text-blue-500 dark:group-hover:text-white"
+                            />
+                        </Button>
+                    </Link>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Detail</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    </div>
 </template>

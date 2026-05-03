@@ -37,9 +37,9 @@ it('renders admin dashboard with correct data', function () {
                     ->has('activeProducts')
                     ->has('monthPurchases')
             )
-            ->has('data.lowStock.data', 1)
-            ->where('data.lowStock.data.0.name', 'Low Stock Item')
-            ->has('data.activities.data')
+            ->has('data.lowStock', 1)
+            ->where('data.lowStock.0.name', 'Low Stock Item')
+            ->has('data.activities')
     );
 });
 

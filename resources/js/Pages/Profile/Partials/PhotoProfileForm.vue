@@ -110,85 +110,76 @@ const deletePhotoProfile = () => {
 </script>
 
 <template>
-  <!-- Tombol Edit -->
-  <DropdownMenu>
-    <DropdownMenuTrigger>
-      <DotsVerticalIcon class="w-4 h-4" />
-    </DropdownMenuTrigger>
-    <DropdownMenuContent>
-      <DropdownMenuLabel>Profile</DropdownMenuLabel>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem
-        class="cursor-pointer"
-        @click="openFilePicker"
-      >
-        Ganti Photo Profile
-      </DropdownMenuItem>
-      <DropdownMenuItem
-        v-if="$page.props.auth.user.photo_profile"
-        class="cursor-pointer text-red-500"
-        @click="deletePhotoProfile"
-      >
-        Hapus Photo Profile
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
+    <!-- Tombol Edit -->
+    <DropdownMenu>
+        <DropdownMenuTrigger>
+            <DotsVerticalIcon class="w-4 h-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+            <DropdownMenuLabel>Profile</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem class="cursor-pointer" @click="openFilePicker">
+                Ganti Photo Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem
+                v-if="$page.props.auth.user.photo_profile"
+                class="cursor-pointer text-red-500"
+                @click="deletePhotoProfile"
+            >
+                Hapus Photo Profile
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+    </DropdownMenu>
 
-  <!-- Input file hidden -->
-  <input
-    ref="fileInput"
-    type="file"
-    accept="image/*"
-    class="hidden"
-    @change="setImage"
-  >
+    <!-- Input file hidden -->
+    <input
+        ref="fileInput"
+        type="file"
+        accept="image/*"
+        class="hidden"
+        @change="setImage"
+    />
 
-  <!-- Modal Cropper -->
-  <Dialog v-model:open="showCropperModal">
-    <DialogContent class="max-w-3xl">
-      <DialogHeader>
-        <DialogTitle>Crop Gambar</DialogTitle>
-      </DialogHeader>
+    <!-- Modal Cropper -->
+    <Dialog v-model:open="showCropperModal">
+        <DialogContent class="max-w-3xl">
+            <DialogHeader>
+                <DialogTitle>Crop Gambar</DialogTitle>
+            </DialogHeader>
 
-      <div class="flex flex-col gap-4">
-        <vue-cropper
-          ref="cropper"
-          :src="imgSrc"
-          :guides="true"
-          :view-mode="2"
-          drag-mode="crop"
-          :auto-crop-area="0.5"
-          :min-container-width="250"
-          :min-container-height="180"
-          :background="true"
-          :rotatable="true"
-          :aspect-ratio="1 / 1"
-          :img-style="{
-            width: '100%',
-            maxHeight: '400px',
-          }"
-        />
+            <div class="flex flex-col gap-4">
+                <vue-cropper
+                    ref="cropper"
+                    :src="imgSrc"
+                    :guides="true"
+                    :view-mode="2"
+                    drag-mode="crop"
+                    :auto-crop-area="0.5"
+                    :min-container-width="250"
+                    :min-container-height="180"
+                    :background="true"
+                    :rotatable="true"
+                    :aspect-ratio="1 / 1"
+                    :img-style="{
+                        width: '100%',
+                        maxHeight: '400px',
+                    }"
+                />
 
-        <div class="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            @click="showCropperModal = false"
-          >
-            Batal
-          </Button>
-          <Button
-            :disable="isUploadingPhoto"
-            class="disabled:cursor-not-allowed disabled:opacity-50"
-            @click="handleCrop"
-          >
-            <Loader2
-              v-if="isUploadingPhoto"
-              class="animate-spin"
-            />
-            Simpan Gambar
-          </Button>
-        </div>
-      </div>
-    </DialogContent>
-  </Dialog>
+                <div class="flex justify-end gap-2">
+                    <Button variant="ghost" @click="showCropperModal = false">
+                        Batal
+                    </Button>
+                    <Button
+                        :disable="isUploadingPhoto"
+                        class="disabled:cursor-not-allowed disabled:opacity-50"
+                        @click="handleCrop"
+                    >
+                        <Loader2 v-if="isUploadingPhoto" class="animate-spin" />
+                        Simpan Gambar
+                    </Button>
+                </div>
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>

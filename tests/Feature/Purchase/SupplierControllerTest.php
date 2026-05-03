@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Purchase;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -7,8 +8,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
+use function Pest\Laravel\get;
 
 uses(RefreshDatabase::class);
+
+// --- INDEX ---
 
 it('allows admin and warehouse roles to view suppliers', function ($role) {
     /** @var User $user */
@@ -32,24 +36,62 @@ it('denies cashier to view suppliers', function () {
     $response->assertForbidden();
 });
 
-it('allows admin to create a supplier', function () {
+it('redirects unauthenticated users to login', function () {
+    get(route('supplier.index'))->assertRedirect(route('login'));
+});
+
+it('filters suppliers by search query', function () {
     /** @var User $admin */
     $admin = User::factory()->create(['role' => 'admin']);
+    Supplier::factory()->create(['name' => 'Toko Maju']);
+    Supplier::factory()->create(['name' => 'Warung Sejahtera']);
 
-    $response = actingAs($admin)
+    actingAs($admin)
+        ->get(route('supplier.index', ['search' => 'Maju']))
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('Supplier/Index')
+                ->has('suppliers.data', 1)
+                ->where('suppliers.data.0.name', 'Toko Maju')
+        );
+});
+
+it('paginates suppliers with custom per_page', function () {
+    /** @var User $admin */
+    $admin = User::factory()->create(['role' => 'admin']);
+    Supplier::factory()->count(5)->create();
+
+    actingAs($admin)
+        ->get(route('supplier.index', ['per_page' => 3]))
+        ->assertInertia(
+            fn ($page) => $page
+                ->component('Supplier/Index')
+                ->where('suppliers.per_page', 3)
+                ->where('suppliers.total', 5)
+        );
+});
+
+// --- STORE ---
+
+it('allows admin and warehouse to create a supplier', function ($role) {
+    /** @var User $user */
+    $user = User::factory()->create(['role' => $role]);
+
+    actingAs($user)
         ->post(route('supplier.store'), [
             'name' => 'New Supplier',
             'phone' => '08123456789',
             'address' => 'Supplier Address',
-        ]);
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Supplier berhasil ditambahkan');
 
-    $response->assertRedirect();
     assertDatabaseHas('suppliers', [
         'name' => 'New Supplier',
         'phone' => '08123456789',
         'slug' => 'new-supplier',
     ]);
-});
+})->with(['admin', 'warehouse']);
 
 it('validates supplier creation', function ($data, $errors) {
     /** @var User $admin */
@@ -65,34 +107,115 @@ it('validates supplier creation', function ($data, $errors) {
     'empty address' => [['name' => 'Name', 'phone' => '123', 'address' => ''], ['address']],
 ]);
 
-it('allows admin to update a supplier', function () {
-    /** @var User $admin */
-    $admin = User::factory()->create(['role' => 'admin']);
+it('denies cashier to create a supplier', function () {
+    /** @var User $cashier */
+    $cashier = User::factory()->create(['role' => 'cashier']);
+
+    actingAs($cashier)
+        ->post(route('supplier.store'), ['name' => 'Test', 'phone' => '123', 'address' => 'Test'])
+        ->assertForbidden();
+});
+
+// --- UPDATE ---
+
+it('allows admin and warehouse to update a supplier', function ($role) {
+    /** @var User $user */
+    $user = User::factory()->create(['role' => $role]);
     $supplier = Supplier::factory()->create(['name' => 'Old Name']);
 
-    $response = actingAs($admin)
+    actingAs($user)
         ->put(route('supplier.update', $supplier), [
             'name' => 'Updated Name',
             'phone' => '08987654321',
             'address' => 'Updated Address',
-        ]);
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Supplier berhasil diubah');
 
-    $response->assertRedirect();
     assertDatabaseHas('suppliers', [
         'id' => $supplier->id,
         'name' => 'Updated Name',
         'slug' => 'updated-name',
     ]);
+})->with(['admin', 'warehouse']);
+
+it('does not regenerate slug when supplier name is unchanged', function () {
+    /** @var User $admin */
+    $admin = User::factory()->create(['role' => 'admin']);
+    $supplier = Supplier::factory()->create(['name' => 'Same Name']);
+    $originalSlug = $supplier->slug;
+
+    actingAs($admin)->put(route('supplier.update', $supplier), [
+        'name' => 'Same Name',
+        'phone' => '08111111111',
+        'address' => 'New Address',
+    ]);
+
+    assertDatabaseHas('suppliers', [
+        'id' => $supplier->id,
+        'slug' => $originalSlug,
+    ]);
 });
 
-it('allows admin to delete a supplier', function () {
+it('validates supplier update', function ($data, $errors) {
     /** @var User $admin */
     $admin = User::factory()->create(['role' => 'admin']);
     $supplier = Supplier::factory()->create();
 
-    $response = actingAs($admin)
-        ->delete(route('supplier.destroy', $supplier));
+    actingAs($admin)
+        ->put(route('supplier.update', $supplier), $data)
+        ->assertSessionHasErrors($errors);
+})->with([
+    'empty name' => [['name' => '', 'phone' => '123', 'address' => 'addr'], ['name']],
+    'invalid phone' => [['name' => 'Name', 'phone' => 'abc', 'address' => 'addr'], ['phone']],
+    'empty address' => [['name' => 'Name', 'phone' => '123', 'address' => ''], ['address']],
+]);
 
-    $response->assertRedirect();
+it('denies cashier to update a supplier', function () {
+    /** @var User $cashier */
+    $cashier = User::factory()->create(['role' => 'cashier']);
+    $supplier = Supplier::factory()->create();
+
+    actingAs($cashier)
+        ->put(route('supplier.update', $supplier), ['name' => 'Test', 'phone' => '123', 'address' => 'Test'])
+        ->assertForbidden();
+});
+
+// --- DESTROY ---
+
+it('allows admin and warehouse to delete a supplier', function ($role) {
+    /** @var User $user */
+    $user = User::factory()->create(['role' => $role]);
+    $supplier = Supplier::factory()->create();
+
+    actingAs($user)
+        ->delete(route('supplier.destroy', $supplier))
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Supplier berhasil dihapus');
+
     assertDatabaseMissing('suppliers', ['id' => $supplier->id]);
+})->with(['admin', 'warehouse']);
+
+it('returns error flash when deleting a supplier that has purchases', function () {
+    /** @var User $admin */
+    $admin = User::factory()->create(['role' => 'admin']);
+    $supplier = Supplier::factory()->create();
+    Purchase::factory()->create(['supplier_id' => $supplier->id]);
+
+    actingAs($admin)
+        ->delete(route('supplier.destroy', $supplier))
+        ->assertRedirect()
+        ->assertSessionHas('error', 'Supplier gagal dihapus');
+
+    assertDatabaseHas('suppliers', ['id' => $supplier->id]);
+});
+
+it('denies cashier to delete a supplier', function () {
+    /** @var User $cashier */
+    $cashier = User::factory()->create(['role' => 'cashier']);
+    $supplier = Supplier::factory()->create();
+
+    actingAs($cashier)
+        ->delete(route('supplier.destroy', $supplier))
+        ->assertForbidden();
 });

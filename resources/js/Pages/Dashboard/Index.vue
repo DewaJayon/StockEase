@@ -36,42 +36,42 @@ const role = page.props.auth.user.role;
 </script>
 
 <template>
-  <AuthenticatedLayout>
-    <Head>
-      <title>Dashboard</title>
-    </Head>
-    <template #breadcrumb>
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbSeparator class="hidden md:block" />
-          <BreadcrumbItem>
-            <BreadcrumbPage> Dashboard </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </template>
+    <AuthenticatedLayout>
+        <Head>
+            <title>Dashboard</title>
+        </Head>
+        <template #breadcrumb>
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbSeparator class="hidden md:block" />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage> Dashboard </BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        </template>
 
-    <AdminDashboard
-      v-if="role === 'admin'"
-      :sales-summary="salesSummary"
-      :low-stock="lowStock"
-      :activities="activities"
-      :weekly-sales-chart="weeklySalesChart"
-      :price-update-chart="priceUpdateChart"
-    />
+        <AdminDashboard
+            v-if="role === 'admin'"
+            :sales-summary="salesSummary"
+            :low-stock="lowStock"
+            :activities="activities"
+            :weekly-sales-chart="weeklySalesChart"
+            :price-update-chart="priceUpdateChart"
+        />
 
-    <CashierDashboard
-      v-if="role === 'cashier'"
-      :cashier-sales-summary="cashierSalesSummary"
-      :cashier-recent-trasactions="cashierRecentTrasactions"
-      :cashier-weekly-sales-chart="cashierWeeklySalesChart"
-    />
+        <CashierDashboard
+            v-if="role === 'cashier'"
+            :cashier-sales-summary="cashierSalesSummary"
+            :cashier-recent-trasactions="cashierRecentTrasactions"
+            :cashier-weekly-sales-chart="cashierWeeklySalesChart"
+        />
 
-    <WarehouseDashboard
-      v-if="role === 'warehouse'"
-      :warehouse-summary="warehouseSummary"
-      :activity-log-warehouse="activityLogWarehouse"
-      :warehouse-chart="warehouseChart"
-    />
-  </AuthenticatedLayout>
+        <WarehouseDashboard
+            v-if="role === 'warehouse'"
+            :warehouse-summary="warehouseSummary"
+            :activity-log-warehouse="activityLogWarehouse"
+            :warehouse-chart="warehouseChart"
+        />
+    </AuthenticatedLayout>
 </template>

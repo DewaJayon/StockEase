@@ -115,86 +115,80 @@ const summaryItems = computed(() => [
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 p-4">
-    <!-- Ringkasan Penjualan -->
-    <div class="grid gap-4 md:grid-cols-4">
-      <Card
-        v-for="item in summaryItems"
-        :key="item.key"
-      >
-        <CardHeader
-          class="p-3 flex flex-row items-center justify-between"
-        >
-          <CardTitle class="text-sm font-medium">
-            {{ item.key }}
-          </CardTitle>
-          <component
-            :is="item.icon"
-            class="h-5 w-5 text-muted-foreground"
-          />
-        </CardHeader>
-        <CardContent>
-          <p class="text-2xl font-bold">
-            {{ item.value }}
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-
-    <!-- Riwayat Transaksi Terbaru -->
-    <Card>
-      <CardHeader>
-        <CardTitle>Transaksi Terbaru</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>No</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Metode</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow
-              v-for="(
-                trx, index
-              ) in props.cashierRecentTrasactions"
-              :key="index"
-            >
-              <TableCell>{{ index + 1 }}</TableCell>
-              <TableCell>{{ trx.customer }}</TableCell>
-              <TableCell>
-                {{ formatPrice(trx.total) }}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  class="capitalize"
-                  variant="outline"
+    <div class="flex flex-col gap-6 p-4">
+        <!-- Ringkasan Penjualan -->
+        <div class="grid gap-4 md:grid-cols-4">
+            <Card v-for="item in summaryItems" :key="item.key">
+                <CardHeader
+                    class="p-3 flex flex-row items-center justify-between"
                 >
-                  {{ trx.payment_method }}
-                </Badge>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+                    <CardTitle class="text-sm font-medium">
+                        {{ item.key }}
+                    </CardTitle>
+                    <component
+                        :is="item.icon"
+                        class="h-5 w-5 text-muted-foreground"
+                    />
+                </CardHeader>
+                <CardContent>
+                    <p class="text-2xl font-bold">
+                        {{ item.value }}
+                    </p>
+                </CardContent>
+            </Card>
+        </div>
 
-    <!-- Chart -->
-    <Card>
-      <CardHeader>
-        <CardTitle>Penjualan Minggu Ini</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <apexchart
-          type="bar"
-          height="300"
-          :options="salesChartOptions"
-          :series="salesChartSeries"
-        />
-      </CardContent>
-    </Card>
-  </div>
+        <!-- Riwayat Transaksi Terbaru -->
+        <Card>
+            <CardHeader>
+                <CardTitle>Transaksi Terbaru</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>No</TableHead>
+                            <TableHead>Customer</TableHead>
+                            <TableHead>Total</TableHead>
+                            <TableHead>Metode</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow
+                            v-for="(
+                                trx, index
+                            ) in props.cashierRecentTrasactions"
+                            :key="index"
+                        >
+                            <TableCell>{{ index + 1 }}</TableCell>
+                            <TableCell>{{ trx.customer }}</TableCell>
+                            <TableCell>
+                                {{ formatPrice(trx.total) }}
+                            </TableCell>
+                            <TableCell>
+                                <Badge class="capitalize" variant="outline">
+                                    {{ trx.payment_method }}
+                                </Badge>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+
+        <!-- Chart -->
+        <Card>
+            <CardHeader>
+                <CardTitle>Penjualan Minggu Ini</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <apexchart
+                    type="bar"
+                    height="300"
+                    :options="salesChartOptions"
+                    :series="salesChartSeries"
+                />
+            </CardContent>
+        </Card>
+    </div>
 </template>
