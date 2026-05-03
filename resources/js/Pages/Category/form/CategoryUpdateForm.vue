@@ -55,67 +55,55 @@ const submit = () => {
 </script>
 
 <template>
-  <Dialog v-model:open="isDialogOpen">
-    <DialogTrigger as-child>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="group"
-      >
-        <Pencil
-          class="w-4 h-4 text-blue-500 dark:group-hover:text-white"
-        />
-      </Button>
-    </DialogTrigger>
-    <DialogContent class="sm:max-w-md">
-      <DialogHeader>
-        <DialogTitle>Form update kategori</DialogTitle>
-        <DialogDescription>
-          Silahkan isi form dibawah ini untuk mengupdate kategori
-        </DialogDescription>
-      </DialogHeader>
-      <form
-        id="form"
-        @submit.prevent="submit"
-      >
-        <div class="flex items-center space-x-2">
-          <div class="grid flex-1 gap-2">
-            <Label for="name"> Nama Kategori </Label>
-            <Input
-              id="name"
-              v-model="form.name"
-              placeholder="Masukkan nama kategori"
-              type="text"
-              required
-              autocomplete="off"
-            />
-          </div>
-        </div>
-      </form>
-      <DialogFooter class="flex justify-between">
-        <DialogClose as-child>
-          <Button
-            type="button"
-            variant="secondary"
-          >
-            Batal
-          </Button>
-        </DialogClose>
+    <Dialog v-model:open="isDialogOpen">
+        <DialogTrigger as-child>
+            <Button variant="ghost" size="icon" class="group">
+                <Pencil
+                    class="w-4 h-4 text-blue-500 dark:group-hover:text-white"
+                />
+            </Button>
+        </DialogTrigger>
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Form update kategori</DialogTitle>
+                <DialogDescription>
+                    Silahkan isi form dibawah ini untuk mengupdate kategori
+                </DialogDescription>
+            </DialogHeader>
+            <form id="form" @submit.prevent="submit">
+                <div class="flex items-center space-x-2">
+                    <div class="grid flex-1 gap-2">
+                        <Label for="name"> Nama Kategori </Label>
+                        <Input
+                            id="name"
+                            v-model="form.name"
+                            placeholder="Masukkan nama kategori"
+                            type="text"
+                            required
+                            autocomplete="off"
+                        />
+                    </div>
+                </div>
+            </form>
+            <DialogFooter class="flex justify-between">
+                <DialogClose as-child>
+                    <Button type="button" variant="secondary"> Batal </Button>
+                </DialogClose>
 
-        <Button
-          type="submit"
-          form="form"
-          :class="{ 'opacity-25 ': form.processing }"
-          :disabled="form.processing"
-          class="disabled:cursor-not-allowed"
-        >
-          <Loader2
-            v-if="form.processing"
-            class="w-4 h-4 animate-spin"
-          />
-          {{ form.processing ? 'Loading...' : 'Simpan' }}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+                <Button
+                    type="submit"
+                    form="form"
+                    :class="{ 'opacity-25 ': form.processing }"
+                    :disabled="form.processing"
+                    class="disabled:cursor-not-allowed"
+                >
+                    <Loader2
+                        v-if="form.processing"
+                        class="w-4 h-4 animate-spin"
+                    />
+                    {{ form.processing ? 'Loading...' : 'Simpan' }}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
