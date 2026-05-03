@@ -106,19 +106,19 @@ const chartOptions = computed(() => ({
 </script>
 
 <template>
-  <div class="w-full h-full">
-    <apexchart
-      v-if="chartData.length > 0"
-      type="area"
-      height="100%"
-      :options="chartOptions"
-      :series="series"
-    />
-    <div
-      v-else
-      class="flex flex-col items-center justify-center h-full text-muted-foreground gap-2"
-    >
-      <p>Tidak ada data grafik untuk ditampilkan.</p>
+    <div class="w-full h-full">
+        <apexchart
+            v-if="chartData.length > 0"
+            type="area"
+            height="100%"
+            :options="chartOptions"
+            :series="series"
+        />
+        <div
+            v-else
+            class="flex flex-col items-center justify-center h-full text-muted-foreground gap-2"
+        >
+            <p>Tidak ada data grafik untuk ditampilkan.</p>
+        </div>
     </div>
-  </div>
 </template>

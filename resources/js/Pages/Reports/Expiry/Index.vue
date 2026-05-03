@@ -24,6 +24,14 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from '@/Components/ui/card';
+
 const props = defineProps({
     expiryData: Object,
     filters: Object,
@@ -52,12 +60,12 @@ const columns = [
             const isExpired = date.isBefore(dayjs());
             const isNear = date.isBefore(dayjs().add(30, 'day')) && !isExpired;
 
-            let variant = 'outline';
-            if (isExpired) variant = 'destructive';
-            else if (isNear) variant = 'warning'; // Assuming warning variant exists or use custom class
-
             return h('div', { class: 'flex items-center gap-2' }, [
-                h('span', date.format('DD MMMM YYYY')),
+                h(
+                    'span',
+                    { class: 'font-medium' },
+                    date.format('DD MMMM YYYY'),
+                ),
                 isExpired
                     ? h(Badge, { variant: 'destructive' }, 'Kedaluwarsa')
                     : null,
@@ -65,7 +73,7 @@ const columns = [
                     ? h(
                           Badge,
                           {
-                              class: 'bg-yellow-500 hover:bg-yellow-600 text-white',
+                              class: 'bg-yellow-500 hover:bg-yellow-600 text-white border-none',
                           },
                           'Mendekati',
                       )
@@ -76,12 +84,18 @@ const columns = [
     {
         accessorKey: 'product.name',
         header: 'Produk',
-        cell: ({ row }) => h('div', row.original.product.name),
+        cell: ({ row }) =>
+            h('div', { class: 'font-medium' }, row.original.product.name),
     },
     {
         accessorKey: 'product.sku',
         header: 'SKU',
-        cell: ({ row }) => h('div', row.original.product.sku),
+        cell: ({ row }) =>
+            h(
+                'div',
+                { class: 'font-mono text-xs uppercase' },
+                row.original.product.sku,
+            ),
     },
     {
         accessorKey: 'purchase.supplier.name',
@@ -92,71 +106,85 @@ const columns = [
     {
         accessorKey: 'qty',
         header: 'Stok Masuk',
+        cell: ({ row }) =>
+            h('div', { class: 'text-center' }, row.getValue('qty')),
     },
 ];
 </script>
 
 <template>
-  <AuthenticatedLayout>
-    <Head title="Laporan Kedaluwarsa" />
-    <template #breadcrumb>
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <Link :href="route('dashboard')">
-              <BreadcrumbLink> Dashboard </BreadcrumbLink>
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage> Laporan Kedaluwarsa </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </template>
+    <AuthenticatedLayout>
+        <Head title="Laporan Kedaluwarsa" />
+        <template #breadcrumb>
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <Link :href="route('dashboard')">
+                            <BreadcrumbLink> Dashboard </BreadcrumbLink>
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage> Laporan Kedaluwarsa </BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        </template>
 
-    <div class="flex flex-1 flex-col gap-4 p-4">
-      <div class="rounded-xl bg-muted/50 h-full p-4">
-        <div class="flex justify-between items-center">
-          <div>
-            <h4 class="font-semibold text-lg">
-              Laporan Kedaluwarsa
-            </h4>
-            <p class="text-sm text-muted-foreground">
-              Monitoring tanggal kedaluwarsa produk dari
-              pembelian.
-            </p>
-          </div>
-          <div class="flex gap-2">
-            <Select v-model="status">
-              <SelectTrigger class="w-45">
-                <SelectValue placeholder="Pilih Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">
-                  Semua
-                </SelectItem>
-                <SelectItem value="near_expired">
-                  Mendekati (30 Hari)
-                </SelectItem>
-                <SelectItem value="expired">
-                  Kedaluwarsa
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <Separator class="my-4" />
+        <div class="flex flex-col gap-6 p-6">
+            <div
+                class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight">
+                        Laporan Kedaluwarsa
+                    </h1>
+                    <p class="text-muted-foreground">
+                        Monitoring tanggal kedaluwarsa produk dari pembelian.
+                    </p>
+                </div>
+                <div
+                    class="flex items-center gap-2 bg-card p-2 rounded-lg border shadow-sm"
+                >
+                    <span
+                        class="text-xs font-semibold uppercase text-muted-foreground px-2"
+                        >Filter Status:</span
+                    >
+                    <Select v-model="status">
+                        <SelectTrigger
+                            class="w-48 h-9 border-none shadow-none focus:ring-0"
+                        >
+                            <SelectValue placeholder="Pilih Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all"> Semua </SelectItem>
+                            <SelectItem value="near_expired">
+                                Mendekati (30 Hari)
+                            </SelectItem>
+                            <SelectItem value="expired">
+                                Kedaluwarsa
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
 
-        <div class="mt-4">
-          <DataTable
-            :data="expiryData.data"
-            :columns="columns"
-            :route-name="'reports.expiry.index'"
-            :pagination="expiryData"
-          />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Data Produk</CardTitle>
+                    <CardDescription>
+                        Daftar produk yang memiliki tanggal kedaluwarsa.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <DataTable
+                        :data="expiryData.data"
+                        :columns="columns"
+                        :route-name="'reports.expiry.index'"
+                        :pagination="expiryData"
+                    />
+                </CardContent>
+            </Card>
         </div>
-      </div>
-    </div>
-  </AuthenticatedLayout>
+    </AuthenticatedLayout>
 </template>

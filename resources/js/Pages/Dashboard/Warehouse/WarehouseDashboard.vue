@@ -125,106 +125,103 @@ const categoryOptions = computed(() => ({
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 p-4">
-    <!-- Ringkasan -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <Card
-        v-for="(item, i) in summary"
-        :key="i"
-        class="shadow-sm p-4 flex flex-col justify-between"
-      >
-        <div class="flex items-center justify-between">
-          <CardTitle class="text-sm font-medium">
-            {{ item.title }}
-          </CardTitle>
-          <div
-            class="w-8 h-8 rounded-full flex items-center justify-center"
-            :class="item.color"
-          >
-            <component
-              :is="item.icon"
-              class="w-4 h-4"
-            />
-          </div>
-        </div>
-        <CardContent class="pt-4">
-          <p class="text-2xl font-bold">
-            {{ item.value }}
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-
-    <!-- Chart -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Pergerakan Stok (Mingguan)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <apexchart
-            type="bar"
-            height="300"
-            :options="stockOptions"
-            :series="stockSeries"
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Distribusi Stok per Kategori</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <apexchart
-            type="pie"
-            height="300"
-            :options="categoryOptions"
-            :series="categorySeries"
-          />
-        </CardContent>
-      </Card>
-    </div>
-
-    <!-- Log Aktivitas Gudang -->
-    <Card>
-      <CardHeader>
-        <CardTitle>Aktivitas Gudang Terbaru</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Produk</TableHead>
-              <TableHead>Jenis</TableHead>
-              <TableHead>Kuantitas</TableHead>
-              <TableHead>Tanggal</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow
-              v-for="(log, index) in props.activityLogWarehouse"
-              :key="index"
+    <div class="flex flex-col gap-6 p-4">
+        <!-- Ringkasan -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card
+                v-for="(item, i) in summary"
+                :key="i"
+                class="shadow-sm p-4 flex flex-col justify-between"
             >
-              <TableCell>{{ log.product_name }}</TableCell>
-              <TableCell>
-                <Badge
-                  class="capitalize"
-                  :variant="
-                    log.type === 'Masuk'
-                      ? 'default'
-                      : 'destructive'
-                  "
-                >
-                  {{ log.type }}
-                </Badge>
-              </TableCell>
-              <TableCell>{{ log.qty }}</TableCell>
-              <TableCell>{{ log.date }}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  </div>
+                <div class="flex items-center justify-between">
+                    <CardTitle class="text-sm font-medium">
+                        {{ item.title }}
+                    </CardTitle>
+                    <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center"
+                        :class="item.color"
+                    >
+                        <component :is="item.icon" class="w-4 h-4" />
+                    </div>
+                </div>
+                <CardContent class="pt-4">
+                    <p class="text-2xl font-bold">
+                        {{ item.value }}
+                    </p>
+                </CardContent>
+            </Card>
+        </div>
+
+        <!-- Chart -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Pergerakan Stok (Mingguan)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <apexchart
+                        type="bar"
+                        height="300"
+                        :options="stockOptions"
+                        :series="stockSeries"
+                    />
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Distribusi Stok per Kategori</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <apexchart
+                        type="pie"
+                        height="300"
+                        :options="categoryOptions"
+                        :series="categorySeries"
+                    />
+                </CardContent>
+            </Card>
+        </div>
+
+        <!-- Log Aktivitas Gudang -->
+        <Card>
+            <CardHeader>
+                <CardTitle>Aktivitas Gudang Terbaru</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Produk</TableHead>
+                            <TableHead>Jenis</TableHead>
+                            <TableHead>Kuantitas</TableHead>
+                            <TableHead>Tanggal</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow
+                            v-for="(log, index) in props.activityLogWarehouse"
+                            :key="index"
+                        >
+                            <TableCell>{{ log.product_name }}</TableCell>
+                            <TableCell>
+                                <Badge
+                                    class="capitalize"
+                                    :variant="
+                                        log.type === 'Masuk'
+                                            ? 'default'
+                                            : 'destructive'
+                                    "
+                                >
+                                    {{ log.type }}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>{{ log.qty }}</TableCell>
+                            <TableCell>{{ log.date }}</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    </div>
 </template>

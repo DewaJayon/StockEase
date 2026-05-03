@@ -101,35 +101,35 @@ const purchaseTopSupplierSeriesOptions = computed(() => ({
 </script>
 
 <template>
-  <template v-if="purchaseTrendSeries[0].data.length > 0">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Card class="shadow-md">
-        <CardHeader class="gap-y-0 p-4">
-          <CardTitle>Trend Pembelian per Bulan</CardTitle>
-        </CardHeader>
-        <CardContent class="pb-0 pt-3">
-          <apexchart
-            type="line"
-            height="350"
-            :options="purchaseTrendChartOptions"
-            :series="purchaseTrendSeries"
-          />
-        </CardContent>
-      </Card>
-      <Card class="shadow-md">
-        <CardHeader class="gap-y-0 p-4">
-          <CardTitle>Top Supplier</CardTitle>
-        </CardHeader>
-        <CardContent class="h-[350px]">
-          <apexchart
-            type="bar"
-            height="100%"
-            width="100%"
-            :options="purchaseTopSupplierSeriesOptions"
-            :series="purchaseTopSupplierSeries"
-          />
-        </CardContent>
-      </Card>
-    </div>
-  </template>
+    <template v-if="purchaseTrendSeries[0].data.length > 0">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card class="shadow-md">
+                <CardHeader class="gap-y-0 p-4">
+                    <CardTitle>Trend Pembelian per Bulan</CardTitle>
+                </CardHeader>
+                <CardContent class="pb-0 pt-3">
+                    <apexchart
+                        type="line"
+                        height="350"
+                        :options="purchaseTrendChartOptions"
+                        :series="purchaseTrendSeries"
+                    />
+                </CardContent>
+            </Card>
+            <Card class="shadow-md">
+                <CardHeader class="gap-y-0 p-4">
+                    <CardTitle>Top Supplier</CardTitle>
+                </CardHeader>
+                <CardContent class="h-[350px]">
+                    <apexchart
+                        type="bar"
+                        height="100%"
+                        width="100%"
+                        :options="purchaseTopSupplierSeriesOptions"
+                        :series="purchaseTopSupplierSeries"
+                    />
+                </CardContent>
+            </Card>
+        </div>
+    </template>
 </template>

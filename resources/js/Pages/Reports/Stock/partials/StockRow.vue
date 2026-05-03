@@ -26,10 +26,7 @@ const statusText = (row) => {
 </script>
 
 <template>
-  <Badge
-    variant="outline"
-    :class="statusColor(row)"
-  >
-    {{ statusText(row) }}
-  </Badge>
+    <Badge variant="outline" :class="statusColor(row)">
+        {{ statusText(row) }}
+    </Badge>
 </template>

@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Info } from 'lucide-vue-next';
+import { PackageSearch } from 'lucide-vue-next';
 
 import {
     Breadcrumb,
@@ -12,7 +12,13 @@ import {
     BreadcrumbSeparator,
 } from '@/Components/ui/breadcrumb';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from '@/Components/ui/card';
 import Filter from './partials/Filter.vue';
 import { DataTable } from '@/Components/ui/data-table';
 import { filteredStockColumns } from './partials/filtered-stock-column';
@@ -26,70 +32,72 @@ const props = defineProps({
 </script>
 
 <template>
-  <AuthenticatedLayout>
-    <Head>
-      <title>Laporan Stock</title>
-    </Head>
-    <template #breadcrumb>
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <Link :href="route('dashboard')">
-              <BreadcrumbLink> Dashboard </BreadcrumbLink>
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage> Data Laporan Stock </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </template>
-    <div class="flex flex-1 flex-col gap-4 p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Penting!</CardTitle>
-        </CardHeader>
-        <CardContent class="grid gap-4">
-          <div
-            class="flex items-center space-x-4 rounded-md border p-4"
-          >
-            <Info />
-            <div class="flex-1 space-y-1">
-              <p class="text-sm font-medium leading-none">
-                Silahkan isi form filter dibawah ini untuk
-                melihat laporan
-              </p>
-              <p class="text-sm text-muted-foreground">
-                Laporan stock akan muncul ketika filter sudah
-                diisi
-              </p>
+    <AuthenticatedLayout>
+        <Head title="Laporan Stok" />
+
+        <template #breadcrumb>
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <Link :href="route('dashboard')">
+                            <BreadcrumbLink> Dashboard </BreadcrumbLink>
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage> Laporan Stok </BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        </template>
+
+        <div class="flex flex-col gap-6 p-6 pb-12">
+            <div
+                class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight">
+                        Laporan Stok
+                    </h1>
+                    <p class="text-muted-foreground">
+                        Monitoring pergerakan dan ketersediaan stok barang.
+                    </p>
+                </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-      <Filter />
-      <template v-if="filteredStocks.data?.length > 0">
-        <DataTable
-          :data="filteredStocks.data"
-          :columns="filteredStockColumns"
-          :route-name="'reports.stock.index'"
-          :pagination="filteredStocks"
-        />
-      </template>
-      <template v-else>
-        <div
-          class="flex flex-col items-center justify-center mt-4 text-center"
-        >
-          <h1 class="text-2xl font-semibold">
-            Tidak ada data
-          </h1>
-          <p class="text-sm text-muted-foreground">
-            Tidak ada data laporan stock, silahkan lakukan filter
-            lebih lanjut.
-          </p>
+
+            <Filter />
+
+            <Card v-if="filteredStocks.data?.length > 0">
+                <CardHeader>
+                    <CardTitle>Data Stok</CardTitle>
+                    <CardDescription>
+                        Daftar ketersediaan stok barang berdasarkan filter.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <DataTable
+                        :data="filteredStocks.data"
+                        :columns="filteredStockColumns"
+                        :route-name="'reports.stock.index'"
+                        :pagination="filteredStocks"
+                    />
+                </CardContent>
+            </Card>
+
+            <template v-else>
+                <div
+                    class="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-card text-center"
+                >
+                    <div class="rounded-full bg-muted p-4 mb-4">
+                        <PackageSearch class="w-8 h-8 text-muted-foreground" />
+                    </div>
+                    <h3 class="text-lg font-semibold mb-1">Belum ada data</h3>
+                    <p class="text-sm text-muted-foreground max-w-md mx-auto">
+                        Silahkan isi filter di atas untuk melihat laporan stok
+                        barang.
+                    </p>
+                </div>
+            </template>
         </div>
-      </template>
-    </div>
-  </AuthenticatedLayout>
+    </AuthenticatedLayout>
 </template>
