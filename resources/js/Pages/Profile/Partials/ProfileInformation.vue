@@ -17,40 +17,40 @@ const reloadPage = () => {
 </script>
 
 <template>
-  <div
-    class="mb-6 rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800"
-  >
     <div
-      class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between"
+        class="mb-6 rounded-2xl border border-gray-200 p-5 lg:p-6 dark:border-gray-800"
     >
-      <div class="flex w-full flex-col items-center gap-6 xl:flex-row">
         <div
-          class="h-20 w-20 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800"
+            class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between"
         >
-          <ProfilePicture v-if="!photoProfile" />
-          <img
-            v-else
-            :src="`/${photoProfile}`"
-            class="h-full w-full"
-          >
-        </div>
-        <div class="order-3 xl:order-2">
-          <h4
-            class="mb-2 text-center text-lg font-semibold text-gray-800 xl:text-left dark:text-white/90"
-          >
-            {{ $page.props.auth.user.name }}
-          </h4>
-          <div
-            class="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left"
-          >
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              {{ $page.props.auth.user.email }}
-            </p>
-          </div>
-        </div>
-      </div>
+            <div class="flex w-full flex-col items-center gap-6 xl:flex-row">
+                <div
+                    class="h-20 w-20 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800"
+                >
+                    <ProfilePicture v-if="!photoProfile" />
+                    <img
+                        v-else
+                        :src="`/${photoProfile}`"
+                        class="h-full w-full"
+                    />
+                </div>
+                <div class="order-3 xl:order-2">
+                    <h4
+                        class="mb-2 text-center text-lg font-semibold text-gray-800 xl:text-left dark:text-white/90"
+                    >
+                        {{ $page.props.auth.user.name }}
+                    </h4>
+                    <div
+                        class="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left"
+                    >
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ $page.props.auth.user.email }}
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-      <PhotoProfileForm @photo-updated="reloadPage" />
+            <PhotoProfileForm @photo-updated="reloadPage" />
+        </div>
     </div>
-  </div>
 </template>

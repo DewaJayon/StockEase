@@ -1,7 +1,7 @@
 <script setup></script>
 
 <template>
-  <div>delete</div>
+    <div>delete</div>
 </template>
 
 <!-- <script setup>
