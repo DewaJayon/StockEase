@@ -6,7 +6,6 @@ import { Check, Plus, Search, Trash } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { watchDebounced } from '@vueuse/core';
 import axios from 'axios';
-
 import {
     Table,
     TableBody,
@@ -16,7 +15,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-
 import {
     Combobox,
     ComboboxAnchor,
@@ -27,6 +25,7 @@ import {
     ComboboxItemIndicator,
     ComboboxList,
 } from '@/Components/ui/combobox';
+import DatePicker from '@/Components/DatePicker.vue';
 
 const props = defineProps({
     modelValue: {
@@ -38,6 +37,21 @@ const props = defineProps({
         default: () => ({}),
     },
 });
+
+const formatDateInput = (date) => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const parseExpiryDate = (dateStr) => {
+    if (!dateStr) return null;
+    const datePart = dateStr.split('T')[0];
+    const [year, month, day] = datePart.split('-').map(Number);
+    return new Date(year, month - 1, day);
+};
 
 const searchProduct = ref({});
 const productOptions = ref({});
@@ -90,6 +104,7 @@ function addItem() {
         },
     ]);
 }
+
 function remove(index) {
     const updated = [...props.modelValue];
     updated.splice(index, 1);
@@ -98,240 +113,237 @@ function remove(index) {
 </script>
 
 <template>
-  <div class="rounded-md border overflow-x-auto">
-    <Table class="min-w-275">
-      <TableCaption> Daftar Produk Pembelian </TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead class="w-75">
-            Produk
-          </TableHead>
-          <TableHead class="w-25 text-center">
-            QTY
-          </TableHead>
-          <TableHead class="w-25 text-center">
-            Unit
-          </TableHead>
-          <TableHead class="w-45">
-            Harga Beli
-          </TableHead>
-          <TableHead class="w-45">
-            Harga Jual
-          </TableHead>
-          <TableHead class="w-40">
-            Kadaluwarsa
-          </TableHead>
-          <TableHead class="w-37.5 text-right px-4">
-            Subtotal
-          </TableHead>
-          <TableHead class="w-12.5" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow
-          v-for="(item, index) in modelValue"
-          :key="index"
-        >
-          <TableCell>
-            <Combobox
-              :model-value="item.product_id"
-              @update:model-value="
-                (val) => {
-                  item.product_id = val.id;
-                  item.product_name = val.label;
-                  item.price = parseFloat(val.purchase_price);
-                  item.selling_price = parseFloat(
-                    val.selling_price,
-                  );
-                  item.unit = val.unit?.name ?? val.unit;
-                }
-              "
-            >
-              <ComboboxAnchor>
-                <div class="relative w-full items-center">
-                  <ComboboxInput
-                    v-model="searchProduct[index]"
-                    class="pl-9"
-                    :display-value="
-                      () => {
-                        const found = (
-                          productOptions[index] || []
-                        ).find(
-                          (p) =>
-                            p.id ===
-                            item.product_id,
-                        );
-                        return (
-                          found?.label ??
-                          item.product_name ??
-                          ''
-                        );
-                      }
-                    "
-                    placeholder="Cari Produk..."
-                  />
-                  <span
-                    class="absolute inset-s-0 inset-y-0 flex items-center justify-center px-3"
-                  >
-                    <Search
-                      class="size-4 text-muted-foreground"
-                    />
-                  </span>
-                </div>
-              </ComboboxAnchor>
+    <div class="rounded-md border overflow-x-auto">
+        <Table class="min-w-175">
+            <TableCaption> Daftar Produk Pembelian </TableCaption>
+            <TableHeader>
+                <TableRow>
+                    <TableHead class="w-45"> Produk </TableHead>
+                    <TableHead class="w-15 text-center"> QTY </TableHead>
+                    <TableHead class="w-15 text-center"> Unit </TableHead>
+                    <TableHead class="w-27.5"> Harga Beli </TableHead>
+                    <TableHead class="w-27.5"> Harga Jual </TableHead>
+                    <TableHead class="w-25"> Kadaluwarsa </TableHead>
+                    <TableHead class="w-22.5 text-right px-4">
+                        Subtotal
+                    </TableHead>
+                    <TableHead class="w-7.5" />
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                <TableRow v-for="(item, index) in modelValue" :key="index">
+                    <TableCell>
+                        <Combobox
+                            :model-value="item.product_id"
+                            @update:model-value="
+                                (val) => {
+                                    item.product_id = val.id;
+                                    item.product_name = val.label;
+                                    item.price = parseFloat(val.purchase_price);
+                                    item.selling_price = parseFloat(
+                                        val.selling_price,
+                                    );
+                                    item.unit = val.unit?.name ?? val.unit;
+                                }
+                            "
+                        >
+                            <ComboboxAnchor>
+                                <div class="relative w-full items-center">
+                                    <ComboboxInput
+                                        v-model="searchProduct[index]"
+                                        class="pl-9"
+                                        :display-value="
+                                            () => {
+                                                const found = (
+                                                    productOptions[index] || []
+                                                ).find(
+                                                    (p) =>
+                                                        p.id ===
+                                                        item.product_id,
+                                                );
+                                                return (
+                                                    found?.label ??
+                                                    item.product_name ??
+                                                    ''
+                                                );
+                                            }
+                                        "
+                                        placeholder="Cari Produk..."
+                                    />
+                                    <span
+                                        class="absolute inset-start-0 inset-y-0 flex items-center justify-center px-3"
+                                    >
+                                        <Search
+                                            class="size-4 text-muted-foreground"
+                                        />
+                                    </span>
+                                </div>
+                            </ComboboxAnchor>
 
-              <ComboboxList>
-                <ComboboxEmpty>
-                  Tidak ada produk ditemukan.
-                </ComboboxEmpty>
-                <ComboboxGroup>
-                  <ComboboxItem
-                    v-for="product in productOptions[
-                      index
-                    ] || []"
-                    :key="product.id"
-                    class="cursor-pointer"
-                    :value="product"
-                  >
-                    {{ product.label }}
+                            <ComboboxList>
+                                <ComboboxEmpty>
+                                    Tidak ada produk ditemukan.
+                                </ComboboxEmpty>
+                                <ComboboxGroup>
+                                    <ComboboxItem
+                                        v-for="product in productOptions[
+                                            index
+                                        ] || []"
+                                        :key="product.id"
+                                        class="cursor-pointer"
+                                        :value="product"
+                                    >
+                                        {{ product.label }}
 
-                    <ComboboxItemIndicator>
-                      <Check
-                        :class="cn('ml-auto h-4 w-4')"
-                      />
-                    </ComboboxItemIndicator>
-                  </ComboboxItem>
-                </ComboboxGroup>
-              </ComboboxList>
-            </Combobox>
-            <p
-              v-if="
-                form?.errors?.[
-                  `product_items.${index}.product_id`
-                ]
-              "
-              class="text-red-500 text-[10px] mt-1"
-            >
-              {{
-                form.errors[`product_items.${index}.product_id`]
-              }}
-            </p>
-          </TableCell>
-          <TableCell>
-            <Input
-              v-model.number="item.qty"
-              type="number"
-              placeholder="0"
-              min="1"
-              class="text-center [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <p
-              v-if="form?.errors?.[`product_items.${index}.qty`]"
-              class="text-red-500 text-[10px] mt-1"
-            >
-              {{ form.errors[`product_items.${index}.qty`] }}
-            </p>
-          </TableCell>
+                                        <ComboboxItemIndicator>
+                                            <Check
+                                                :class="cn('ml-auto h-4 w-4')"
+                                            />
+                                        </ComboboxItemIndicator>
+                                    </ComboboxItem>
+                                </ComboboxGroup>
+                            </ComboboxList>
+                        </Combobox>
+                        <p
+                            v-if="
+                                form?.errors?.[
+                                    `product_items.${index}.product_id`
+                                ]
+                            "
+                            class="text-red-500 text-[10px] mt-1"
+                        >
+                            {{
+                                form.errors[`product_items.${index}.product_id`]
+                            }}
+                        </p>
+                    </TableCell>
+                    <TableCell>
+                        <Input
+                            v-model.number="item.qty"
+                            type="number"
+                            placeholder="0"
+                            min="1"
+                            class="text-center [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <p
+                            v-if="form?.errors?.[`product_items.${index}.qty`]"
+                            class="text-red-500 text-[10px] mt-1"
+                        >
+                            {{ form.errors[`product_items.${index}.qty`] }}
+                        </p>
+                    </TableCell>
 
-          <TableCell
-            class="text-center text-sm text-muted-foreground"
-          >
-            {{ item.unit ?? '-' }}
-          </TableCell>
+                    <TableCell
+                        class="text-center text-sm text-muted-foreground"
+                    >
+                        {{ item.unit ?? '-' }}
+                    </TableCell>
 
-          <TableCell>
-            <div class="relative group">
-              <span
-                class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
-              >Rp</span>
-              <Input
-                v-model.number="item.price"
-                type="number"
-                placeholder="0"
-                class="pl-8 [&::-webkit-inner-spin-button]:appearance-none font-mono"
-              />
-              <div
-                class="hidden group-focus-within:block absolute top-full left-0 mt-1 bg-zinc-900 text-white text-[10px] px-2 py-1 rounded shadow-lg z-10 whitespace-nowrap"
-              >
-                {{ formatNumber(item.price || 0) }}
-              </div>
-            </div>
-            <p
-              v-if="
-                form?.errors?.[`product_items.${index}.price`]
-              "
-              class="text-red-500 text-[10px] mt-1"
-            >
-              {{ form.errors[`product_items.${index}.price`] }}
-            </p>
-          </TableCell>
-          <TableCell>
-            <div class="relative group">
-              <span
-                class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
-              >Rp</span>
-              <Input
-                v-model.number="item.selling_price"
-                type="number"
-                placeholder="0"
-                class="pl-8 [&::-webkit-inner-spin-button]:appearance-none font-mono text-blue-600 dark:text-blue-400"
-              />
-              <div
-                class="hidden group-focus-within:block absolute top-full left-0 mt-1 bg-zinc-900 text-white text-[10px] px-2 py-1 rounded shadow-lg z-10 whitespace-nowrap"
-              >
-                {{ formatNumber(item.selling_price || 0) }}
-              </div>
-            </div>
-          </TableCell>
-          <TableCell>
-            <Input
-              v-model="item.expiry_date"
-              type="date"
-              class="w-full text-xs"
-            />
-          </TableCell>
-          <TableCell class="text-right font-medium px-4">
-            {{ formatPrice(item.qty * (item.price || 0)) }}
-          </TableCell>
-          <TableCell>
-            <Button
-              size="icon"
-              variant="ghost"
-              class="text-destructive hover:text-destructive hover:bg-destructive/10"
-              @click.prevent="remove(index)"
-            >
-              <Trash class="w-4 h-4" />
-            </Button>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
-  </div>
-
-  <div
-    class="mt-4 flex justify-between items-center bg-muted/30 p-4 rounded-lg border border-dashed"
-  >
-    <Button
-      variant="outline"
-      size="sm"
-      @click.prevent="addItem"
-    >
-      <Plus class="w-4 h-4 mr-2" />
-      Tambah Baris Produk
-    </Button>
-
-    <div class="flex flex-col items-end">
-      <span
-        class="text-xs text-muted-foreground uppercase tracking-wider font-semibold"
-      >Total Estimasi Pembelian</span>
-      <span class="text-2xl font-black text-primary">{{
-        formatPrice(
-          modelValue.reduce(
-            (acc, item) => acc + item.qty * (item.price || 0),
-            0,
-          ),
-        )
-      }}</span>
+                    <TableCell>
+                        <div class="relative group">
+                            <span
+                                class="absolute inset-s-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
+                                >Rp</span
+                            >
+                            <Input
+                                v-model.number="item.price"
+                                type="number"
+                                placeholder="0"
+                                class="pl-8 [&::-webkit-inner-spin-button]:appearance-none font-mono"
+                            />
+                            <div
+                                class="hidden group-focus-within:block absolute top-full inset-s-0 mt-1 bg-zinc-900 text-white text-[10px] px-2 py-1 rounded shadow-lg z-10 whitespace-nowrap"
+                            >
+                                {{ formatNumber(item.price || 0) }}
+                            </div>
+                        </div>
+                        <p
+                            v-if="
+                                form?.errors?.[`product_items.${index}.price`]
+                            "
+                            class="text-red-500 text-[10px] mt-1"
+                        >
+                            {{ form.errors[`product_items.${index}.price`] }}
+                        </p>
+                    </TableCell>
+                    <TableCell>
+                        <div class="relative group">
+                            <span
+                                class="absolute inset-s-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
+                                >Rp</span
+                            >
+                            <Input
+                                v-model.number="item.selling_price"
+                                type="number"
+                                placeholder="0"
+                                class="pl-8 [&::-webkit-inner-spin-button]:appearance-none font-mono text-blue-600 dark:text-blue-400"
+                            />
+                            <div
+                                class="hidden group-focus-within:block absolute top-full inset-s-0 mt-1 bg-zinc-900 text-white text-[10px] px-2 py-1 rounded shadow-lg z-10 whitespace-nowrap"
+                            >
+                                {{ formatNumber(item.selling_price || 0) }}
+                            </div>
+                        </div>
+                    </TableCell>
+                    <TableCell>
+                        <DatePicker
+                            :model-value="parseExpiryDate(item.expiry_date)"
+                            placeholder="Pilih"
+                            class="w-full"
+                            @update:model-value="
+                                (dateValue) => {
+                                    if (dateValue) {
+                                        item.expiry_date =
+                                            formatDateInput(dateValue);
+                                    } else {
+                                        item.expiry_date = null;
+                                    }
+                                }
+                            "
+                        />
+                    </TableCell>
+                    <TableCell class="text-right font-medium px-4">
+                        {{ formatPrice(item.qty * (item.price || 0)) }}
+                    </TableCell>
+                    <TableCell>
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            class="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            @click.prevent="remove(index)"
+                        >
+                            <Trash class="w-4 h-4" />
+                        </Button>
+                    </TableCell>
+                </TableRow>
+            </TableBody>
+        </Table>
     </div>
-  </div>
+
+    <div
+        class="mt-4 flex justify-between items-center bg-muted/30 p-4 rounded-lg border border-dashed"
+    >
+        <Button variant="outline" size="sm" @click.prevent="addItem">
+            <Plus class="w-4 h-4 mr-2" />
+            Tambah Baris Produk
+        </Button>
+
+        <div class="flex flex-col items-end">
+            <span
+                class="text-xs text-muted-foreground uppercase tracking-wider font-semibold"
+            >
+                Total Estimasi Pembelian
+            </span>
+            <span class="text-2xl font-black text-primary">
+                {{
+                    formatPrice(
+                        modelValue.reduce(
+                            (acc, item) => acc + item.qty * (item.price || 0),
+                            0,
+                        ),
+                    )
+                }}
+            </span>
+        </div>
+    </div>
 </template>
