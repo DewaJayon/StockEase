@@ -16,44 +16,41 @@ const props = defineProps({
 </script>
 
 <template>
-  <Pagination
-    v-slot="{ page }"
-    :items-per-page="props.files?.per_page"
-    :total="props.files?.total"
-    :default-page="props.files?.current_page"
-  >
-    <PaginationContent v-slot="{ items }">
-      <PaginationPrevious
-        :disabled="!props.files?.prev_page_url"
-        @click="$inertia.visit(props.files?.prev_page_url)"
-      />
+    <Pagination
+        v-slot="{ page }"
+        :items-per-page="props.files?.per_page"
+        :total="props.files?.total"
+        :default-page="props.files?.current_page"
+    >
+        <PaginationContent v-slot="{ items }">
+            <PaginationPrevious
+                :disabled="!props.files?.prev_page_url"
+                @click="$inertia.visit(props.files?.prev_page_url)"
+            />
 
-      <template
-        v-for="(item, index) in items"
-        :key="index"
-      >
-        <PaginationItem
-          v-if="item.type === 'page'"
-          class="border disabled:opacity-50 disabled:cursor-not-allowed"
-          :value="item.value"
-          :is-active="item.value === page"
-          :disabled="item.value === page"
-          @click="
-            $inertia.get(route('file-manager.index'), {
-              page: item.value,
-            })
-          "
-        >
-          {{ item.value }}
-        </PaginationItem>
-      </template>
+            <template v-for="(item, index) in items" :key="index">
+                <PaginationItem
+                    v-if="item.type === 'page'"
+                    class="border disabled:opacity-50 disabled:cursor-not-allowed"
+                    :value="item.value"
+                    :is-active="item.value === page"
+                    :disabled="item.value === page"
+                    @click="
+                        $inertia.get(route('file-manager.index'), {
+                            page: item.value,
+                        })
+                    "
+                >
+                    {{ item.value }}
+                </PaginationItem>
+            </template>
 
-      <PaginationEllipsis :index="4" />
+            <PaginationEllipsis :index="4" />
 
-      <PaginationNext
-        :disabled="!props.files?.next_page_url"
-        @click="$inertia.visit(props.files?.next_page_url)"
-      />
-    </PaginationContent>
-  </Pagination>
+            <PaginationNext
+                :disabled="!props.files?.next_page_url"
+                @click="$inertia.visit(props.files?.next_page_url)"
+            />
+        </PaginationContent>
+    </Pagination>
 </template>
