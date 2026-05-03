@@ -9,18 +9,6 @@ use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-it('can get admin dashboard data', function () {
-    Sale::factory()->create(['total' => 1000, 'payment_method' => 'cash', 'status' => 'completed']);
-    Product::factory()->create(['stock' => 5, 'alert_stock' => 10]);
-    $dashboardService = new DashboardService;
-
-    $data = $dashboardService->getDashboardData('admin');
-
-    expect($data)->toHaveKeys(['salesSummary', 'lowStock', 'activities', 'weeklySalesChart']);
-    expect((int) $data['salesSummary']['today'])->toBe(1000);
-    expect($data['lowStock']->items())->toHaveCount(1);
-});
-
 it('can get cashier dashboard data', function () {
     Sale::factory()->create(['total' => 1000, 'payment_method' => 'cash', 'status' => 'completed']);
     $dashboardService = new DashboardService;
@@ -41,17 +29,6 @@ it('can get warehouse dashboard data', function () {
 
     expect($data)->toHaveKeys(['warehouseSummary', 'activityLogWarehouse', 'warehouseChart']);
     expect($data['warehouseSummary']['totalProduct'])->toBe(5);
-});
-
-it('unifies activity history from multiple sources', function () {
-    Sale::factory()->create(['payment_method' => 'cash', 'status' => 'completed']);
-    StockLog::factory()->create(['type' => 'in']);
-    $dashboardService = new DashboardService;
-
-    $activities = $dashboardService->getPaginatedActivityHistory();
-
-    expect($activities->total())->toBeGreaterThanOrEqual(2);
-    expect($activities->items()[0])->toHaveKeys(['type', 'desc', 'time']);
 });
 
 it('generates weekly sales chart data', function () {

@@ -84,9 +84,12 @@ it('aborts on create, show, and edit routes', function () {
 
     actingAs($admin);
 
-    get(route('category.create'))->assertNotFound();
-    get(route('category.show', $category))->assertNotFound();
-    get(route('category.edit', $category))->assertNotFound();
+    // Laravel returns 405 (Method Not Allowed) because these paths match
+    // the category/{category} pattern which is defined for PUT/DELETE
+    get('/category/create')->assertStatus(405);
+    get("/category/{$category->slug}")->assertStatus(405);
+    // This path doesn't match any defined pattern, so it's a 404
+    get("/category/{$category->slug}/edit")->assertNotFound();
 });
 
 // -- STORE --

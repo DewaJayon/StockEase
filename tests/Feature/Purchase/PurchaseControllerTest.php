@@ -4,202 +4,656 @@ use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Supplier;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Inertia\Testing\AssertableInertia as Assert;
+use Carbon\Carbon;
+use Tests\TestCase;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 
-uses(RefreshDatabase::class);
+beforeEach(function () {
+    /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+    $this->admin = User::factory()->create(['role' => 'admin']);
+    $this->warehouse = User::factory()->create(['role' => 'warehouse']);
+    $this->cashier = User::factory()->create(['role' => 'cashier']);
 
-it('allows admin and warehouse to view purchases', function ($role) {
-    /** @var User $user */
-    $user = User::factory()->create(['role' => $role]);
-    Purchase::factory()->count(3)->create();
-
-    $response = actingAs($user)->get(route('purchase.index'));
-
-    $response->assertSuccessful();
-    $response->assertInertia(
-        fn (Assert $page) => $page
-            ->component('Purchase/Index')
-            ->has('purchases.data', 3)
-    );
-})->with(['admin', 'warehouse']);
-
-it('filters purchases by date range', function () {
-    /** @var User $admin */
-    $admin = User::factory()->create(['role' => 'admin']);
-
-    // Create purchases on different dates
-    Purchase::factory()->create(['date' => '2024-04-01']);
-    Purchase::factory()->create(['date' => '2024-04-15']);
-    Purchase::factory()->create(['date' => '2024-04-30']);
-    Purchase::factory()->create(['date' => '2024-05-01']);
-
-    // Filter for April 2024
-    $response = actingAs($admin)->get(route('purchase.index', [
-        'start' => '2024-04-01',
-        'end' => '2024-04-30',
-    ]));
-
-    $response->assertSuccessful();
-    $response->assertInertia(
-        fn (Assert $page) => $page
-            ->component('Purchase/Index')
-            ->has('purchases.data', 3)
-    );
-
-    // Filter for middle of April
-    $response = actingAs($admin)->get(route('purchase.index', [
-        'start' => '2024-04-10',
-        'end' => '2024-04-20',
-    ]));
-
-    $response->assertInertia(
-        fn (Assert $page) => $page
-            ->component('Purchase/Index')
-            ->has('purchases.data', 1)
-    );
+    $this->supplier = Supplier::factory()->create();
+    $this->product = Product::factory()->create(['stock' => 10]);
 });
 
-it('searches purchases by supplier name', function () {
-    /** @var User $admin */
-    $admin = User::factory()->create(['role' => 'admin']);
-    $supplier1 = Supplier::factory()->create(['name' => 'Supplier ABC']);
-    $supplier2 = Supplier::factory()->create(['name' => 'Vendor XYZ']);
+// Helper — buat purchase dengan item
+function purchase(User $user, Supplier $supplier, Product $product, array $purchaseAttributes = [], array $itemAttributes = []): Purchase
+{
+    $purchase = Purchase::factory()->create(array_merge([
+        'user_id' => $user->id,
+        'supplier_id' => $supplier->id,
+        'date' => Carbon::today()->toDateString(),
+        'total' => 5000,
+    ], $purchaseAttributes));
 
-    Purchase::factory()->create(['supplier_id' => $supplier1->id]);
-    Purchase::factory()->create(['supplier_id' => $supplier2->id]);
-
-    $response = actingAs($admin)->get(route('purchase.index', ['search' => 'ABC']));
-
-    $response->assertSuccessful();
-    $response->assertInertia(
-        fn (Assert $page) => $page
-            ->component('Purchase/Index')
-            ->has('purchases.data', 1)
-            ->where('purchases.data.0.supplier.name', 'Supplier ABC')
-    );
-});
-
-it('searches purchases by product name', function () {
-    /** @var User $admin */
-    $admin = User::factory()->create(['role' => 'admin']);
-    $product1 = Product::factory()->create(['name' => 'Laptop Pro']);
-    $product2 = Product::factory()->create(['name' => 'Mouse Wireless']);
-
-    $purchase1 = Purchase::factory()->create();
-    $purchase1->purchaseItems()->create([
-        'product_id' => $product1->id,
-        'qty' => 1,
+    $purchase->purchaseItems()->create(array_merge([
+        'product_id' => $product->id,
+        'qty' => 5,
+        'remaining_qty' => 5,
         'price' => 1000,
+    ], $itemAttributes));
+
+    return $purchase;
+}
+
+// Helper — payload store/update yang valid
+function purchasePayload(Supplier $supplier, Product $product, array $overrides = []): array
+{
+    return array_merge([
+        'supplier_id' => $supplier->id,
+        'date' => Carbon::today()->toDateString(),
+        'product_items' => [
+            [
+                'product_id' => $product->id,
+                'qty' => 5,
+                'price' => 1000,
+                'selling_price' => 2000,
+                'expiry_date' => null,
+            ],
+        ],
+    ], $overrides);
+}
+
+// ============================================================
+// Authorization
+// ============================================================
+
+describe('Authorization', function () {
+    it('redirects unauthenticated user from all purchase routes', function (string $method, string $route) {
+        $purchase = Purchase::factory()->create();
+
+        $url = in_array($route, ['purchase.update', 'purchase.destroy'])
+            ? route($route, $purchase)
+            : route($route);
+
+        $this->$method($url)->assertRedirect(route('login'));
+    })->with([
+        'index' => ['get',    'purchase.index'],
+        'store' => ['post',   'purchase.store'],
+        'update' => ['put',    'purchase.update'],
+        'destroy' => ['delete', 'purchase.destroy'],
     ]);
 
-    $purchase2 = Purchase::factory()->create();
-    $purchase2->purchaseItems()->create([
-        'product_id' => $product2->id,
-        'qty' => 1,
-        'price' => 1000,
+    it('forbids cashier from all purchase routes', function (string $method, string $route) {
+        $purchase = Purchase::factory()->create();
+
+        $url = in_array($route, ['purchase.update', 'purchase.destroy'])
+            ? route($route, $purchase)
+            : route($route);
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->cashier)->$method($url)->assertForbidden();
+    })->with([
+        'index' => ['get',    'purchase.index'],
+        'store' => ['post',   'purchase.store'],
+        'update' => ['put',    'purchase.update'],
+        'destroy' => ['delete', 'purchase.destroy'],
     ]);
 
-    $response = actingAs($admin)->get(route('purchase.index', ['search' => 'Laptop']));
-
-    $response->assertSuccessful();
-    $response->assertInertia(
-        fn (Assert $page) => $page
-            ->component('Purchase/Index')
-            ->has('purchases.data', 1)
-            ->has('purchases.data.0.purchase_items', 1)
-            ->where('purchases.data.0.purchase_items.0.product.name', 'Laptop Pro')
-    );
+    it('allows admin and warehouse to access purchase index', function (string $role) {
+        actingAs($this->{$role})
+            ->get(route('purchase.index'))
+            ->assertSuccessful();
+    })->with(['admin', 'warehouse']);
 });
 
-it('handles pagination in purchase index', function () {
-    /** @var User $admin */
-    $admin = User::factory()->create(['role' => 'admin']);
-    Purchase::factory()->count(15)->create();
+// ============================================================
+// Index — listing & pagination
+// ============================================================
 
-    $response = actingAs($admin)->get(route('purchase.index', ['per_page' => 5]));
+describe('Index', function () {
+    it('renders Purchase/Index component', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index'))
+            ->assertSuccessful()
+            ->assertInertia(fn ($page) => $page->component('Purchase/Index'));
+    });
 
-    $response->assertSuccessful();
-    $response->assertInertia(
-        fn (Assert $page) => $page
-            ->component('Purchase/Index')
-            ->has('purchases.data', 5)
-            ->where('purchases.total', 15)
-            ->where('purchases.per_page', 5)
-    );
+    it('passes purchases prop with paginator structure', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index'))
+            ->assertInertia(
+                fn ($page) => $page
+                    ->has('purchases.data')
+                    ->has('purchases.current_page')
+                    ->has('purchases.per_page')
+                    ->has('purchases.total')
+            );
+    });
+
+    it('paginates with default 10 per page', function () {
+        Purchase::factory()->count(12)->create();
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index'))
+            ->assertInertia(
+                fn ($page) => $page
+                    ->has('purchases.data', 10)
+                    ->where('purchases.total', 12)
+            );
+    });
+
+    it('respects per_page query parameter', function () {
+        Purchase::factory()->count(10)->create();
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index', ['per_page' => 5]))
+            ->assertInertia(fn ($page) => $page->has('purchases.data', 5));
+    });
+
+    it('orders purchases by date descending', function () {
+        $older = Purchase::factory()->create(['date' => Carbon::now()->subDays(3)->toDateString()]);
+        $newer = Purchase::factory()->create(['date' => Carbon::today()->toDateString()]);
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index'))
+            ->assertInertia(
+                fn ($page) => $page
+                    ->where('purchases.data.0.id', $newer->id)
+                    ->where('purchases.data.1.id', $older->id)
+            );
+    });
 });
 
-it('allows admin to create a purchase and increments stock', function () {
-    /** @var User $admin */
-    $admin = User::factory()->create(['role' => 'admin']);
-    $supplier = Supplier::factory()->create();
-    $product1 = Product::factory()->create(['stock' => 10]);
-    $product2 = Product::factory()->create(['stock' => 5]);
+// ============================================================
+// Index — date range filter
+// ============================================================
 
-    $response = actingAs($admin)
-        ->post(route('purchase.store'), [
-            'supplier_id' => $supplier->id,
-            'date' => '2024-04-04',
-            'product_items' => [
-                [
-                    'product_id' => $product1->id,
+describe('Date range filter', function () {
+    it('filters purchases within date range', function () {
+        Purchase::factory()->create(['date' => '2024-04-01']);
+        Purchase::factory()->create(['date' => '2024-04-15']);
+        Purchase::factory()->create(['date' => '2024-04-30']);
+        Purchase::factory()->create(['date' => '2024-05-01']); // outside
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index', ['start' => '2024-04-01', 'end' => '2024-04-30']))
+            ->assertInertia(fn ($page) => $page->has('purchases.data', 3));
+    });
+
+    it('excludes purchases before start date', function () {
+        Purchase::factory()->create(['date' => '2024-03-31']);
+        Purchase::factory()->create(['date' => '2024-04-01']);
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index', ['start' => '2024-04-01', 'end' => '2024-04-30']))
+            ->assertInertia(fn ($page) => $page->has('purchases.data', 1));
+    });
+
+    it('excludes purchases after end date', function () {
+        Purchase::factory()->create(['date' => '2024-04-30']);
+        Purchase::factory()->create(['date' => '2024-05-01']);
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index', ['start' => '2024-04-01', 'end' => '2024-04-30']))
+            ->assertInertia(fn ($page) => $page->has('purchases.data', 1));
+    });
+
+    it('ignores date filter when only start is provided', function () {
+        Purchase::factory()->create(['date' => Carbon::now()->subMonth()->toDateString()]);
+        Purchase::factory()->create(['date' => Carbon::today()->toDateString()]);
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index', ['start' => Carbon::today()->toDateString()]))
+            ->assertInertia(fn ($page) => $page->has('purchases.data', 2));
+    });
+});
+
+// ============================================================
+// Index — search filter
+// ============================================================
+
+describe('Search filter', function () {
+    it('searches by supplier name', function () {
+        $supplierA = Supplier::factory()->create(['name' => 'Supplier ABC']);
+        $supplierB = Supplier::factory()->create(['name' => 'Vendor XYZ']);
+
+        Purchase::factory()->create(['supplier_id' => $supplierA->id]);
+        Purchase::factory()->create(['supplier_id' => $supplierB->id]);
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index', ['search' => 'ABC']))
+            ->assertInertia(
+                fn ($page) => $page
+                    ->has('purchases.data', 1)
+                    ->where('purchases.data.0.supplier.name', 'Supplier ABC')
+            );
+    });
+
+    it('searches by user name', function () {
+        $userA = User::factory()->create(['name' => 'Budi Gudang', 'role' => 'warehouse']);
+        $userB = User::factory()->create(['name' => 'Rina Admin', 'role' => 'admin']);
+
+        Purchase::factory()->create(['user_id' => $userA->id]);
+        Purchase::factory()->create(['user_id' => $userB->id]);
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index', ['search' => 'Budi']))
+            ->assertInertia(fn ($page) => $page->has('purchases.data', 1));
+    });
+
+    it('searches by product name through purchase items', function () {
+        $productA = Product::factory()->create(['name' => 'Laptop Pro']);
+        $productB = Product::factory()->create(['name' => 'Mouse Wireless']);
+
+        $p1 = Purchase::factory()->create();
+        $p1->purchaseItems()->create(['product_id' => $productA->id, 'qty' => 1, 'price' => 1000, 'remaining_qty' => 1]);
+
+        $p2 = Purchase::factory()->create();
+        $p2->purchaseItems()->create(['product_id' => $productB->id, 'qty' => 1, 'price' => 1000, 'remaining_qty' => 1]);
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index', ['search' => 'Laptop']))
+            ->assertInertia(
+                fn ($page) => $page
+                    ->has('purchases.data', 1)
+                    ->where('purchases.data.0.purchase_items.0.product.name', 'Laptop Pro')
+            );
+    });
+
+    it('returns empty when search has no match', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        Purchase::factory()->create(['supplier_id' => $this->supplier->id]);
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->get(route('purchase.index', ['search' => 'xyznonexistent']))
+            ->assertInertia(fn ($page) => $page->has('purchases.data', 0));
+    });
+});
+
+// ============================================================
+// Search Supplier
+// ============================================================
+
+describe('Search supplier', function () {
+    it('returns supplier matching search query', function () {
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->getJson(route('purchase.search-supplier', ['search' => $this->supplier->name]))
+            ->assertSuccessful()
+            ->assertJsonPath('data.0.value', $this->supplier->id);
+    });
+
+    it('returns label and value structure', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->getJson(route('purchase.search-supplier', ['search' => $this->supplier->name]))
+            ->assertJsonStructure(['data' => [['value', 'label']]]);
+    });
+
+    it('returns empty data when search is blank', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->getJson(route('purchase.search-supplier', ['search' => '']))
+            ->assertSuccessful()
+            ->assertJsonPath('data', []);
+    });
+
+    it('returns 404 when no supplier matches', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->getJson(route('purchase.search-supplier', ['search' => 'xyznonexistent']))
+            ->assertStatus(404);
+    });
+});
+
+// ============================================================
+// Search Product
+// ============================================================
+
+describe('Search product', function () {
+    it('returns product matching search query', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->getJson(route('purchase.search-product', ['search' => $this->product->name]))
+            ->assertSuccessful()
+            ->assertJsonPath('data.0.id', $this->product->id);
+    });
+
+    it('returns empty data when search is blank', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->getJson(route('purchase.search-product', ['search' => '']))
+            ->assertSuccessful()
+            ->assertJsonPath('data', []);
+    });
+
+    it('returns empty data when no product matches', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->getJson(route('purchase.search-product', ['search' => 'xyznonexistent']))
+            ->assertSuccessful()
+            ->assertJsonPath('data', []);
+    });
+
+    it('returns product with unit relation', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->getJson(route('purchase.search-product', ['search' => $this->product->name]))
+            ->assertSuccessful()
+            ->assertJsonStructure(['data' => [['id', 'label', 'purchase_price', 'selling_price', 'stock']]]);
+    });
+});
+
+// ============================================================
+// Store
+// ============================================================
+
+describe('Store', function () {
+    it('creates a purchase and redirects to index with success message', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->post(route('purchase.store'), purchasePayload($this->supplier, $this->product))
+            ->assertRedirect(route('purchase.index'))
+            ->assertSessionHas('success');
+
+        assertDatabaseHas('purchases', ['supplier_id' => $this->supplier->id]);
+    });
+
+    it('increments product stock on store', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->post(route('purchase.store'), purchasePayload($this->supplier, $this->product, [
+                'product_items' => [[
+                    'product_id' => $this->product->id,
                     'qty' => 5,
                     'price' => 1000,
                     'selling_price' => 2000,
-                ],
-                [
-                    'product_id' => $product2->id,
-                    'qty' => 10,
-                    'price' => 500,
-                    'selling_price' => 1000,
-                ],
-            ],
+                    'expiry_date' => null,
+                ]],
+            ]));
+
+        expect($this->product->fresh()->stock)->toBe(15); // 10 + 5
+    });
+
+    it('creates stock log with type in on store', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->post(route('purchase.store'), purchasePayload($this->supplier, $this->product));
+
+        assertDatabaseHas('stock_logs', [
+            'product_id' => $this->product->id,
+            'qty' => 5,
+            'type' => 'in',
+            'reference_type' => 'Purchase',
         ]);
+    });
 
-    $response->assertRedirect(route('purchase.index'));
+    it('calculates total correctly on store', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->post(route('purchase.store'), purchasePayload($this->supplier, $this->product, [
+                'product_items' => [
+                    ['product_id' => $this->product->id, 'qty' => 3, 'price' => 2000, 'selling_price' => 4000, 'expiry_date' => null],
+                ],
+            ]));
 
-    assertDatabaseHas('purchases', ['supplier_id' => $supplier->id]);
+        assertDatabaseHas('purchases', ['total' => 6000]);
+    });
 
-    $product1->refresh();
-    $product2->refresh();
+    it('stores multiple products in one purchase', function () {
+        $product2 = Product::factory()->create(['stock' => 5]);
 
-    expect($product1->stock)->toBe(15);
-    expect($product2->stock)->toBe(15);
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->post(route('purchase.store'), purchasePayload($this->supplier, $this->product, [
+                'product_items' => [
+                    ['product_id' => $this->product->id, 'qty' => 5, 'price' => 1000, 'selling_price' => 2000, 'expiry_date' => null],
+                    ['product_id' => $product2->id, 'qty' => 10, 'price' => 500, 'selling_price' => 1000, 'expiry_date' => null],
+                ],
+            ]));
 
-    assertDatabaseHas('stock_logs', [
-        'product_id' => $product1->id,
-        'qty' => 5,
-        'type' => 'in',
+        expect($this->product->fresh()->stock)->toBe(15);
+        expect($product2->fresh()->stock)->toBe(15);
+    });
+
+    it('stores purchase item with expiry_date when provided', function () {
+        $expiryDate = Carbon::today()->addMonths(6)->toDateString();
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->post(route('purchase.store'), purchasePayload($this->supplier, $this->product, [
+                'product_items' => [[
+                    'product_id' => $this->product->id,
+                    'qty' => 5,
+                    'price' => 1000,
+                    'selling_price' => 2000,
+                    'expiry_date' => $expiryDate,
+                ]],
+            ]));
+
+        assertDatabaseHas('purchase_items', [
+            'product_id' => $this->product->id,
+            'expiry_date' => $expiryDate,
+        ]);
+    });
+
+    it('warehouse can also store a purchase', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->warehouse)
+            ->post(route('purchase.store'), purchasePayload($this->supplier, $this->product))
+            ->assertRedirect(route('purchase.index'));
+    });
+
+    it('validates required fields on store', function (array $data, array $errors) {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->post(route('purchase.store'), $data)
+            ->assertSessionHasErrors($errors);
+    })->with([
+        'missing supplier_id' => [['date' => Carbon::today()->toDateString(), 'product_items' => []], ['supplier_id']],
+        'missing date' => [['supplier_id' => 1, 'product_items' => []], ['date']],
+        'empty product_items' => [['supplier_id' => 1, 'date' => Carbon::today()->toDateString(), 'product_items' => []], ['product_items']],
+        'missing product_items key' => [['supplier_id' => 1, 'date' => Carbon::today()->toDateString()], ['product_items']],
+        'invalid supplier_id' => [['supplier_id' => 999999, 'date' => Carbon::today()->toDateString(), 'product_items' => [['product_id' => 1, 'qty' => 1, 'price' => 100, 'selling_price' => 200]]], ['supplier_id']],
+    ]);
+
+    it('does not create purchase when validation fails', function () {
+        $countBefore = Purchase::count();
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->post(route('purchase.store'), ['supplier_id' => '', 'date' => '', 'product_items' => []]);
+
+        expect(Purchase::count())->toBe($countBefore);
+    });
+});
+
+// ============================================================
+// Update
+// ============================================================
+
+describe('Update', function () {
+    it('updates a purchase and redirects to index with success message', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->admin, $this->supplier, $this->product);
+        $newSupplier = Supplier::factory()->create();
+
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->put(route('purchase.update', $purchase), purchasePayload($newSupplier, $this->product))
+            ->assertRedirect(route('purchase.index'))
+            ->assertSessionHas('success');
+
+        assertDatabaseHas('purchases', [
+            'id' => $purchase->id,
+            'supplier_id' => $newSupplier->id,
+        ]);
+    });
+
+    it('adjusts stock when qty increases on update', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->admin, $this->supplier, $this->product, [], ['qty' => 5]);
+        // stock: 10 + 5 (dari factory) = 15 setelah store, tapi kita set manual
+        $this->product->update(['stock' => 15]);
+
+        actingAs($this->admin)
+            ->put(route('purchase.update', $purchase), purchasePayload($this->supplier, $this->product, [
+                'product_items' => [[
+                    'product_id' => $this->product->id,
+                    'qty' => 8, // +3 dari 5
+                    'price' => 1000,
+                    'selling_price' => 2000,
+                    'expiry_date' => null,
+                ]],
+            ]));
+
+        expect($this->product->fresh()->stock)->toBe(18); // 15 + 3
+    });
+
+    it('adjusts stock when qty decreases on update', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->admin, $this->supplier, $this->product, [], ['qty' => 5]);
+        $this->product->update(['stock' => 15]);
+
+        actingAs($this->admin)
+            ->put(route('purchase.update', $purchase), purchasePayload($this->supplier, $this->product, [
+                'product_items' => [[
+                    'product_id' => $this->product->id,
+                    'qty' => 3, // -2 dari 5
+                    'price' => 1000,
+                    'selling_price' => 2000,
+                    'expiry_date' => null,
+                ]],
+            ]));
+
+        expect($this->product->fresh()->stock)->toBe(13); // 15 - 2
+    });
+
+    it('creates stock log with type adjust on update', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->admin, $this->supplier, $this->product, [], ['qty' => 5]);
+        $this->product->update(['stock' => 15]);
+
+        actingAs($this->admin)
+            ->put(route('purchase.update', $purchase), purchasePayload($this->supplier, $this->product, [
+                'product_items' => [[
+                    'product_id' => $this->product->id,
+                    'qty' => 8,
+                    'price' => 1000,
+                    'selling_price' => 2000,
+                    'expiry_date' => null,
+                ]],
+            ]));
+
+        assertDatabaseHas('stock_logs', [
+            'product_id' => $this->product->id,
+            'type' => 'adjust',
+            'reference_type' => 'Purchase',
+            'reference_id' => $purchase->id,
+        ]);
+    });
+
+    it('returns 404 for non-existent purchase on update', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->put(route('purchase.update', 999999), purchasePayload($this->supplier, $this->product))
+            ->assertNotFound();
+    });
+
+    it('validates required fields on update', function (array $overrides, array $errors) {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->admin, $this->supplier, $this->product);
+
+        actingAs($this->admin)
+            ->put(route('purchase.update', $purchase), array_merge(
+                purchasePayload($this->supplier, $this->product),
+                $overrides
+            ))
+            ->assertSessionHasErrors($errors);
+    })->with([
+        'missing supplier_id' => [['supplier_id' => ''],   ['supplier_id']],
+        'missing date' => [['date' => ''],          ['date']],
+        'empty product_items' => [['product_items' => []], ['product_items']],
     ]);
 });
 
-it('allows admin to delete a purchase and decrements stock', function () {
-    /** @var User $admin */
-    $admin = User::factory()->create(['role' => 'admin']);
-    $purchase = Purchase::factory()->create();
-    $product = Product::factory()->create(['stock' => 20]);
-    $purchase->purchaseItems()->create([
-        'product_id' => $product->id,
-        'qty' => 5,
-        'price' => 1000,
-    ]);
+// ============================================================
+// Destroy
+// ============================================================
 
-    $response = actingAs($admin)
-        ->delete(route('purchase.destroy', $purchase));
+describe('Destroy', function () {
+    it('deletes a purchase and redirects to index with success message', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->admin, $this->supplier, $this->product);
 
-    $response->assertRedirect(route('purchase.index'));
-    assertDatabaseMissing('purchases', ['id' => $purchase->id]);
+        actingAs($this->admin)
+            ->delete(route('purchase.destroy', $purchase))
+            ->assertRedirect(route('purchase.index'))
+            ->assertSessionHas('success');
 
-    $product->refresh();
-    expect($product->stock)->toBe(15);
+        assertDatabaseMissing('purchases', ['id' => $purchase->id]);
+    });
 
-    assertDatabaseHas('stock_logs', [
-        'product_id' => $product->id,
-        'qty' => 5,
-        'type' => 'out',
-    ]);
+    it('decrements product stock on delete', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->admin, $this->supplier, $this->product, [], ['qty' => 5]);
+        $this->product->update(['stock' => 15]);
+
+        actingAs($this->admin)
+            ->delete(route('purchase.destroy', $purchase));
+
+        expect($this->product->fresh()->stock)->toBe(10); // 15 - 5
+    });
+
+    it('creates stock log with type out on delete', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->admin, $this->supplier, $this->product, [], ['qty' => 5]);
+
+        actingAs($this->admin)
+            ->delete(route('purchase.destroy', $purchase));
+
+        assertDatabaseHas('stock_logs', [
+            'product_id' => $this->product->id,
+            'qty' => 5,
+            'type' => 'out',
+            'reference_type' => 'Purchase',
+            'reference_id' => $purchase->id,
+        ]);
+    });
+
+    it('deletes all purchase items on purchase delete', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->admin, $this->supplier, $this->product);
+
+        actingAs($this->admin)
+            ->delete(route('purchase.destroy', $purchase));
+
+        assertDatabaseMissing('purchase_items', ['purchase_id' => $purchase->id]);
+    });
+
+    it('returns 404 for non-existent purchase on delete', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        actingAs($this->admin)
+            ->delete(route('purchase.destroy', 999999))
+            ->assertNotFound();
+    });
+
+    it('warehouse can also delete a purchase', function () {
+        /** @var TestCase&object{admin:User, cashier:User, warehouse:User, supplier:Supplier, product:Product} $this */
+        $purchase = purchase($this->warehouse, $this->supplier, $this->product);
+
+        actingAs($this->warehouse)
+            ->delete(route('purchase.destroy', $purchase))
+            ->assertRedirect(route('purchase.index'));
+    });
 });
