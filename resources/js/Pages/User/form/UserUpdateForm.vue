@@ -76,120 +76,98 @@ const submit = (id) => {
 </script>
 
 <template>
-  <Dialog v-model:open="isDialogOpen">
-    <DialogTrigger as-child>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="group"
-      >
-        <Pencil
-          class="w-4 h-4 text-blue-500 dark:group-hover:text-white"
-        />
-      </Button>
-    </DialogTrigger>
-    <DialogContent class="sm:max-w-md">
-      <DialogHeader>
-        <DialogTitle>Form tambah user</DialogTitle>
-        <DialogDescription>
-          Silahkan isi form dibawah ini untuk menambahkan user
-        </DialogDescription>
-      </DialogHeader>
-      <form
-        id="form"
-        class="space-y-4"
-        @submit.prevent="submit(row.id)"
-      >
-        <div class="flex items-center space-x-2">
-          <div class="grid flex-1 gap-2">
-            <Label for="name"> Nama user </Label>
-            <Input
-              id="name"
-              v-model="form.name"
-              placeholder="Masukkan nama user"
-              type="text"
-              required
-              autocomplete="off"
-            />
-            <InputError
-              class="mt-2"
-              :message="form.errors.name"
-            />
-          </div>
-        </div>
-        <div class="flex items-center space-x-2">
-          <div class="grid flex-1 gap-2">
-            <Label for="email"> Email </Label>
-            <Input
-              id="email"
-              v-model="form.email"
-              placeholder="Masukkan email user"
-              type="email"
-              disabled
-            />
-            <InputError
-              class="mt-2"
-              :message="form.errors.email"
-            />
-          </div>
-        </div>
+    <Dialog v-model:open="isDialogOpen">
+        <DialogTrigger as-child>
+            <Button variant="ghost" size="icon" class="group">
+                <Pencil
+                    class="w-4 h-4 text-blue-500 dark:group-hover:text-white"
+                />
+            </Button>
+        </DialogTrigger>
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Form tambah user</DialogTitle>
+                <DialogDescription>
+                    Silahkan isi form dibawah ini untuk menambahkan user
+                </DialogDescription>
+            </DialogHeader>
+            <form id="form" class="space-y-4" @submit.prevent="submit(row.id)">
+                <div class="flex items-center space-x-2">
+                    <div class="grid flex-1 gap-2">
+                        <Label for="name"> Nama user </Label>
+                        <Input
+                            id="name"
+                            v-model="form.name"
+                            placeholder="Masukkan nama user"
+                            type="text"
+                            required
+                            autocomplete="off"
+                        />
+                        <InputError class="mt-2" :message="form.errors.name" />
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="grid flex-1 gap-2">
+                        <Label for="email"> Email </Label>
+                        <Input
+                            id="email"
+                            v-model="form.email"
+                            placeholder="Masukkan email user"
+                            type="email"
+                            disabled
+                        />
+                        <InputError class="mt-2" :message="form.errors.email" />
+                    </div>
+                </div>
 
-        <div class="flex items-center space-x-2">
-          <div class="grid flex-1 gap-2">
-            <Label for="role"> Role </Label>
-            <Select v-model="form.role">
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Role</SelectLabel>
-                  <SelectItem
-                    v-for="role in roles"
-                    :key="role.value"
-                    class="capitalize cursor-pointer"
-                    :value="role.value"
-                  >
-                    {{ role.label }}
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <InputError
-              class="mt-2"
-              :message="form.errors.role"
-            />
-          </div>
-        </div>
-      </form>
-      <DialogFooter class="flex">
-        <div class="flex items-start justify-start grow">
-          <UserResetPasswordForm :row="row" />
-        </div>
+                <div class="flex items-center space-x-2">
+                    <div class="grid flex-1 gap-2">
+                        <Label for="role"> Role </Label>
+                        <Select v-model="form.role">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Pilih role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Role</SelectLabel>
+                                    <SelectItem
+                                        v-for="role in roles"
+                                        :key="role.value"
+                                        class="capitalize cursor-pointer"
+                                        :value="role.value"
+                                    >
+                                        {{ role.label }}
+                                    </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <InputError class="mt-2" :message="form.errors.role" />
+                    </div>
+                </div>
+            </form>
+            <DialogFooter class="flex">
+                <div class="flex items-start justify-start grow">
+                    <UserResetPasswordForm :row="row" />
+                </div>
 
-        <DialogClose as-child>
-          <Button
-            type="button"
-            variant="secondary"
-          >
-            Batal
-          </Button>
-        </DialogClose>
+                <DialogClose as-child>
+                    <Button type="button" variant="secondary"> Batal </Button>
+                </DialogClose>
 
-        <Button
-          type="submit"
-          form="form"
-          :class="{ 'opacity-25 ': form.processing }"
-          :disabled="form.processing"
-          class="disabled:cursor-not-allowed"
-        >
-          <Loader2
-            v-if="form.processing"
-            class="w-4 h-4 animate-spin"
-          />
-          {{ form.processing ? 'Loading...' : 'Simpan' }}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+                <Button
+                    type="submit"
+                    form="form"
+                    :class="{ 'opacity-25 ': form.processing }"
+                    :disabled="form.processing"
+                    class="disabled:cursor-not-allowed"
+                >
+                    <Loader2
+                        v-if="form.processing"
+                        class="w-4 h-4 animate-spin"
+                    />
+                    {{ form.processing ? 'Loading...' : 'Simpan' }}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
