@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Sale;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sale\PosBarcodeCartItemRequest;
 use App\Http\Requests\Sale\PosCartItemRequest;
+use App\Http\Requests\Sale\PosChangeQtyRequest;
 use App\Http\Requests\Sale\PosCheckoutRequest;
+use App\Models\Promotion;
 use App\Services\Sale\PosService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,10 +33,13 @@ class PosController extends Controller
             12
         );
 
+        $promotions = Promotion::active()->get();
+
         return Inertia::render('Pos/Index', [
             'products' => $products,
             'categories' => $categories,
             'cart' => $this->posService->getOrCreateCart(),
+            'active_promotions' => $promotions,
         ]);
     }
 
@@ -55,7 +60,7 @@ class PosController extends Controller
     /**
      * Update the qty of a product in the current cart.
      */
-    public function changeQty(PosCartItemRequest $request)
+    public function changeQty(PosChangeQtyRequest $request)
     {
         try {
             $validated = $request->validated();
@@ -82,7 +87,8 @@ class PosController extends Controller
     {
         try {
             $validated = $request->validated();
-            $result = $this->posService->addToCart((int) $validated['product_id']);
+            $qty = (int) ($validated['qty'] ?? 1);
+            $result = $this->posService->addToCart((int) $validated['product_id'], $qty);
 
             if ($request->expectsJson()) {
                 return response()->json([
