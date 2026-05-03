@@ -100,269 +100,271 @@ const parseInput = (val) => {
 </script>
 
 <template>
-  <AuthenticatedLayout>
-    <Head>
-      <title>Update Harga - {{ product.name }}</title>
-    </Head>
-    <template #breadcrumb>
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <Link :href="route('dashboard')">
-              <BreadcrumbLink> Dashboard </BreadcrumbLink>
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <Link :href="route('product.index')">
-              <BreadcrumbLink> Produk </BreadcrumbLink>
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage> Update Harga </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </template>
+    <AuthenticatedLayout>
+        <Head>
+            <title>Update Harga - {{ product.name }}</title>
+        </Head>
+        <template #breadcrumb>
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <Link :href="route('dashboard')">
+                            <BreadcrumbLink> Dashboard </BreadcrumbLink>
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <Link :href="route('product.index')">
+                            <BreadcrumbLink> Produk </BreadcrumbLink>
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage> Update Harga </BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        </template>
 
-    <div class="flex flex-1 flex-col gap-4 p-4">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <!-- Update Price Form -->
-        <div class="lg:col-span-1">
-          <div class="rounded-xl bg-muted/50 p-4 h-full">
-            <div class="flex justify-between items-center mb-4">
-              <h4 class="font-semibold text-lg">
-                Update Harga
-              </h4>
-              <Link :href="route('product.index')">
-                <Button
-                  variant="outline"
-                  size="sm"
-                >
-                  <ArrowLeftToLine class="mr-2 h-4 w-4" />
-                  Kembali
-                </Button>
-              </Link>
-            </div>
-            <Separator class="mb-6" />
+        <div class="flex flex-1 flex-col gap-4 p-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Update Price Form -->
+                <div class="lg:col-span-1">
+                    <div class="rounded-xl bg-muted/50 p-4 h-full">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-semibold text-lg">Update Harga</h4>
+                            <Link :href="route('product.index')">
+                                <Button variant="outline" size="sm">
+                                    <ArrowLeftToLine class="mr-2 h-4 w-4" />
+                                    Kembali
+                                </Button>
+                            </Link>
+                        </div>
+                        <Separator class="mb-6" />
 
-            <div
-              class="mb-6 bg-white dark:bg-zinc-900 p-4 rounded-lg border"
-            >
-              <p class="text-sm text-muted-foreground mb-1">
-                Produk
-              </p>
-              <p class="font-medium text-lg">
-                {{ product.name }}
-              </p>
-              <p class="text-xs font-mono text-muted-foreground">
-                {{ product.sku }}
-              </p>
-            </div>
+                        <div
+                            class="mb-6 bg-white dark:bg-zinc-900 p-4 rounded-lg border"
+                        >
+                            <p class="text-sm text-muted-foreground mb-1">
+                                Produk
+                            </p>
+                            <p class="font-medium text-lg">
+                                {{ product.name }}
+                            </p>
+                            <p class="text-xs font-mono text-muted-foreground">
+                                {{ product.sku }}
+                            </p>
+                        </div>
 
-            <form
-              class="space-y-4"
-              @submit.prevent="submit"
-            >
-              <div>
-                <Label for="purchase_price">Harga Beli Baru</Label>
-                <div class="relative">
-                  <span
-                    class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
-                  >Rp</span>
-                  <Input
-                    id="purchase_price"
-                    :model-value="
-                      formatInput(form.purchase_price)
-                    "
-                    type="text"
-                    class="pl-9 font-mono"
-                    @update:model-value="
-                      (v) =>
-                        (form.purchase_price =
-                          parseInput(v))
-                    "
-                  />
+                        <form class="space-y-4" @submit.prevent="submit">
+                            <div>
+                                <Label for="purchase_price"
+                                    >Harga Beli Baru</Label
+                                >
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
+                                        >Rp</span
+                                    >
+                                    <Input
+                                        id="purchase_price"
+                                        :model-value="
+                                            formatInput(form.purchase_price)
+                                        "
+                                        type="text"
+                                        class="pl-9 font-mono"
+                                        @update:model-value="
+                                            (v) =>
+                                                (form.purchase_price =
+                                                    parseInput(v))
+                                        "
+                                    />
+                                </div>
+                                <InputError
+                                    :message="form.errors.purchase_price"
+                                />
+                            </div>
+
+                            <div>
+                                <Label for="selling_price"
+                                    >Harga Jual Baru</Label
+                                >
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
+                                        >Rp</span
+                                    >
+                                    <Input
+                                        id="selling_price"
+                                        :model-value="
+                                            formatInput(form.selling_price)
+                                        "
+                                        type="text"
+                                        class="pl-9 font-mono text-blue-600 dark:text-blue-400"
+                                        @update:model-value="
+                                            (v) =>
+                                                (form.selling_price =
+                                                    parseInput(v))
+                                        "
+                                    />
+                                </div>
+                                <InputError
+                                    :message="form.errors.selling_price"
+                                />
+                            </div>
+
+                            <div>
+                                <Label for="reason">Alasan Perubahan</Label>
+                                <Textarea
+                                    id="reason"
+                                    v-model="form.reason"
+                                    placeholder="Contoh: Kenaikan harga dari supplier"
+                                    rows="3"
+                                />
+                                <p
+                                    class="text-[10px] text-muted-foreground mt-1"
+                                >
+                                    Wajib diisi untuk keperluan audit.
+                                </p>
+                                <InputError :message="form.errors.reason" />
+                            </div>
+
+                            <Button
+                                type="submit"
+                                class="w-full"
+                                :disabled="form.processing"
+                            >
+                                <Loader2
+                                    v-if="form.processing"
+                                    class="mr-2 h-4 w-4 animate-spin"
+                                />
+                                Update Harga
+                            </Button>
+                        </form>
+                    </div>
                 </div>
-                <InputError
-                  :message="form.errors.purchase_price"
-                />
-              </div>
 
-              <div>
-                <Label for="selling_price">Harga Jual Baru</Label>
-                <div class="relative">
-                  <span
-                    class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium"
-                  >Rp</span>
-                  <Input
-                    id="selling_price"
-                    :model-value="
-                      formatInput(form.selling_price)
-                    "
-                    type="text"
-                    class="pl-9 font-mono text-blue-600 dark:text-blue-400"
-                    @update:model-value="
-                      (v) =>
-                        (form.selling_price =
-                          parseInput(v))
-                    "
-                  />
+                <!-- Price History -->
+                <div class="lg:col-span-2">
+                    <div class="rounded-xl bg-muted/50 p-4 h-full">
+                        <div class="flex items-center gap-2 mb-4">
+                            <History class="h-5 w-5 text-muted-foreground" />
+                            <h4 class="font-semibold text-lg">
+                                Riwayat Perubahan Harga
+                            </h4>
+                        </div>
+                        <Separator class="mb-4" />
+
+                        <div
+                            class="rounded-md border bg-white dark:bg-zinc-900 overflow-hidden"
+                        >
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Tanggal</TableHead>
+                                        <TableHead>Oleh</TableHead>
+                                        <TableHead>
+                                            Harga Beli (Lama → Baru)
+                                        </TableHead>
+                                        <TableHead>
+                                            Harga Jual (Lama → Baru)
+                                        </TableHead>
+                                        <TableHead>Alasan</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow
+                                        v-for="log in history.data"
+                                        :key="log.id"
+                                    >
+                                        <TableCell class="whitespace-nowrap">
+                                            {{ formatDate(log.created_at) }}
+                                        </TableCell>
+                                        <TableCell>
+                                            {{ log.user.name }}
+                                        </TableCell>
+                                        <TableCell class="text-xs">
+                                            <div class="flex flex-col">
+                                                <span
+                                                    class="line-through text-muted-foreground"
+                                                    >{{
+                                                        formatPrice(
+                                                            log.old_purchase_price,
+                                                        )
+                                                    }}</span
+                                                >
+                                                <span
+                                                    class="font-medium text-green-600 dark:text-green-400"
+                                                    >{{
+                                                        formatPrice(
+                                                            log.new_purchase_price,
+                                                        )
+                                                    }}</span
+                                                >
+                                            </div>
+                                        </TableCell>
+                                        <TableCell class="text-xs">
+                                            <div class="flex flex-col">
+                                                <span
+                                                    class="line-through text-muted-foreground"
+                                                    >{{
+                                                        formatPrice(
+                                                            log.old_selling_price,
+                                                        )
+                                                    }}</span
+                                                >
+                                                <span
+                                                    class="font-medium text-blue-600 dark:text-blue-400"
+                                                    >{{
+                                                        formatPrice(
+                                                            log.new_selling_price,
+                                                        )
+                                                    }}</span
+                                                >
+                                            </div>
+                                        </TableCell>
+                                        <TableCell
+                                            class="max-w-50 truncate"
+                                            :title="log.reason"
+                                        >
+                                            {{ log.reason }}
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow v-if="history.data.length === 0">
+                                        <TableCell
+                                            colspan="5"
+                                            class="text-center py-10 text-muted-foreground"
+                                        >
+                                            Belum ada riwayat perubahan harga.
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        <div
+                            v-if="history.links.length > 3"
+                            class="mt-4 flex justify-end gap-2"
+                        >
+                            <Link
+                                v-for="(link, index) in history.links"
+                                :key="index"
+                                :href="link.url || '#'"
+                                class="px-3 py-1 text-sm rounded border"
+                                :class="{
+                                    'bg-primary text-primary-foreground':
+                                        link.active,
+                                    'opacity-50 cursor-not-allowed': !link.url,
+                                    'hover:bg-muted': link.url && !link.active,
+                                }"
+                            >
+                                <!-- eslint-disable-next-line vue/no-v-html -->
+                                <span v-html="link.label" />
+                            </Link>
+                        </div>
+                    </div>
                 </div>
-                <InputError
-                  :message="form.errors.selling_price"
-                />
-              </div>
-
-              <div>
-                <Label for="reason">Alasan Perubahan</Label>
-                <Textarea
-                  id="reason"
-                  v-model="form.reason"
-                  placeholder="Contoh: Kenaikan harga dari supplier"
-                  rows="3"
-                />
-                <p
-                  class="text-[10px] text-muted-foreground mt-1"
-                >
-                  Wajib diisi untuk keperluan audit.
-                </p>
-                <InputError :message="form.errors.reason" />
-              </div>
-
-              <Button
-                type="submit"
-                class="w-full"
-                :disabled="form.processing"
-              >
-                <Loader2
-                  v-if="form.processing"
-                  class="mr-2 h-4 w-4 animate-spin"
-                />
-                Update Harga
-              </Button>
-            </form>
-          </div>
+            </div>
         </div>
-
-        <!-- Price History -->
-        <div class="lg:col-span-2">
-          <div class="rounded-xl bg-muted/50 p-4 h-full">
-            <div class="flex items-center gap-2 mb-4">
-              <History class="h-5 w-5 text-muted-foreground" />
-              <h4 class="font-semibold text-lg">
-                Riwayat Perubahan Harga
-              </h4>
-            </div>
-            <Separator class="mb-4" />
-
-            <div
-              class="rounded-md border bg-white dark:bg-zinc-900 overflow-hidden"
-            >
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tanggal</TableHead>
-                    <TableHead>Oleh</TableHead>
-                    <TableHead>
-                      Harga Beli (Lama → Baru)
-                    </TableHead>
-                    <TableHead>
-                      Harga Jual (Lama → Baru)
-                    </TableHead>
-                    <TableHead>Alasan</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow
-                    v-for="log in history.data"
-                    :key="log.id"
-                  >
-                    <TableCell class="whitespace-nowrap">
-                      {{ formatDate(log.created_at) }}
-                    </TableCell>
-                    <TableCell>
-                      {{ log.user.name }}
-                    </TableCell>
-                    <TableCell class="text-xs">
-                      <div class="flex flex-col">
-                        <span
-                          class="line-through text-muted-foreground"
-                        >{{
-                          formatPrice(
-                            log.old_purchase_price,
-                          )
-                        }}</span>
-                        <span
-                          class="font-medium text-green-600 dark:text-green-400"
-                        >{{
-                          formatPrice(
-                            log.new_purchase_price,
-                          )
-                        }}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell class="text-xs">
-                      <div class="flex flex-col">
-                        <span
-                          class="line-through text-muted-foreground"
-                        >{{
-                          formatPrice(
-                            log.old_selling_price,
-                          )
-                        }}</span>
-                        <span
-                          class="font-medium text-blue-600 dark:text-blue-400"
-                        >{{
-                          formatPrice(
-                            log.new_selling_price,
-                          )
-                        }}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell
-                      class="max-w-50 truncate"
-                      :title="log.reason"
-                    >
-                      {{ log.reason }}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow v-if="history.data.length === 0">
-                    <TableCell
-                      colspan="5"
-                      class="text-center py-10 text-muted-foreground"
-                    >
-                      Belum ada riwayat perubahan harga.
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-
-            <div
-              v-if="history.links.length > 3"
-              class="mt-4 flex justify-end gap-2"
-            >
-              <Link
-                v-for="(link, index) in history.links"
-                :key="index"
-                :href="link.url || '#'"
-                class="px-3 py-1 text-sm rounded border"
-                :class="{
-                  'bg-primary text-primary-foreground':
-                    link.active,
-                  'opacity-50 cursor-not-allowed': !link.url,
-                  'hover:bg-muted': link.url && !link.active,
-                }"
-              >
-                <!-- eslint-disable-next-line vue/no-v-html -->
-                <span v-html="link.label" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </AuthenticatedLayout>
+    </AuthenticatedLayout>
 </template>

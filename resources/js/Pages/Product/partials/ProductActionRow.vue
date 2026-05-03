@@ -1,8 +1,15 @@
 <script setup>
 import { Button } from '@/Components/ui/button';
-import { Eye, Loader2, Pencil, Trash2, Banknote } from 'lucide-vue-next';
+import {
+    Eye,
+    Loader2,
+    Pencil,
+    Trash2,
+    Banknote,
+    MoreHorizontal,
+} from 'lucide-vue-next';
 import { ref } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { router, usePage, Link } from '@inertiajs/vue3';
 
 import {
     AlertDialog,
@@ -15,6 +22,14 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import { toast } from 'vue-sonner';
 
 const props = defineProps({
@@ -26,19 +41,20 @@ const isLoading = ref(false);
 
 const user = usePage().props.auth.user.name;
 
-const destroy = (slug, productName) => {
+// Fixed destroy function parameters to match actual use
+const handleDelete = () => {
     isLoading.value = true;
 
-    router.delete(route('product.destroy', slug), {
+    router.delete(route('product.destroy', props.row.slug), {
         preserveScroll: true,
         showProgress: false,
         onSuccess: () => {
-            toast.success('Produk berhasil dihapus', {
-                description: `Produk ${productName} berhasil dihapus oleh ${user}`,
+            toast.success('Produk dihapus', {
+                description: `Produk ${props.row.name} berhasil dihapus oleh ${user}`,
             });
         },
         onError: () => {
-            toast.error('Produk gagal dihapus');
+            toast.error('Gagal menghapus produk');
         },
         onFinish: () => {
             isLoading.value = false;
@@ -49,78 +65,83 @@ const destroy = (slug, productName) => {
 </script>
 
 <template>
-  <div class="flex items-center justify-start">
-    <Button
-      variant="ghost"
-      size="icon"
-      class="group"
-      title="Edit Produk"
-      @click="router.get(route('product.edit', row.slug))"
-    >
-      <Pencil class="size-4 text-blue-500 dark:group-hover:text-white" />
-    </Button>
+    <div class="flex items-center justify-center gap-1">
+        <Link :href="route('product.show', row.slug)">
+            <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                title="Detail"
+            >
+                <Eye class="h-4 w-4" />
+            </Button>
+        </Link>
 
-    <Button
-      variant="ghost"
-      size="icon"
-      class="group"
-      title="Update Harga"
-      @click="router.get(route('product.price.edit', row.slug))"
-    >
-      <Banknote
-        class="size-4 text-orange-500 dark:group-hover:text-white"
-      />
-    </Button>
+        <Link :href="route('product.edit', row.slug)">
+            <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                title="Edit"
+            >
+                <Pencil class="h-4 w-4" />
+            </Button>
+        </Link>
 
-    <Button
-      variant="ghost"
-      size="icon"
-      class="group"
-      title="Detail Produk"
-      @click="router.get(route('product.show', row.slug))"
-    >
-      <Eye class="size-4 text-green-500 dark:group-hover:text-white" />
-    </Button>
-
-    <AlertDialog v-model:open="isDialogOpen">
-      <AlertDialogTrigger>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="dark:hover:bg-red-900 hover:bg-red-500 group"
-          title="Hapus Produk"
-        >
-          <Trash2
-            class="size-4 text-red-500 dark:group-hover:text-white group-hover:text-black"
-          />
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            Apakah anda yakin ingin menghapus product
-            <span class="underline font-bold">{{ row.name }}</span>
-            ini?
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            Data yang telah dihapus tidak dapat dikembalikan!
-            Tindakan ini tidak dapat dibatalkan!
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Batal</AlertDialogCancel>
-          <AlertDialogAction
-            class="bg-red-500 hover:bg-red-600 text-white"
-            @click="destroy(row.slug, row.name)"
-          >
-            <Loader2
-              v-if="isLoading"
-              class="w-4 h-4 animate-spin"
-            />
-            {{ isLoading ? 'Loading...' : 'Hapus' }}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="icon" class="h-8 w-8">
+                    <MoreHorizontal class="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" class="w-48">
+                <DropdownMenuLabel>Opsi Lanjutan</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <Link :href="route('product.price.edit', row.slug)">
+                    <DropdownMenuItem class="cursor-pointer gap-2">
+                        <Banknote class="h-4 w-4 text-orange-500" />
+                        Update Harga
+                    </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
+                <AlertDialog v-model:open="isDialogOpen">
+                    <AlertDialogTrigger as-child>
+                        <DropdownMenuItem
+                            class="cursor-pointer gap-2 text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20"
+                            @select.prevent
+                        >
+                            <Trash2 class="h-4 w-4" />
+                            Hapus Produk
+                        </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Hapus Produk?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Apakah Anda yakin ingin menghapus product
+                                <span class="font-bold text-foreground">{{
+                                    row.name
+                                }}</span
+                                >? Tindakan ini tidak dapat dibatalkan.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction
+                                class="bg-red-600 hover:bg-red-700 text-white"
+                                @click="handleDelete"
+                                :disabled="isLoading"
+                            >
+                                <Loader2
+                                    v-if="isLoading"
+                                    class="mr-2 h-4 w-4 animate-spin"
+                                />
+                                Hapus
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    </div>
 </template>

@@ -25,44 +25,42 @@ const props = defineProps({
 </script>
 
 <template>
-  <AuthenticatedLayout>
-    <Head>
-      <title>Data Penjualan</title>
-    </Head>
-    <template #breadcrumb>
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <Link :href="route('dashboard')">
-              <BreadcrumbLink> Dashboard </BreadcrumbLink>
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage> Penjualan </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </template>
-    <div class="flex flex-1 flex-col gap-4 p-4">
-      <div class="rounded-xl bg-muted/50 h-full p-4">
-        <div class="flex justify-between items-center">
-          <h4 class="font-semibold">
-            Data Penjualan
-          </h4>
-          <DateFilter />
-        </div>
-        <Separator class="my-4" />
+    <AuthenticatedLayout>
+        <Head>
+            <title>Data Penjualan</title>
+        </Head>
+        <template #breadcrumb>
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <Link :href="route('dashboard')">
+                            <BreadcrumbLink> Dashboard </BreadcrumbLink>
+                        </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage> Penjualan </BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        </template>
+        <div class="flex flex-1 flex-col gap-4 p-4">
+            <div class="rounded-xl bg-muted/50 h-full p-4">
+                <div class="flex justify-between items-center">
+                    <h4 class="font-semibold">Data Penjualan</h4>
+                    <DateFilter />
+                </div>
+                <Separator class="my-4" />
 
-        <div class="mt-4">
-          <DataTable
-            :data="sales.data"
-            :columns="saleColumns"
-            :route-name="'sale.index'"
-            :pagination="sales"
-          />
+                <div class="mt-4">
+                    <DataTable
+                        :data="sales.data"
+                        :columns="saleColumns"
+                        :route-name="'sale.index'"
+                        :pagination="sales"
+                    />
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </AuthenticatedLayout>
+    </AuthenticatedLayout>
 </template>

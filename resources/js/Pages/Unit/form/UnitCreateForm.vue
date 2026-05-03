@@ -45,83 +45,73 @@ const submit = () => {
 </script>
 
 <template>
-  <Dialog v-model:open="isDialogOpen">
-    <DialogTrigger as-child>
-      <Button
-        variant="outline"
-        class="dark:border-white border-zinc-600"
-      >
-        <Plus />
-        Tambah Satuan
-      </Button>
-    </DialogTrigger>
-    <DialogContent class="sm:max-w-md">
-      <DialogHeader>
-        <DialogTitle>Form tambah satuan</DialogTitle>
-        <DialogDescription>
-          Silahkan isi form dibawah ini untuk menambahkan satuan
-        </DialogDescription>
-      </DialogHeader>
-      <form
-        id="form"
-        class="space-y-4"
-        @submit.prevent="submit"
-      >
-        <div class="grid gap-2">
-          <Label for="name"> Nama Satuan </Label>
-          <Input
-            id="name"
-            v-model="form.name"
-            placeholder="Contoh: Kilogram"
-            type="text"
-            required
-            autocomplete="off"
-          />
-          <span
-            v-if="form.errors.name"
-            class="text-sm text-red-500"
-          >{{ form.errors.name }}</span>
-        </div>
-        <div class="grid gap-2">
-          <Label for="short_name"> Singkatan </Label>
-          <Input
-            id="short_name"
-            v-model="form.short_name"
-            placeholder="Contoh: kg"
-            type="text"
-            required
-            autocomplete="off"
-          />
-          <span
-            v-if="form.errors.short_name"
-            class="text-sm text-red-500"
-          >{{ form.errors.short_name }}</span>
-        </div>
-      </form>
-      <DialogFooter class="flex justify-between">
-        <DialogClose as-child>
-          <Button
-            type="button"
-            variant="secondary"
-          >
-            Batal
-          </Button>
-        </DialogClose>
+    <Dialog v-model:open="isDialogOpen">
+        <DialogTrigger as-child>
+            <Button variant="outline" class="dark:border-white border-zinc-600">
+                <Plus />
+                Tambah Satuan
+            </Button>
+        </DialogTrigger>
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Form tambah satuan</DialogTitle>
+                <DialogDescription>
+                    Silahkan isi form dibawah ini untuk menambahkan satuan
+                </DialogDescription>
+            </DialogHeader>
+            <form id="form" class="space-y-4" @submit.prevent="submit">
+                <div class="grid gap-2">
+                    <Label for="name"> Nama Satuan </Label>
+                    <Input
+                        id="name"
+                        v-model="form.name"
+                        placeholder="Contoh: Kilogram"
+                        type="text"
+                        required
+                        autocomplete="off"
+                    />
+                    <span
+                        v-if="form.errors.name"
+                        class="text-sm text-red-500"
+                        >{{ form.errors.name }}</span
+                    >
+                </div>
+                <div class="grid gap-2">
+                    <Label for="short_name"> Singkatan </Label>
+                    <Input
+                        id="short_name"
+                        v-model="form.short_name"
+                        placeholder="Contoh: kg"
+                        type="text"
+                        required
+                        autocomplete="off"
+                    />
+                    <span
+                        v-if="form.errors.short_name"
+                        class="text-sm text-red-500"
+                        >{{ form.errors.short_name }}</span
+                    >
+                </div>
+            </form>
+            <DialogFooter class="flex justify-between">
+                <DialogClose as-child>
+                    <Button type="button" variant="secondary"> Batal </Button>
+                </DialogClose>
 
-        <Button
-          type="submit"
-          form="form"
-          :class="{ 'opacity-25 ': form.processing }"
-          :disabled="form.processing"
-          class="disabled:cursor-not-allowed"
-        >
-          <Loader2
-            v-if="form.processing"
-            class="w-4 h-4 animate-spin"
-          />
-          {{ form.processing ? 'Loading...' : 'Simpan' }}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+                <Button
+                    type="submit"
+                    form="form"
+                    :class="{ 'opacity-25 ': form.processing }"
+                    :disabled="form.processing"
+                    class="disabled:cursor-not-allowed"
+                >
+                    <Loader2
+                        v-if="form.processing"
+                        class="w-4 h-4 animate-spin"
+                    />
+                    {{ form.processing ? 'Loading...' : 'Simpan' }}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
