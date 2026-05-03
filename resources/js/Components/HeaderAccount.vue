@@ -46,53 +46,50 @@ const avatarColor = getColorFromName(user.name);
 </script>
 
 <template>
-  <DropdownMenu>
-    <DropdownMenuTrigger
-      as-child
-      class="outline-none cursor-pointer"
-    >
-      <Avatar
-        class="h-8 w-8 flex items-center justify-center rounded-full overflow-hidden"
-      >
-        <AvatarImage
-          v-if="user.photo_profile"
-          :src="user.photo_profile"
-          :alt="user.name"
-        />
-        <AvatarFallback
-          :class="[
-            avatarColor,
-            'text-white font-bold w-full h-full flex items-center justify-center rounded-full',
-          ]"
-        >
-          {{
-            user.name
-              .split(' ')
-              .map((n) => n[0])
-              .join('')
-              .toUpperCase()
-          }}
-        </AvatarFallback>
-      </Avatar>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent>
-      <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
-      <DropdownMenuSeparator />
-      <Link :href="route('profile.edit')">
-        <DropdownMenuItem class="cursor-pointer hover:text-black">
-          Profile
-        </DropdownMenuItem>
-      </Link>
-      <Link
-        :href="route('logout')"
-        as="button"
-        method="post"
-        class="w-full hover:bg-accent hover:text-slate-900 cursor-pointer transition-all ease-in-out duration-300 rounded"
-      >
-        <DropdownMenuItem class="cursor-pointer">
-          Logout
-        </DropdownMenuItem>
-      </Link>
-    </DropdownMenuContent>
-  </DropdownMenu>
+    <DropdownMenu>
+        <DropdownMenuTrigger as-child class="outline-none cursor-pointer">
+            <Avatar
+                class="h-8 w-8 flex items-center justify-center rounded-full overflow-hidden"
+            >
+                <AvatarImage
+                    v-if="user.photo_profile"
+                    :src="user.photo_profile"
+                    :alt="user.name"
+                />
+                <AvatarFallback
+                    :class="[
+                        avatarColor,
+                        'text-white font-bold w-full h-full flex items-center justify-center rounded-full',
+                    ]"
+                >
+                    {{
+                        user.name
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')
+                            .toUpperCase()
+                    }}
+                </AvatarFallback>
+            </Avatar>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+            <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <Link :href="route('profile.edit')">
+                <DropdownMenuItem class="cursor-pointer hover:text-black">
+                    Profile
+                </DropdownMenuItem>
+            </Link>
+            <Link
+                :href="route('logout')"
+                as="button"
+                method="post"
+                class="w-full hover:bg-accent hover:text-slate-900 cursor-pointer transition-all ease-in-out duration-300 rounded"
+            >
+                <DropdownMenuItem class="cursor-pointer">
+                    Logout
+                </DropdownMenuItem>
+            </Link>
+        </DropdownMenuContent>
+    </DropdownMenu>
 </template>

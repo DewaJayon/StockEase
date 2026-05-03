@@ -7,26 +7,23 @@ import HeaderTheme from './HeaderTheme.vue';
 </script>
 
 <template>
-  <header class="shadow-sm border-b bg-background">
-    <div class="flex items-center justify-between px-4 py-4">
-      <div class="flex items-center">
-        <SidebarTrigger />
-        <Separator
-          orientation="vertical"
-          class="mr-2 h-4"
-        />
-        <slot name="breadcrumb" />
-      </div>
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2">
-          <HeaderTheme />
+    <header class="shadow-sm border-b bg-background">
+        <div class="flex items-center justify-between px-4 py-4">
+            <div class="flex items-center">
+                <SidebarTrigger />
+                <Separator orientation="vertical" class="mr-2 h-4" />
+                <slot name="breadcrumb" />
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <HeaderTheme />
 
-          <HeaderNotification />
+                    <HeaderNotification />
+                </div>
+                <div class="relative">
+                    <HeaderAccount />
+                </div>
+            </div>
         </div>
-        <div class="relative">
-          <HeaderAccount />
-        </div>
-      </div>
-    </div>
-  </header>
+    </header>
 </template>
