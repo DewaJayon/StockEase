@@ -16,6 +16,8 @@ class SaleItem extends Model
         'qty',
         'price',
         'cost_price',
+        'promotion_id',
+        'discount_amount',
     ];
 
     /**
@@ -28,7 +30,18 @@ class SaleItem extends Model
         return [
             'price' => 'decimal:4',
             'cost_price' => 'decimal:4',
+            'discount_amount' => 'decimal:4',
         ];
+    }
+
+    /**
+     * Get the promotion applied to this sale item.
+     *
+     * @return BelongsTo
+     */
+    public function promotion()
+    {
+        return $this->belongsTo(Promotion::class);
     }
 
     /**

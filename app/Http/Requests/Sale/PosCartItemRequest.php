@@ -24,7 +24,7 @@ class PosCartItemRequest extends FormRequest
     {
         return [
             'product_id' => ['required', 'exists:products,id'],
-            'qty' => ['sometimes', 'required', 'numeric'],
+            'qty' => ['sometimes', 'required', 'numeric', 'min:1'],
         ];
     }
 }

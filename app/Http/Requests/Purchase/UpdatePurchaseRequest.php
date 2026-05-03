@@ -41,7 +41,7 @@ class UpdatePurchaseRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        if ($this->has('date')) {
+        if ($this->filled('date')) {
 
             $translatedDate = strtr($this->date, [
                 'Januari' => 'January',
