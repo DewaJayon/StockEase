@@ -63,13 +63,34 @@
 - refactor LogStockController buatin service class dan buatkan unit test (Done)
 - fix bug di expiry page itu filternya bentrok dengan filter di datatabel (Done)
 
-<!-- TODO: -->
+<!-- TODO: 03/05/2026 -->
 
-- fix n+1 query, query duplikat, dan jangan pakai datatable limit aja 5 atau 10 data di dashboard
-- Analisis Produk (Fast & Slow Moving)
-    - **Masalah:** Penumpukan stok pada produk yang tidak laku.
-    - **Fitur:** Grafik analisis produk yang paling cepat terjual vs yang paling lama mengendap di gudang.
-    - **Teknis:** Agregasi data dari `sale_items` dan `stock_logs`.
+- rapikan struktur controller (pindahkan Dashboard, Promotion, dan Unit ke subfolder) (Done)
+- rapikan penempatan file test di folder tests/Feature agar lebih terorganisir (Done)
+- fix n+1 query, query duplikat, dan jangan pakai datatable limit aja 5 atau 10 data di dashboard (Done)
+- penambahan test case untuk PurchaseController (Done)
+- penambahan test case untuk SupplierController (Done)
+- penambahan test case untuk ProductController (Done)
+- hapus file code auth yang sudah tidak terpakai (Done)
+- improve ui/ux di halaman report (Done)
+- fix ui di halaman POS (Done)
+- fitur Analisis Produk (Fast & Slow Moving) (Done)
+- fitur Manajemen Diskon & Promo (Done)
+- fix fitur Manajemen Diskon & Promo beserta UI/UX nya dan tambahkan lagi testnya (Done)
+- fix date form di diskon page (Done)
+- perbaikan UI/UX di halaman tambah produk, edit dan show produk (Done)
+- fix bug sidebar active (Done)
+- database seeder untuk promo diskon (Done)
+- fix filter pencarian datatable di diskon promo page (Done)
+- fitur filter tanggal di halaman promo diskon (Done)
+- fix bug di update form promo diskon itu ketika typenya persen nilai diskonnya malah kayak harga (Done)
+- refactor tabel di halaman promo untuk type dan nilai itu dipisah (Done)
+- unit test untuk file manager controller (Done)
+- fix bug di sidebar active laporan laba rugi dan analisis produk (Done)
+- fix Form edit pembelian produk di tanggal Kadaluwarsa itu pakai date shadcn vue (Done)
+- refactor route web buatkan folder web dengan route sesuai fitur (Done)
+
+<!-- TODO: -->
 
 - tambahin lagi beberapa laporan atau fitur di laporan penjualan
 - tambahkan test case untuk semua logic
