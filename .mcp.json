@@ -2,11 +2,17 @@
     "mcpServers": {
         "laravel-boost": {
             "command": "php",
-            "args": ["artisan", "boost:mcp"]
+            "args": [
+                "artisan",
+                "boost:mcp"
+            ]
         },
         "shadcnVue": {
             "command": "npx",
-            "args": ["shadcn-vue@latest", "mcp"]
+            "args": [
+                "shadcn-vue@latest",
+                "mcp"
+            ]
         }
     }
 }
