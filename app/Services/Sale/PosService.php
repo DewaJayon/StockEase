@@ -104,11 +104,12 @@ class PosService
             throw new \Exception('Stok produk habis');
         }
 
-        if ($product->stock < $qty) {
+        $existItem = $cart->saleItems->firstWhere('product_id', $product->id);
+        $resultingQty = ($existItem?->qty ?? 0) + $qty;
+
+        if ($product->stock < $resultingQty) {
             throw new \Exception('Stok produk tidak mencukupi');
         }
-
-        $existItem = $cart->saleItems->firstWhere('product_id', $product->id);
 
         if (! $existItem) {
             $newItem = SaleItem::create([

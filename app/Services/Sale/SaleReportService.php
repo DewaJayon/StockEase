@@ -2,7 +2,6 @@
 
 namespace App\Services\Sale;
 
-use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
 use Carbon\Carbon;
@@ -43,7 +42,7 @@ class SaleReportService
 
         $sumTotalSale = $sales->sum('total');
         $transactionCount = $sales->where('status', 'completed')->count();
-        $countProductSale = $sales->flatMap->saleItems->count();
+        $countProductSale = $sales->flatMap->saleItems->sum('qty');
 
         $bestSellingProduct = $sales
             ->flatMap->saleItems
@@ -102,7 +101,7 @@ class SaleReportService
 
         $totalSale = $sales->sum('total');
         $transactionCount = $sales->where('status', 'completed')->count();
-        $productSold = $sales->flatMap->saleItems->count();
+        $productSold = $sales->flatMap->saleItems->sum('qty');
 
         $bestSellingProduct = $sales
             ->flatMap->saleItems
@@ -153,17 +152,24 @@ class SaleReportService
      */
     public function getExcelReportSummary(Collection $sales): array
     {
+        $bestProductId = $sales->flatMap->saleItems
+            ->groupBy('product_id')
+            ->map->sum('qty')
+            ->sortDesc()
+            ->keys()
+            ->first();
+
+        $bestProduct = '-';
+        if ($bestProductId) {
+            $bestProductItem = $sales->flatMap->saleItems->firstWhere('product_id', $bestProductId);
+            $bestProduct = $bestProductItem?->product?->name ?? '-';
+        }
+
         return [
             'total_sales' => number_format($sales->sum('total')),
             'transaction_count' => $sales->count(),
             'product_count' => $sales->flatMap->saleItems->sum('qty'),
-            'best_product' => $sales->flatMap->saleItems
-                ->groupBy('product_id')
-                ->map->sum('quantity')
-                ->sortDesc()
-                ->keys()
-                ->map(fn ($id) => Product::find($id)->name)
-                ->first() ?? '-',
+            'best_product' => $bestProduct,
         ];
     }
 
